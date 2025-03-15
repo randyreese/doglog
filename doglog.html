@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DogLog</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        table {
+            width: 50%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Dog Log</h2>
+    <button onclick="insertPee()">Pee</button>
+    <button onclick="insertPoo()">Poo</button>
+	<button onclick="clearTimestampAndWord()">Clear</button>
+
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td></td><td></td></tr>
+            <tr><td></td><td></td></tr>
+            <tr><td></td><td></td></tr>
+            <tr><td></td><td></td></tr>
+	        <tr><td></td><td></td></tr>
+		    <tr><td></td><td></td></tr>
+		</tbody>
+    </table>
+
+    <script>
+        // Function to insert timestamp and "Pee"
+        function insertPee() {
+            let table = document.getElementById("dataTable");
+            let rows = table.getElementsByTagName("tbody")[0].rows;
+
+            for (let i = 0; i < rows.length; i++) {
+                let firstCell = rows[i].cells[0]; // First column
+                let secondCell = rows[i].cells[1]; // Second column
+
+                if (firstCell.innerHTML === "") { // Find first empty row
+                    firstCell.innerHTML = new Date().toLocaleString(); // Insert timestamp
+                    secondCell.innerHTML = "Pee"; // Insert "Pee"
+                    return;
+                }
+            }
+            alert("No empty cells available!");
+        }
+
+        // Function to insert timestamp and "Poo"
+        function insertPoo() {
+            let table = document.getElementById("dataTable");
+            let rows = table.getElementsByTagName("tbody")[0].rows;
+
+            for (let i = 0; i < rows.length; i++) {
+                let firstCell = rows[i].cells[0]; // First column
+                let secondCell = rows[i].cells[1]; // Second column
+
+                if (firstCell.innerHTML === "") { // Find first empty row
+                    firstCell.innerHTML = new Date().toLocaleString(); // Insert timestamp
+                    secondCell.innerHTML = "Poo"; // Insert "Poo"
+                    return;
+                }
+            }
+            alert("No empty cells available!");
+        }
+
+        // Function to clear all 
+        function clearTimestampAndWord() {
+            let table = document.getElementById("dataTable");
+            let rows = table.getElementsByTagName("tbody")[0].rows;
+
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].cells[0].innerHTML = ""; // Clear timestamp
+                rows[i].cells[1].innerHTML = ""; // Clear "Pee"
+            }
+            alert("Entries cleared successfully!");
+        }
+    </script>
+
+</body>
+</html>
