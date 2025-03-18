@@ -67,7 +67,7 @@
                 let secondCell = rows[i].cells[1]; // Second column
 
                 if (firstCell.innerHTML === "") { // Find first empty row
-                    firstCell.innerHTML = new Date().toLocaleString(); // Insert timestamp
+                    firstCell.innerHTML = new formatDate(Date()).toLocaleString(); // Insert timestamp
                     secondCell.innerHTML = "Pee"; // Insert "Pee"
                     return;
                 }
@@ -92,6 +92,20 @@
             }
             alert("No empty cells available!");
         }
+		
+		function formatDate() {
+    const date = new Date();
+    const options = { weekday: 'short' }; // 'short' gives abbreviated day (e.g., Mon, Tue)
+    const day = date.toLocaleDateString('en-US', options);
+    
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12 || 12; // Convert to 12-hour format, treating 0 as 12
+    
+    return `${day} ${hours}:${minutes} ${ampm}`;
+}
 
         // Function to clear all 
         function clearTimestampAndWord() {
