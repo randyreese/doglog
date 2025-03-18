@@ -67,7 +67,7 @@
                 let secondCell = rows[i].cells[1]; // Second column
 
                 if (firstCell.innerHTML === "") { // Find first empty row
-                    firstCell.innerHTML = new formatDate(Date()).toLocaleString(); // Insert timestamp
+                    firstCell.innerHTML = new Date().toLocaleString(); // Insert timestamp
                     secondCell.innerHTML = "Pee"; // Insert "Pee"
                     return;
                 }
@@ -85,7 +85,7 @@
                 let secondCell = rows[i].cells[1]; // Second column
 
                 if (firstCell.innerHTML === "") { // Find first empty row
-                    firstCell.innerHTML = new Date().toLocaleString(); // Insert timestamp
+                    firstCell.innerHTML = formatDate().toLocaleString(); // Insert timestamp
                     secondCell.innerHTML = "Poo"; // Insert "Poo"
                     return;
                 }
