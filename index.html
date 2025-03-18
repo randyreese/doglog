@@ -67,7 +67,7 @@
                 let secondCell = rows[i].cells[1]; // Second column
 
                 if (firstCell.innerHTML === "") { // Find first empty row
-                    firstCell.innerHTML = new Date().toLocaleString(); // Insert timestamp
+                    firstCell.innerHTML = formatDate().toLocaleString(); // Insert timestamp
                     secondCell.innerHTML = "Pee"; // Insert "Pee"
                     return;
                 }
@@ -100,11 +100,11 @@
     
     let hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const ampm = hours >= 12 ? 'pm' : 'am';
     
     hours = hours % 12 || 12; // Convert to 12-hour format, treating 0 as 12
     
-    return `${day} ${hours}:${minutes} ${ampm}`;
+    return `${day} ${hours}:${minutes}${ampm}`;
 }
 
         // Function to clear all 
