@@ -162,6 +162,10 @@
             localStorage.removeItem("tableData");
             alert("Local storage cleared!");
         }
+
+        // Load table data from localStorage on page load
+        window.onload = loadTable;
+
    </script>
 
 </body>
