@@ -56,12 +56,10 @@
 		</tbody>
     </table>
 
-	<button onclick="clearTimestampAndWord()">Reset</button>
-	<br>
-	<br>
-    <button onclick="saveTable()">Save Table</button>
-    <button onclick="loadTable()">Load Table</button>
-    <button onclick="clearStorage()">Clear Storage</button>
+	<button onclick="clearTimestampAndWord()">Clear</button>
+    <button onclick="saveTable()">Save</button>
+    <button onclick="loadTable()">Load</button>
+    <button onclick="clearStorage()">Erase</button>
 
     <script>
         // Function to insert timestamp and "Pee"
@@ -154,7 +152,7 @@
                     row.insertCell(0).innerText = rowData[0];
                     row.insertCell(1).innerText = rowData[1];
                 });
-                alert("Table data loaded!");
+             //   alert("Table data loaded!");
             } else {
                 alert("No data found in local storage.");
             }
