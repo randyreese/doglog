@@ -57,6 +57,11 @@
     </table>
 
 	<button onclick="clearTimestampAndWord()">Reset</button>
+	<br>
+	<br>
+    <button onclick="saveTable()">Save Table</button>
+    <button onclick="loadTable()">Load Table</button>
+    <button onclick="clearStorage()">Clear Storage</button>
 
     <script>
         // Function to insert timestamp and "Pee"
@@ -120,7 +125,46 @@
             }
             // alert("Entries cleared successfully!");
         }
-    </script>
+   
+        function saveTable() {
+            const table = document.getElementById("dataTable");
+            const rows = table.getElementsByTagName("tbody")[0].rows;
+            let data = [];
+
+            for (let row of rows) {
+                let rowData = [
+                    row.cells[0].innerText,
+                    row.cells[1].innerText
+                ];
+                data.push(rowData);
+            }
+
+            localStorage.setItem("tableData", JSON.stringify(data));
+            alert("Table data saved!");
+        }
+
+        function loadTable() {
+            const table = document.getElementById("dataTable").getElementsByTagName("tbody")[0];
+            const data = JSON.parse(localStorage.getItem("tableData"));
+
+            if (data) {
+                table.innerHTML = ""; // Clear existing table rows
+                data.forEach(rowData => {
+                    let row = table.insertRow();
+                    row.insertCell(0).innerText = rowData[0];
+                    row.insertCell(1).innerText = rowData[1];
+                });
+                alert("Table data loaded!");
+            } else {
+                alert("No data found in local storage.");
+            }
+        }
+
+        function clearStorage() {
+            localStorage.removeItem("tableData");
+            alert("Local storage cleared!");
+        }
+   </script>
 
 </body>
 </html>
