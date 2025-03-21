@@ -1,0 +1,1 @@
+copy *.* d:\$user\www\test\
