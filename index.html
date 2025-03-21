@@ -33,6 +33,7 @@
 
     <h2>Dog Log</h2>
     
+    <h2>
     <label>
             <input type="radio" name="selection" value="Tess" checked> Tess
     </label>
@@ -40,10 +41,10 @@
         <input type="radio" name="selection" value="Pickles"> Pickles
     </label>
     <br><br>
-    
+    </h2>
 
       <button onclick="logAction('Pee')">Pee</button>
-      <button onclick="insertPoo()">Poo</b></button>
+      <button onclick="logAction('Poo')">Poo</button>
     
     <table id="dataTable">
         <thead>
@@ -91,26 +92,6 @@
         }
 
 
-
-
-        // Function to insert timestamp and "Poo"
-        function insertPoo() {
-            let table = document.getElementById("dataTable");
-            let rows = table.getElementsByTagName("tbody")[0].rows;
-
-            for (let i = 0; i < rows.length; i++) {
-                let firstCell = rows[i].cells[0]; // First column
-                let secondCell = rows[i].cells[1]; // Second column
-
-                if (firstCell.innerHTML === "") { // Find first empty row
-                    firstCell.innerHTML = formatDate().toLocaleString(); // Insert timestamp
-                    secondCell.innerHTML = "Poo"; // Insert "Poo"
-                    return;
-                }
-            }
-            alert("No empty cells available!");
-        }
-		
 		function formatDate() {
     const date = new Date();
     const options = { weekday: 'short' }; // 'short' gives abbreviated day (e.g., Mon, Tue)
