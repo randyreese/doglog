@@ -72,6 +72,7 @@
 
     <script>
         function logAction(action) {
+        
             const selectedValue = document.querySelector('input[name="selection"]:checked').value; // DOG NAME
             let table = document.getElementById("dataTable");
             let rows = table.getElementsByTagName("tbody")[0].rows;
@@ -90,23 +91,7 @@
         }
 
 
-        // Function to insert timestamp and "Pee"
-        // function insertPee() {
-            let table = document.getElementById("dataTable");
-            let rows = table.getElementsByTagName("tbody")[0].rows;
 
-            for (let i = 0; i < rows.length; i++) {
-                let firstCell = rows[i].cells[0]; // First column
-                let secondCell = rows[i].cells[1]; // Second column
-
-                if (firstCell.innerHTML === "") { // Find first empty row
-                    firstCell.innerHTML = formatDate().toLocaleString(); // Insert timestamp
-                    secondCell.innerHTML = `${selectedValue}: ${action}`; // Insert "Pee"  NEW
-                    return;
-                }
-            }
-            alert("No empty cells available!");
-        }
 
         // Function to insert timestamp and "Poo"
         function insertPoo() {
