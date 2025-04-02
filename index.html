@@ -69,15 +69,17 @@
 		</tbody>
     </table>
 
-	<button onclick="clearTimestampAndWord()">Clear table</button>
+	// <button onclick="clearTimestampAndWord()">Clear table</button>
     <br>
-    <button onclick="saveTable()">Save table</button>
-    <button onclick="loadTable()">Load data</button>
+    // <button onclick="saveTable()">Save table</button>
+    // <button onclick="loadTable()">Load data</button>
     <br>
     <button onclick="clearStorage()">Erase data</button>
 
     <script>
-        function logAction(action) {
+    window.onload = loadTable;
+    
+    function logAction(action) {
         
             const selectedValue = document.querySelector('input[name="selection"]:checked').value; // DOG NAME
             let table = document.getElementById("dataTable");
@@ -158,12 +160,13 @@
         }
 
         function clearStorage() {
+            clearTimestampAndWord()
             localStorage.removeItem("tableData");
-            alert("Local storage cleared!");
+            alert("Data erased");
         }
 
         // Load table data from localStorage on page load
-        window.onload = loadTable;
+    //    window.onload = loadTable;
 
    </script>
 
