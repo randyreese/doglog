@@ -92,7 +92,8 @@
 
                 if (firstCell.innerHTML === "") { // Find first empty row
                     firstCell.innerHTML = formatDate().toLocaleString(); // Insert timestamp
-                    secondCell.innerHTML = `${selectedValue}: ${action}`; // Insert "Pee"  NEW
+                    secondCell.innerHTML = `${selectedValue}: ${action}`; // Insert event
+                    saveTable()
                     return;
                 }
             }
