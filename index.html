@@ -68,23 +68,16 @@
 		    <tr><td></td><td></td></tr>
 		</tbody>
     </table>
-    
-    
-	<!-- <button onclick="clearTimestampAndWord()">Clear table</button>
-     <button onclick="saveTable()">Save table</button>
-    <button onclick="loadTable()">Load data</button>
-    -->
+
+	<button onclick="clearTimestampAndWord()">Clear table</button>
     <br>
+    <button onclick="saveTable()">Save table</button>
+    <button onclick="loadTable()">Load data</button>
     <br>
     <button onclick="clearStorage()">Erase data</button>
-    <script>
-        window.onload = loadTable();
-    </script>
 
     <script>
-   
-    
-    function logAction(action) {
+        function logAction(action) {
         
             const selectedValue = document.querySelector('input[name="selection"]:checked').value; // DOG NAME
             let table = document.getElementById("dataTable");
@@ -96,8 +89,7 @@
 
                 if (firstCell.innerHTML === "") { // Find first empty row
                     firstCell.innerHTML = formatDate().toLocaleString(); // Insert timestamp
-                    secondCell.innerHTML = `${selectedValue}: ${action}`; // Insert event
-                    saveTable()
+                    secondCell.innerHTML = `${selectedValue}: ${action}`; // Insert "Pee"  NEW
                     return;
                 }
             }
@@ -145,7 +137,7 @@
             }
 
             localStorage.setItem("tableData", JSON.stringify(data));
-            // alert("Table data saved!");
+            alert("Table data saved!");
         }
 
         function loadTable() {
@@ -166,13 +158,12 @@
         }
 
         function clearStorage() {
-            clearTimestampAndWord()
             localStorage.removeItem("tableData");
-            alert("Data erased");
+            alert("Local storage cleared!");
         }
 
         // Load table data from localStorage on page load
-    //    window.onload = loadTable;
+        window.onload = loadTable;
 
    </script>
 
