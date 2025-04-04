@@ -1,1 +1,1 @@
-copy *.* d:\$user\www\test\
+copy *.html d:\$user\www\test\
