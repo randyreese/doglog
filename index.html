@@ -1,171 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DogLog</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
-        table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 10px;
-            text-align: center;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dog Log v2</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-        button {
-            font-size: 20px;
-            padding: 5px 30px;
-            margin-left: 15px;
-            margin-top: 15px;
-            cursor: pointer;
-            background-color: #008CBA;
-            color: white
-        }
-    </style>
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    h3 label {
+      margin: 0 10px;
+      display: inline-block;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      cursor: pointer;
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #eraseBtn {
+      background-color: crimson;
+      margin: 30px auto 10px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin: 20px auto;
+      max-width: 100%;
+    }
+
+    table {
+      width: 100%;
+      max-width: 700px;
+      margin: auto;
+      border-collapse: collapse;
+      min-width: 300px;
+    }
+
+    th, td {
+      border: 1px solid black;
+      padding: 10px;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .footer {
+      margin-top: auto;
+    }
+
+    @media (max-width: 600px) {
+      button {
+        font-size: 16px;
+        width: 100%;
+        max-width: 300px;
+      }
+
+      h3 {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
 </head>
 <body>
 
-    <h2>Dog Log</h2>
-    
-    <h3>
-    <label>
-            <input type="radio" name="selection" value="Tess" checked> Tess
-    </label>
-    <label>
-        <input type="radio" name="selection" value="Pickles"> Pickles
-    </label>
-    <br>
-    </h3>
+  <h2>Dog Log v2</h2>
 
-      <button onclick="logAction('Pee')">Pee</button>
-      <button onclick="logAction('Poo')">Poo</button>
-    
+  <h3>
+    <label><input type="radio" name="selection" value="Tess" checked> Tess</label>
+    <label><input type="radio" name="selection" value="Pickles"> Pickles</label>
+  </h3>
+
+  <div class="button-group">
+    <button onclick="logAction('Pee')">Pee</button>
+    <button onclick="logAction('Poo')">Poo</button>
+  </div>
+
+  <div class="table-container">
     <table id="dataTable">
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Output</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td></td><td></td></tr>
-            <tr><td></td><td></td></tr>
-            <tr><td></td><td></td></tr>
-            <tr><td></td><td></td></tr>
-	        <tr><td></td><td></td></tr>
-		    <tr><td></td><td></td></tr>
-            <tr><td></td><td></td></tr>
-	        <tr><td></td><td></td></tr>
-		    <tr><td></td><td></td></tr>
-		</tbody>
+      <thead>
+        <tr><th>Time</th><th>Output</th></tr>
+      </thead>
+      <tbody>
+        <!-- 10 empty rows -->
+        <script>
+          for (let i = 0; i < 10; i++) {
+            document.write('<tr><td></td><td></td></tr>');
+          }
+        </script>
+      </tbody>
     </table>
+  </div>
 
-	<button onclick="clearTimestampAndWord()">Clear table</button>
-    <br>
-    <button onclick="saveTable()">Save table</button>
-    <button onclick="loadTable()">Load data</button>
-    <br>
-    <button onclick="clearStorage()">Erase data</button>
+  <div class="footer">
+    <button id="eraseBtn" onclick="confirmErase()" style="display: none;">Erase data</button>
+  </div>
 
-    <script>
-        function logAction(action) {
-        
-            const selectedValue = document.querySelector('input[name="selection"]:checked').value; // DOG NAME
-            let table = document.getElementById("dataTable");
-            let rows = table.getElementsByTagName("tbody")[0].rows;
+  <script>
+    const MAX_ROWS = 10;
 
-            for (let i = 0; i < rows.length; i++) {
-                let firstCell = rows[i].cells[0]; // First column
-                let secondCell = rows[i].cells[1]; // Second column
+    function logAction(action) {
+      const dog = document.querySelector('input[name="selection"]:checked').value;
+      const table = document.getElementById("dataTable").getElementsByTagName("tbody")[0];
+      const rows = table.rows;
+      const timestamp = formatDate();
+      const entry = [timestamp, `${dog}: ${action}`];
 
-                if (firstCell.innerHTML === "") { // Find first empty row
-                    firstCell.innerHTML = formatDate().toLocaleString(); // Insert timestamp
-                    secondCell.innerHTML = `${selectedValue}: ${action}`; // Insert "Pee"  NEW
-                    return;
-                }
-            }
-            alert("No empty cells available!");
+      for (let i = 0; i < rows.length; i++) {
+        if (!rows[i].cells[0].innerText) {
+          rows[i].cells[0].innerText = timestamp;
+          rows[i].cells[1].innerText = `${dog}: ${action}`;
+          saveToStorage(entry);
+          return;
         }
+      }
+      alert("No empty cells available!");
+    }
 
+    function formatDate() {
+      const date = new Date();
+      const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+      let hours = date.getHours();
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'pm' : 'am';
+      hours = hours % 12 || 12;
+      return `${day} ${hours}:${minutes}${ampm}`;
+    }
 
-		function formatDate() {
-    const date = new Date();
-    const options = { weekday: 'short' }; // 'short' gives abbreviated day (e.g., Mon, Tue)
-    const day = date.toLocaleDateString('en-US', options);
-    
-    let hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'pm' : 'am';
-    
-    hours = hours % 12 || 12; // Convert to 12-hour format, treating 0 as 12
-    
-    return `${day} ${hours}:${minutes}${ampm}`;
-}
+    function saveToStorage(entry) {
+      let data = JSON.parse(localStorage.getItem("tableData")) || [];
+      if (data.length >= MAX_ROWS) {
+        alert("No more space in storage!");
+        return;
+      }
+      data.push(entry);
+      localStorage.setItem("tableData", JSON.stringify(data));
+      toggleEraseButton(true);
+    }
 
-        // Function to clear all 
-        function clearTimestampAndWord() {
-            let table = document.getElementById("dataTable");
-            let rows = table.getElementsByTagName("tbody")[0].rows;
+    function loadFromStorage() {
+      const data = JSON.parse(localStorage.getItem("tableData")) || [];
+      if (data.length) {
+        const tbody = document.getElementById("dataTable").getElementsByTagName("tbody")[0];
+        data.forEach((entry, i) => {
+          if (tbody.rows[i]) {
+            tbody.rows[i].cells[0].innerText = entry[0];
+            tbody.rows[i].cells[1].innerText = entry[1];
+          }
+        });
+        toggleEraseButton(true);
+      }
+    }
 
-            for (let i = 0; i < rows.length; i++) {
-                rows[i].cells[0].innerHTML = ""; // Clear timestamp
-                rows[i].cells[1].innerHTML = ""; // Clear "Pee"
-            }
-            // alert("Entries cleared successfully!");
-        }
-   
-        function saveTable() {
-            const table = document.getElementById("dataTable");
-            const rows = table.getElementsByTagName("tbody")[0].rows;
-            let data = [];
+    function toggleEraseButton(show) {
+      document.getElementById("eraseBtn").style.display = show ? 'inline-block' : 'none';
+    }
 
-            for (let row of rows) {
-                let rowData = [
-                    row.cells[0].innerText,
-                    row.cells[1].innerText
-                ];
-                data.push(rowData);
-            }
+    function confirmErase() {
+      const confirmDelete = confirm("Confirm delete?");
+      if (confirmDelete) {
+        localStorage.removeItem("tableData");
+        clearTable();
+        toggleEraseButton(false);
+      }
+    }
 
-            localStorage.setItem("tableData", JSON.stringify(data));
-            alert("Table data saved!");
-        }
+    function clearTable() {
+      const rows = document.querySelectorAll("#dataTable tbody tr");
+      rows.forEach(row => {
+        row.cells[0].innerText = "";
+        row.cells[1].innerText = "";
+      });
+    }
 
-        function loadTable() {
-            const table = document.getElementById("dataTable").getElementsByTagName("tbody")[0];
-            const data = JSON.parse(localStorage.getItem("tableData"));
-
-            if (data) {
-                table.innerHTML = ""; // Clear existing table rows
-                data.forEach(rowData => {
-                    let row = table.insertRow();
-                    row.insertCell(0).innerText = rowData[0];
-                    row.insertCell(1).innerText = rowData[1];
-                });
-             //   alert("Table data loaded!");
-            } else {
-            //    alert("No data found in local storage.");
-            }
-        }
-
-        function clearStorage() {
-            localStorage.removeItem("tableData");
-            alert("Local storage cleared!");
-        }
-
-        // Load table data from localStorage on page load
-        window.onload = loadTable;
-
-   </script>
+    window.onload = loadFromStorage;
+  </script>
 
 </body>
 </html>
