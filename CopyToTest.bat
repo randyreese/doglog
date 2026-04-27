@@ -1,1 +1,0 @@
-copy *.html d:\$user\www\test\
