@@ -18,6 +18,11 @@
 - `mobile/src/sync.js` — WiFi-gate sync, localISOString() for timestamps
 - `mobile/vite.config.js` — proxy config routes API calls through Vite in dev
 
+## Architecture & technique docs (canonical source: claude repo)
+
+- `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\vite-pwa-dev-proxy.md` — why the Vite proxy is required for any PWA tested on a physical device; pattern for all future apps
+- `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\dev-prod-workflow.md` — dev/prod split pattern (shared with grow)
+
 ## Critical dev patterns
 
 ### Vite proxy (mandatory for mobile dev)
