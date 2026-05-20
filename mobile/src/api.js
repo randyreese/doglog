@@ -50,7 +50,7 @@ async function req(method, path, body) {
     }
     if (!res.ok) throw new Error(`${res.status} ${method} ${path}`)
     if (res.status === 204) return null
-    return res.json()
+    return await res.json()
   } catch (err) {
     if (method === 'GET') return localGet(path)
     throw err

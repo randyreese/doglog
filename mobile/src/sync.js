@@ -75,12 +75,18 @@ export async function flushQueue() {
   }
 }
 
+function localISOString() {
+  const d = new Date()
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
 export async function queueEvent({ dog_id, type, timestamp }) {
   await db.eventQueue.add({
     dog_id,
     type,
-    timestamp: timestamp || new Date().toISOString(),
-    created_at: new Date().toISOString(),
+    timestamp: timestamp || localISOString(),
+    created_at: localISOString(),
   })
   // also write to local events table so history shows immediately
   await db.events.add({

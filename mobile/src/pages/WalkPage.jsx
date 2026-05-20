@@ -25,7 +25,7 @@ function fmtTime(isoTs) {
   if (!isoTs) return '—'
   const d = new Date(isoTs)
   let h = d.getHours(), m = d.getMinutes()
-  const ampm = h >= 12 ? 'p' : 'a'
+  const ampm = h >= 12 ? 'pm' : 'am'
   h = h % 12 || 12
   return `${h}:${String(m).padStart(2, '0')}${ampm}`
 }
@@ -163,11 +163,18 @@ export default function WalkPage() {
   const [checked, setChecked] = useState({})
   const [logging, setLogging] = useState(false)
 
+  const [dogsError, setDogsError] = useState('')
+
   const loadDogs = useCallback(async () => {
+    const base = (await import('../api')).getBackendUrl()
     try {
-      const data = await api.get('/dogs/')
+      const res = await fetch(`${base}/doglog/dogs/`, { cache: 'no-store' })
+      const data = await res.json()
+      setDogsError('')
       setDogs(data)
-    } catch { /* offline — Dexie fallback handled in api.js */ }
+    } catch (e) {
+      setDogsError(`${base}/doglog/dogs/ — ${e.message}`)
+    }
   }, [])
 
   const loadEvents = useCallback(async () => {
@@ -203,12 +210,15 @@ export default function WalkPage() {
     const type = EVENT_TYPES[eventIdx].toLowerCase()
     setLogging(true)
     try {
-      await queueEvent({ dog_id: dog.id, type })
+      try {
+        await api.post('/events/', { dog_id: dog.id, type })
+      } catch {
+        // offline — queue for sync when WiFi returns
+        await queueEvent({ dog_id: dog.id, type })
+      }
       await refreshQueueCount()
       await loadEvents()
       await loadStatus()
-      // advance dog carousel after log
-      setDogIdx(i => (i + 1) % dogs.length)
     } finally {
       setLogging(false)
     }
@@ -257,7 +267,7 @@ export default function WalkPage() {
           onAdvance={() => setDogIdx(i => (i + 1) % dogs.length)}
         />
       ) : (
-        <div style={p.loading}>Loading dogs…</div>
+        <div style={p.loading}>{dogsError || 'Loading dogs…'}</div>
       )}
 
       {/* Event type carousel */}

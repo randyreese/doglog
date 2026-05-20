@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../../../../../$user/dev/Folders/ObsidianVault/doglog"
 		}
 	],
 	"settings": {}

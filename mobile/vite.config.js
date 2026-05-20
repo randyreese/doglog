@@ -7,6 +7,14 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    proxy: {
+      '/doglog/dogs': 'http://127.0.0.1:8001',
+      '/doglog/events': 'http://127.0.0.1:8001',
+      '/doglog/status': 'http://127.0.0.1:8001',
+      '/doglog/health': 'http://127.0.0.1:8001',
+      '/doglog/lan-url': 'http://127.0.0.1:8001',
+      '/doglog/connect-qr': 'http://127.0.0.1:8001',
+    },
   },
   plugins: [
     react(),
