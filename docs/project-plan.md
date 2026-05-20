@@ -157,8 +157,15 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
    Medication schedule, dose logging, medications screen in PWA.
    Depends on: Sprint 1
 
-5. **Sprint 6 — Desktop scaffold + milestones**
+5. **Prod deploy — first deployment to Mint**
+   Push to GitHub, clone on Mint, add `/doglog` nginx location block, docker compose up.
+   Use dev app in field until ready; data is 24-hour transient so loss on dev is acceptable.
+   Depends on: Sprint 1 (done — unblock whenever ready)
+
+6. **Sprint 6 — Desktop scaffold + milestones**
    PySide6 desktop app, dog milestones (vet visits, weight log, notable trips).
+   Include Pull Prod DB utility (SSH + docker cp pattern from grow) so migrations can be
+   tested against real data locally before deploying. Add to Settings widget.
    Depends on: Sprint 1 (shared backend)
 
 6. **Sprint 7 — Desktop: dog config + meal composition**
@@ -185,8 +192,7 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Open Questions
 
-- [ ] Grow PWA scaffold: which branch/commit is the cleanest reuse base?
-- [ ] Status matrix color thresholds: what elapsed times trigger yellow/red per event type?
+- [ ] Status matrix color thresholds: what elapsed times trigger yellow/red per event type? (defaults: pee 4h/6h, poo 8h/12h — confirm after field use)
 - [ ] Google Sheets existing data: what columns/tabs does the current sheet use? (needed for import script)
 - [ ] Meal slots: am/pm only, or more granular (breakfast/lunch/dinner/snack)?
 - [ ] Photo storage: store on Mint filesystem (path in DB), or encode in DB?
