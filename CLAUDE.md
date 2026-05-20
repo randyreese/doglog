@@ -1,0 +1,62 @@
+# Doglog — Project Notes for Claude
+
+## Stack
+- Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
+- Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
+- Desktop: PySide6 (Sprint 6+, not started yet)
+- Project plan: `docs/project-plan.md`
+
+## Dev commands
+- `start_dev.bat` — starts backend (0.0.0.0:8001) + Vite dev server (5173)
+- `deploy_to_prod.bat` — git pull + docker compose rebuild on Mint
+
+## Key files
+- `backend/main.py` — FastAPI app, migration startup, seeds Tess + Pickles on first run
+- `backend/models.py` — full data model (all 8 tables)
+- `backend/routers/` — dogs, events, status
+- `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, history
+- `mobile/src/sync.js` — WiFi-gate sync, localISOString() for timestamps
+- `mobile/vite.config.js` — proxy config routes API calls through Vite in dev
+
+## Critical dev patterns
+
+### Vite proxy (mandatory for mobile dev)
+The Vite dev server proxies API routes (`/doglog/dogs`, `/doglog/events`, etc.) to
+`http://127.0.0.1:8001`. This means the mobile ConnectPage URL is the Vite server
+IP:5173, NOT port 8001 directly. Without this, Android Chrome caches HTML responses
+from port 8001 and breaks the app.
+
+### Never build dist/ locally during dev
+`mobile/dist/` must not exist when running uvicorn directly. FastAPI's StaticFiles
+mount at `/doglog` intercepts ALL paths under that prefix — including API routes like
+`/doglog/dogs/` — and returns index.html. dist/ is gitignored. Only build in Docker.
+
+### Timestamp storage — always local time
+Backend uses `datetime.now()` (local, naive). Frontend queueEvent uses `localISOString()`
+(also local, no Z suffix). Never use `new Date().toISOString()` (UTC) for event
+timestamps — it stores UTC but the backend returns it without Z, so the browser
+treats it as local time → displays 4 hours ahead (EDT offset).
+
+### api.js fetch pattern
+Always `return await res.json()` (not `return res.json()`). Without await, the promise
+escapes the try/catch and JSON parse errors propagate uncaught instead of falling back
+to the Dexie offline store.
+
+## Mobile UI design decisions
+- One-handed right-handed: carousel [›] buttons and LOG button on right side
+- Three tabs: Walk / Adverse / Meals (bottom tab bar)
+- Status matrix: collapsible strip at top of Walk tab, replaces fridge whiteboard
+- Poo thresholds: yellow > 8h, red > 12h. Pee: yellow > 4h, red > 6h
+- Meals: stepped carousel 0/25/50/75/100%
+- Pickles: track_pee = False (pee column always shows —)
+- Erase all data in hamburger menu (behavior TBD)
+
+## Dogs
+Tess (track_pee=True) and Pickles (track_pee=False) seeded on first run if no dogs exist.
+Dogs are configurable — no hardcoding beyond the seed.
+
+## Deployment notes
+- Backend port 8001 (grow uses 8000 — don't conflict)
+- Add `/doglog` location block to Mint's nginx config (see `nginx/doglog-location.conf`)
+- Add `mint.local` to Windows hosts file before first load test (see global CLAUDE.md)
+- Windows Firewall: port 8001 needs an inbound allow rule for dev

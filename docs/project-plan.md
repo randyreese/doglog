@@ -109,35 +109,33 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poo ti
 
 ## Sprint History
 
-*(none yet)*
+**Sprint 1 — Foundation** ✓ COMPLETE *(2026-05-20)*
+
+Goal: Replace `index.html` with a real persisted mobile app. Dogs configurable, pee/poo
+logging works end-to-end, data survives app close.
+
+- [x] Backend: FastAPI scaffold + Docker compose on Mint
+- [x] Backend: `dogs` table + CRUD endpoints
+- [x] Backend: `pee_poo_events` table + POST/GET endpoints
+- [x] Backend: `/doglog/status/` endpoint (returns status matrix data)
+- [x] Mobile: copy grow PWA scaffold, strip grow-specific UI
+- [x] Mobile: dog carousel component (from API, configurable)
+- [x] Mobile: Pee/Poo entry via direct POST with offline queue fallback
+- [x] Mobile: status matrix collapsible strip (green/yellow/red color bands)
+- [x] Mobile: WiFi-gate sync (Network Information API, Android/Chrome)
+- [x] Mobile: offline queue → sync on WiFi connect
+- [x] Dev/Prod: `start_dev.bat`, `deploy_to_prod.bat`
+- [x] Vite dev proxy routes API through :5173 (fixes Android caching issue)
+- [x] Tested end-to-end on Android (Pixel 7a) and Desktop Chrome
+
+Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
+(Walk/Adverse/Meals) shipped; Adverse and Meals are shells.
 
 ---
 
 ## Current Sprint
 
-**Sprint 1 — Foundation**
-
-Goal: Replace `index.html` with a real persisted mobile app. Dogs configurable, pee/poo
-logging works end-to-end, data survives app close.
-
-Design decisions to resolve before building:
-- [ ] Confirm grow PWA scaffold branch/commit to copy from
-- [ ] API shape for pee_poo_events (POST body, response)
-- [ ] Status matrix color thresholds — defaults to use before config screen exists
-
-Stories:
-- [ ] Backend: FastAPI scaffold + Docker compose on Mint
-- [ ] Backend: `dogs` table + CRUD endpoints
-- [ ] Backend: `pee_poo_events` table + POST/GET endpoints
-- [ ] Backend: `/api/status` endpoint (returns status matrix data)
-- [ ] Mobile: copy grow PWA scaffold, strip grow-specific UI
-- [ ] Mobile: dog selector component (from API, not hardcoded)
-- [ ] Mobile: Pee/Poo entry buttons → POST to backend
-- [ ] Mobile: status matrix component (reads `/api/status`)
-- [ ] Mobile: WiFi-gate sync (Network Information API, Android/Chrome)
-- [ ] Mobile: offline queue → sync on WiFi connect
-- [ ] Dev/Prod: `start_dev.bat`, `deploy_to_prod.bat`
-- [ ] QR code LAN discovery (reuse grow pattern)
+*(pull from backlog at start of next session)*
 
 ---
 
