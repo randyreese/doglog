@@ -1,0 +1,15 @@
+services:
+  doglog:
+    build: .
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      - DATABASE_URL=sqlite:////data/doglog.db
+    volumes:
+      - doglog_data:/data
+      - doglog_uploads:/app/backend/uploads
+    restart: unless-stopped
+
+volumes:
+  doglog_data:
+  doglog_uploads:
