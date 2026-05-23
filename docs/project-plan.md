@@ -133,6 +133,12 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Session 4 — Timestamp bug fix** ✓ COMPLETE *(2026-05-23)*
+
+- [x] Fixed: event timestamps displayed 4h ahead on EDT — Docker/Mint runs UTC; client now always sends `timestamp: localISOString()` in POST body
+- [x] Fixed: `since=` filter in loadEvents used `toISOString()` (UTC midnight) instead of local midnight
+- [x] Exported `localISOString(d?)` from sync.js with optional date argument
+
 **Session 3 — UAT fixes + polish** ✓ COMPLETE *(2026-05-23)*
 
 - [x] Fixed: 3× event duplication — `syncInProgressRef` guard on `doSync()` prevents concurrent queue flushes

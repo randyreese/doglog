@@ -40,11 +40,13 @@ from port 8001 and breaks the app.
 mount at `/doglog` intercepts ALL paths under that prefix — including API routes like
 `/doglog/dogs/` — and returns index.html. dist/ is gitignored. Only build in Docker.
 
-### Timestamp storage — always local time
-Backend uses `datetime.now()` (local, naive). Frontend queueEvent uses `localISOString()`
-(also local, no Z suffix). Never use `new Date().toISOString()` (UTC) for event
-timestamps — it stores UTC but the backend returns it without Z, so the browser
-treats it as local time → displays 4 hours ahead (EDT offset).
+### Timestamp storage — client always supplies the timestamp
+The server (Docker on Mint) runs in UTC, so `datetime.now()` returns UTC — not local time.
+Never let the server generate a timestamp. Always send `timestamp: localISOString()` in the
+POST body for both online (`api.post('/events/', { ..., timestamp: localISOString() })`) and
+offline (`queueEvent`) paths. The `since=` filter in `loadEvents` also uses
+`localISOString(today)` (local midnight), not `today.toISOString()` (UTC midnight).
+Without this, timestamps display 4h ahead on EDT and the today-filter may be off.
 
 ### api.js fetch pattern
 Always `return await res.json()` (not `return res.json()`). Without await, the promise
@@ -86,6 +88,10 @@ Dogs are configurable — no hardcoding beyond the seed.
 - Add `mint.local` to Windows hosts file before first load test (see global CLAUDE.md)
 - Windows Firewall: port 8001 needs an inbound allow rule for dev
 - Prod URL: `https://mint.local/doglog/` — installed as PWA on phone
+- **Deploy from Claude Code via SSH directly** — never run `deploy_to_prod.bat` from the Bash tool;
+  it has `pause` and hangs in non-interactive contexts. Use:
+  `ssh mini@mint.local "cd ~/doglog && git pull"` then
+  `ssh mini@mint.local "cd ~/doglog && docker compose up -d --build"`
 
 ## Offline patterns
 - `queueEvent` writes to both `db.eventQueue` AND `db.events` (same timestamp, local ISO format)

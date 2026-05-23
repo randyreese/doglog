@@ -44,6 +44,10 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v0.3.1 (2026-05-23)
+- Fixed: event timestamps displayed 4h ahead on EDT — Docker/Mint server runs in UTC so `datetime.now()` was UTC; client now always sends `timestamp: localISOString()` in the POST body, server no longer generates timestamps
+- Fixed: `since=` filter in history used `toISOString()` (UTC midnight) instead of local midnight
+
 ### v0.3.0 (2026-05-23)
 - Fixed: 3× event duplication on WiFi connect — concurrent `doSync()` calls each flushed the queue before any deleted entries; fixed with `syncInProgressRef` guard
 - Fixed: status strip showed stale "none today" after offline logging — `syncVersion` counter now triggers WalkPage to re-fetch after background sync
