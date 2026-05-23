@@ -26,7 +26,7 @@ async function localGet(path) {
       .toArray()
   }
 
-  if (path === '/events/') return db.events.orderBy('timestamp').reverse().limit(50).toArray()
+  if (path.startsWith('/events/')) return db.events.orderBy('timestamp').reverse().limit(50).toArray()
 
   throw new Error(`No offline fallback for GET ${path}`)
 }
