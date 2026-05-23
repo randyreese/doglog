@@ -81,6 +81,19 @@ function localISOString() {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
 }
 
+export async function deleteEvent(id) {
+  const local = await db.events.get(id)
+  if (local?._queued) {
+    await db.eventQueue.where({ dog_id: local.dog_id, timestamp: local.timestamp }).delete()
+  } else {
+    try {
+      const { api } = await import('./api')
+      await api.delete(`/events/${id}`)
+    } catch { /* offline — server delete skipped, local still removed */ }
+  }
+  await db.events.delete(id)
+}
+
 export async function queueEvent({ dog_id, type, timestamp }) {
   await db.eventQueue.add({
     dog_id,

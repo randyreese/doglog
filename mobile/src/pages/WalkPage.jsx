@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
-import { queueEvent } from '../sync'
+import { queueEvent, deleteEvent } from '../sync'
 import { useSyncContext } from '../SyncContext'
 
 // Color thresholds (hours elapsed)
@@ -218,7 +218,7 @@ export default function WalkPage() {
   async function handleDelete() {
     const ids = Object.entries(checked).filter(([, v]) => v).map(([k]) => parseInt(k))
     for (const id of ids) {
-      try { await api.delete(`/events/${id}`) } catch { /* offline — skip */ }
+      await deleteEvent(id)
     }
     setChecked({})
     await loadEvents()
