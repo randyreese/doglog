@@ -11,7 +11,9 @@ export function SyncProvider({ children }) {
   const [lastSynced, setLastSynced] = useState(getLastSynced)
   const [syncing, setSyncing] = useState(false)
   const [queueCount, setQueueCount] = useState(0)
+  const [syncVersion, setSyncVersion] = useState(0)
   const wasOnlineRef = useRef(false)
+  const syncInProgressRef = useRef(false)
 
   const refreshQueueCount = useCallback(async () => {
     const { db } = await import('./db')
@@ -21,6 +23,8 @@ export function SyncProvider({ children }) {
 
   const doSync = useCallback(async () => {
     if (!getBackendUrl()) return
+    if (syncInProgressRef.current) return
+    syncInProgressRef.current = true
     setSyncing(true)
     try {
       await flushQueue()
@@ -28,10 +32,12 @@ export function SyncProvider({ children }) {
       const { getLastSynced: gls } = await import('./sync')
       setLastSynced(gls())
       await refreshQueueCount()
+      setSyncVersion(v => v + 1)
     } catch {
       // sync failed — will retry on next ping
     } finally {
       setSyncing(false)
+      syncInProgressRef.current = false
     }
   }, [refreshQueueCount])
 
@@ -70,7 +76,7 @@ export function SyncProvider({ children }) {
   useEffect(() => { refreshQueueCount() }, [refreshQueueCount])
 
   return (
-    <SyncContext.Provider value={{ signal, lastSynced, syncing, queueCount, syncNow: doSync, refreshQueueCount }}>
+    <SyncContext.Provider value={{ signal, lastSynced, syncing, queueCount, syncVersion, syncNow: doSync, refreshQueueCount }}>
       {children}
     </SyncContext.Provider>
   )

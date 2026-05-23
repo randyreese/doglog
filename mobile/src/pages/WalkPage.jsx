@@ -156,7 +156,7 @@ const hr = {
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function WalkPage() {
   const nav = useNavigate()
-  const { signal, queueCount, syncNow, refreshQueueCount } = useSyncContext()
+  const { signal, queueCount, syncVersion, syncNow, refreshQueueCount } = useSyncContext()
 
   const [dogs, setDogs] = useState([])
   const [dogIdx, setDogIdx] = useState(0)
@@ -194,6 +194,12 @@ export default function WalkPage() {
     loadEvents()
     loadStatus()
   }, [loadDogs, loadEvents, loadStatus])
+
+  useEffect(() => {
+    if (syncVersion === 0) return
+    loadEvents()
+    loadStatus()
+  }, [syncVersion, loadEvents, loadStatus])
 
   async function handleLog() {
     if (!dogs.length || logging) return
@@ -272,6 +278,14 @@ export default function WalkPage() {
           <button style={p.deleteBtn} onClick={handleDelete}>Delete selected</button>
         </div>
       )}
+
+      {/* DEBUG — remove before shipping */}
+      <div style={{ padding: '4px 12px', background: '#fffbeb' }}>
+        <button style={{ fontSize: 11, padding: '4px 10px', background: '#d97706', color: '#fff', border: 'none', borderRadius: 6 }}
+          onClick={() => { syncNow(); syncNow(); syncNow() }}>
+          TEST: triple sync
+        </button>
+      </div>
 
       {/* Dog carousel */}
       {dogs.length > 0 ? (
