@@ -221,6 +221,7 @@ export default function WalkPage() {
       await deleteEvent(id)
     }
     setChecked({})
+    await refreshQueueCount()
     await loadEvents()
     await loadStatus()
   }
