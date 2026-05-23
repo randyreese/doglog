@@ -3,7 +3,7 @@ import { getBackendUrl } from './api'
 import { SyncProvider } from './SyncContext'
 import ConnectPage from './pages/ConnectPage'
 import WalkPage from './pages/WalkPage'
-import AdversePage from './pages/AdversePage'
+import HealthPage from './pages/HealthPage'
 import MealsPage from './pages/MealsPage'
 
 function RequireBackend({ children }) {
@@ -17,7 +17,7 @@ export default function App() {
         <Routes>
           <Route path="/connect" element={<ConnectPage />} />
           <Route path="/" element={<RequireBackend><WalkPage /></RequireBackend>} />
-          <Route path="/adverse" element={<RequireBackend><AdversePage /></RequireBackend>} />
+          <Route path="/health" element={<RequireBackend><HealthPage /></RequireBackend>} />
           <Route path="/meals" element={<RequireBackend><MealsPage /></RequireBackend>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

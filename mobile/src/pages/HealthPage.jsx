@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 
-export default function MealsPage() {
+export default function HealthPage() {
   const nav = useNavigate()
   return (
     <div style={p.page}>
@@ -8,11 +8,11 @@ export default function MealsPage() {
         <button style={p.hamburger} onClick={() => nav('/connect')}>☰</button>
         <span style={p.title}>Dog Log</span>
       </div>
-      <div style={p.placeholder}>Meals — coming in Sprint 4</div>
+      <div style={p.placeholder}>Health events — coming in Sprint 3</div>
       <div style={p.tabBar}>
         <button style={p.tab} onClick={() => nav('/')}>Walk</button>
-        <button style={{ ...p.tab, ...p.tabActive }}>Meals</button>
-        <button style={p.tab} onClick={() => nav('/health')}>Health</button>
+        <button style={p.tab} onClick={() => nav('/meals')}>Meals</button>
+        <button style={{ ...p.tab, ...p.tabActive }}>Health</button>
       </div>
     </div>
   )

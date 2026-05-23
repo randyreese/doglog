@@ -279,14 +279,6 @@ export default function WalkPage() {
         </div>
       )}
 
-      {/* DEBUG — remove before shipping */}
-      <div style={{ padding: '4px 12px', background: '#fffbeb' }}>
-        <button style={{ fontSize: 11, padding: '4px 10px', background: '#d97706', color: '#fff', border: 'none', borderRadius: 6 }}
-          onClick={() => { syncNow(); syncNow(); syncNow() }}>
-          TEST: triple sync
-        </button>
-      </div>
-
       {/* Dog carousel */}
       {dogs.length > 0 ? (
         <Carousel
@@ -322,7 +314,7 @@ export default function WalkPage() {
       <div style={p.tabBar}>
         <button style={{ ...p.tab, ...p.tabActive }}>Walk</button>
         <button style={p.tab} onClick={() => nav('/meals')}>Meals</button>
-        <button style={p.tab} onClick={() => nav('/adverse')}>Adverse</button>
+        <button style={p.tab} onClick={() => nav('/health')}>Health</button>
       </div>
     </div>
   )
@@ -339,7 +331,7 @@ const p = {
   logRow: { display: 'flex', justifyContent: 'flex-end', padding: '10px 12px', background: '#f5f5f5' },
   logBtn: { width: 100, height: 52, background: '#5b8dd9', color: '#fff', border: 'none', borderRadius: 10, fontSize: 20, fontWeight: 700, cursor: 'pointer' },
   logBtnDisabled: { opacity: 0.5, cursor: 'default' },
-  history: { flex: 1, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },
+  history: { flex: 1, minHeight: 0, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },
   empty: { padding: '20px 12px', color: '#aaa', textAlign: 'center', fontSize: 14 },
   deleteRow: { padding: '8px 12px', background: '#f5f5f5', display: 'flex', justifyContent: 'flex-end' },
   deleteBtn: { padding: '10px 20px', background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
