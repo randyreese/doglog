@@ -10,6 +10,11 @@ const PEE_RED_H = 6
 const POO_YELLOW_H = 8
 const POO_RED_H = 12
 
+// Display labels vs backend values for event types
+const EVENT_TYPES = ['Pee', 'Poop']
+const EVENT_TYPE_VALUES = { Pee: 'pee', Poop: 'poo' }
+const EVENT_TYPE_LABELS = { pee: 'Pee', poo: 'Poop' }
+
 function elapsedHours(isoTs) {
   if (!isoTs) return Infinity
   return (Date.now() - new Date(isoTs).getTime()) / 3_600_000
@@ -54,7 +59,7 @@ function StatusStrip({ dogs, status }) {
       return (
         <span key={dog.id} style={{ marginRight: 12 }}>
           <span style={{ fontWeight: 600 }}>{dog.name}</span>
-          {' poo '}
+          {' poop '}
           <span style={{ color }}>{fmtElapsed(s.last_poo) || 'none today'}</span>
         </span>
       )
@@ -74,7 +79,7 @@ function StatusStrip({ dogs, status }) {
           <tr>
             <th style={ss.th}></th>
             <th style={ss.th}>Pee</th>
-            <th style={ss.th}>Poo</th>
+            <th style={ss.th}>Poop</th>
           </tr>
         </thead>
         <tbody>
@@ -135,22 +140,20 @@ function HistoryRow({ event, dogName, checked, onCheck }) {
   return (
     <div style={hr.row}>
       <span style={hr.time}>{fmtTime(event.timestamp)}</span>
-      <span style={hr.label}>{dogName}: {event.type}</span>
+      <span style={hr.label}>{dogName}: {EVENT_TYPE_LABELS[event.type] || event.type}</span>
       <input type="checkbox" checked={checked} onChange={e => onCheck(event.id, e.target.checked)} style={hr.check} />
     </div>
   )
 }
 
 const hr = {
-  row: { display: 'flex', alignItems: 'center', padding: '10px 12px', borderBottom: '1px solid #f0f0f0', background: '#fff' },
+  row: { display: 'flex', alignItems: 'center', padding: '10px 12px', border: '1px solid #e8e8e8', background: '#fff', marginBottom: 2, borderRadius: 4 },
   time: { fontSize: 14, color: '#555', width: 60, flexShrink: 0 },
   label: { flex: 1, fontSize: 15, color: '#1a202c', textTransform: 'capitalize' },
   check: { width: 22, height: 22, cursor: 'pointer', accentColor: '#5b8dd9' },
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
-const EVENT_TYPES = ['Pee', 'Poo']
-
 export default function WalkPage() {
   const nav = useNavigate()
   const { signal, queueCount, syncNow, refreshQueueCount } = useSyncContext()
@@ -163,18 +166,11 @@ export default function WalkPage() {
   const [checked, setChecked] = useState({})
   const [logging, setLogging] = useState(false)
 
-  const [dogsError, setDogsError] = useState('')
-
   const loadDogs = useCallback(async () => {
-    const base = (await import('../api')).getBackendUrl()
     try {
-      const res = await fetch(`${base}/doglog/dogs/`, { cache: 'no-store' })
-      const data = await res.json()
-      setDogsError('')
-      setDogs(data)
-    } catch (e) {
-      setDogsError(`${base}/doglog/dogs/ — ${e.message}`)
-    }
+      const data = await api.get('/dogs/')
+      setDogs([...data].sort((a, b) => b.name.localeCompare(a.name)))
+    } catch { /* offline */ }
   }, [])
 
   const loadEvents = useCallback(async () => {
@@ -188,13 +184,8 @@ export default function WalkPage() {
 
   const loadStatus = useCallback(async () => {
     try {
-      const base = (await import('../api')).getBackendUrl()
-      if (!base) return
-      const res = await fetch(`${base}/doglog/status/`, { cache: 'no-store' })
-      if (res.ok) {
-        const data = await res.json()
-        setStatus(data.dogs)
-      }
+      const data = await api.get('/status/')
+      setStatus(data.dogs)
     } catch { /* offline */ }
   }, [])
 
@@ -206,14 +197,14 @@ export default function WalkPage() {
 
   async function handleLog() {
     if (!dogs.length || logging) return
+    navigator.vibrate?.(40)
     const dog = dogs[dogIdx]
-    const type = EVENT_TYPES[eventIdx].toLowerCase()
+    const type = EVENT_TYPE_VALUES[EVENT_TYPES[eventIdx]]
     setLogging(true)
     try {
       try {
         await api.post('/events/', { dog_id: dog.id, type })
       } catch {
-        // offline — queue for sync when WiFi returns
         await queueEvent({ dog_id: dog.id, type })
       }
       await refreshQueueCount()
@@ -251,12 +242,35 @@ export default function WalkPage() {
       <div style={p.header}>
         <button style={p.hamburger} onClick={() => nav('/connect')}>☰</button>
         <span style={p.title}>Dog Log</span>
-        <span style={{ color: signalColor, fontSize: 18 }} title={signal}>{signalLabel}</span>
+        <span style={p.signalDot} title={signal}>
+          <span style={{ color: signalColor }}>{signalLabel}</span>
+        </span>
         {queueCount > 0 && <span style={p.queue}>{queueCount}</span>}
       </div>
 
       {/* Status strip */}
       <StatusStrip dogs={dogs} status={status} />
+
+      {/* History — fills available space */}
+      <div style={p.history}>
+        {events.map(ev => (
+          <HistoryRow
+            key={ev.id}
+            event={ev}
+            dogName={dogMap[ev.dog_id] || '?'}
+            checked={!!checked[ev.id]}
+            onCheck={toggleCheck}
+          />
+        ))}
+        {events.length === 0 && <div style={p.empty}>No events today</div>}
+      </div>
+
+      {/* Delete button */}
+      {anyChecked && (
+        <div style={p.deleteRow}>
+          <button style={p.deleteBtn} onClick={handleDelete}>Delete selected</button>
+        </div>
+      )}
 
       {/* Dog carousel */}
       {dogs.length > 0 ? (
@@ -267,7 +281,7 @@ export default function WalkPage() {
           onAdvance={() => setDogIdx(i => (i + 1) % dogs.length)}
         />
       ) : (
-        <div style={p.loading}>{dogsError || 'Loading dogs…'}</div>
+        <div style={p.loading}>Loading dogs…</div>
       )}
 
       {/* Event type carousel */}
@@ -289,32 +303,11 @@ export default function WalkPage() {
         </button>
       </div>
 
-      {/* History */}
-      <div style={p.history}>
-        {events.map(ev => (
-          <HistoryRow
-            key={ev.id}
-            event={ev}
-            dogName={dogMap[ev.dog_id] || '?'}
-            checked={!!checked[ev.id]}
-            onCheck={toggleCheck}
-          />
-        ))}
-        {events.length === 0 && <div style={p.empty}>No events today</div>}
-      </div>
-
-      {/* Delete button */}
-      {anyChecked && (
-        <div style={p.deleteRow}>
-          <button style={p.deleteBtn} onClick={handleDelete}>Delete selected</button>
-        </div>
-      )}
-
       {/* Bottom tab bar */}
       <div style={p.tabBar}>
         <button style={{ ...p.tab, ...p.tabActive }}>Walk</button>
-        <button style={p.tab} onClick={() => nav('/adverse')}>Adverse</button>
         <button style={p.tab} onClick={() => nav('/meals')}>Meals</button>
+        <button style={p.tab} onClick={() => nav('/adverse')}>Adverse</button>
       </div>
     </div>
   )
@@ -325,12 +318,13 @@ const p = {
   header: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#5b8dd9', color: '#fff' },
   hamburger: { background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: '0 4px' },
   title: { flex: 1, fontWeight: 700, fontSize: 18 },
+  signalDot: { background: '#fff', borderRadius: '50%', width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 },
   queue: { background: '#e53e3e', color: '#fff', borderRadius: 10, fontSize: 12, padding: '1px 6px', fontWeight: 700 },
   loading: { padding: 16, textAlign: 'center', color: '#888', background: '#fff', borderBottom: '1px solid #e2e8f0' },
   logRow: { display: 'flex', justifyContent: 'flex-end', padding: '10px 12px', background: '#f5f5f5' },
   logBtn: { width: 100, height: 52, background: '#5b8dd9', color: '#fff', border: 'none', borderRadius: 10, fontSize: 20, fontWeight: 700, cursor: 'pointer' },
   logBtnDisabled: { opacity: 0.5, cursor: 'default' },
-  history: { flex: 1, overflowY: 'auto', background: '#fff' },
+  history: { flex: 1, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },
   empty: { padding: '20px 12px', color: '#aaa', textAlign: 'center', fontSize: 14 },
   deleteRow: { padding: '8px 12px', background: '#f5f5f5', display: 'flex', justifyContent: 'flex-end' },
   deleteBtn: { padding: '10px 20px', background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },

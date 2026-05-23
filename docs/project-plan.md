@@ -42,41 +42,65 @@ vet log and converts historical data to the new format.
 ### Mobile PWA
 
 **Design principles:**
-- One-handed right-handed operation — all active controls on right side
+
+- One-handed right-handed operation — active controls (carousel [>], LOG) lower-right for thumb reach
 - Hamburger menu (top-left) for infrequent actions only
-- Bottom tab bar for tab navigation (right thumb reach)
+- Bottom tab bar: Walk | Meals | Adverse (Meals daily use, Adverse rare)
 - Carousel pattern repeats consistently across all three tabs
+- Dogs sorted reverse-alpha everywhere (Tess first — she is the primary subject)
+- Event type labels use "Poop" not "Poo" (too visually similar to "Pee")
 
 **Three tabs:**
 
 **Walk tab (primary):**
 ```
-[≡]                    [Status ▾]   ← collapsible strip, tap to expand
+[≡]  Dog Log              [●]      ← signal dot on white circle for visibility
 ────────────────────────────────
-[ ←  Tess  → ]              [>]    ← dog carousel, right button advances
-[ ←  Pee   → ]              [>]    ← event carousel
-                          [LOG]    ← right-aligned
+ Tess poop 2.1h ago ▾             ← collapsible status strip
 ────────────────────────────────
-10:30a  Tess: Poo            [ ]   ← history rows
-10:15a  Tess: Pee            [ ]
-...                    [Delete]    ← appears when any checkbox checked
+  10:30a  Tess: Poop       [ ]    ← history fills available space (scrollable)
+  10:15a  Tess: Pee        [ ]    ← rows are boxed with thin grey border
+  ...                  [Delete]   ← appears when any checkbox checked
+────────────────────────────────
+Dog      Tess                [>]   ← carousels at bottom for thumb reach
+Type     Pee                 [>]
+                          [LOG]    ← right-aligned, lower position
+────────────────────────────────
+[ Walk ]  [ Meals ]  [ Adverse ]
 ```
-Status strip (collapsed): one-line summary per dog  
-Status strip (expanded): full matrix — last pee time (Tess only) + last poo time + count-today per dog, color-coded green/yellow/red, resets midnight
+Status strip (collapsed): one-line summary per dog, reverse-alpha order  
+Status strip (expanded): full matrix — last pee time (Tess only) + last poop time + count-today per dog, color-coded green/yellow/red, resets midnight
 
 **Adverse tab:**
 - Same dog carousel [>]
-- Event type carousel: Vomit / Diarrhea / Other [>]
-- Camera button
+- Event type: bottom sheet picker (slides up, full-width rows, scrollable if needed)
+  - Options: Vomit / Diarrhea / Grass eating / Stomach gurgles / Dry heaves / Other
+- Camera button — photo captured at log time or added via `…` edit post-log
 - [LOG] right-aligned
-- History rows with checkbox-to-delete pattern
+- History rows: timestamp + dog + type, with `…` button (opens edit sheet) and checkbox (delete) coexisting on each row
+- Edit sheet (via `…`): free-text comment field + optional photo; saves via PATCH
+- Comment previewed inline on row if present (italicized, below main line)
+- Photo storage: blob in SQLite (self-contained, no filesystem path management needed)
 
 **Meals tab:**
-- Same dog carousel [>]
-- Meal slot carousel: AM / PM [>]
-- % consumed (TBD: slider or stepped carousel 0/25/50/75/100)
+
+- Dog carousel [>]
+- Slot: bottom sheet picker (configurable list, ordered; defined in `meal_slots.json` backend config)
+  - Current values: Breakfast / Snack AM / Lunch / Dinner / Snack PM
+- % consumed: stepped carousel 0 / 25 / 50 / 75 / 100 [>], defaults to 100
 - [LOG] right-aligned
-- History rows with checkbox-to-delete pattern
+- History: one section per dog (bold header), rows = logged slots today
+  - Columns: slot | % | … | ☐ — fixed structure, section list scrollable
+  - `…` opens edit sheet: ingredient checkboxes (all checked by default), editable via PATCH
+  - ☐ marks row for delete
+  - Scales to any number of dogs without layout changes
+- Ingredient detail is optional post-log — fast path is dog + slot + % + LOG only
+
+**Meal config (desktop, not mobile):**
+
+- Ingredient list defined per dog + slot + effective date
+- New entry supersedes previous from that date forward — history always reflects the configured meal on the day it was logged
+- Slot names are app-wide config (`meal_slots.json`), not per-dog
 
 **Hamburger menu contains:**
 - Erase all data (behavior TBD)

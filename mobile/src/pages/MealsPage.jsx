@@ -11,8 +11,8 @@ export default function MealsPage() {
       <div style={p.placeholder}>Meals — coming in Sprint 4</div>
       <div style={p.tabBar}>
         <button style={p.tab} onClick={() => nav('/')}>Walk</button>
-        <button style={p.tab} onClick={() => nav('/adverse')}>Adverse</button>
         <button style={{ ...p.tab, ...p.tabActive }}>Meals</button>
+        <button style={p.tab} onClick={() => nav('/adverse')}>Adverse</button>
       </div>
     </div>
   )

@@ -11,8 +11,8 @@ export default function AdversePage() {
       <div style={p.placeholder}>Adverse events — coming in Sprint 3</div>
       <div style={p.tabBar}>
         <button style={p.tab} onClick={() => nav('/')}>Walk</button>
-        <button style={{ ...p.tab, ...p.tabActive }}>Adverse</button>
         <button style={p.tab} onClick={() => nav('/meals')}>Meals</button>
+        <button style={{ ...p.tab, ...p.tabActive }}>Adverse</button>
       </div>
     </div>
   )
