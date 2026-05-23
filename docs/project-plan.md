@@ -203,9 +203,10 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
    Medication schedule, dose logging, medications screen in PWA.
    Depends on: Sprint 1
 
-5. **Walk tab — history overflows tab bar**
-   When > ~8 events, history pushes tab bar off screen. Tab bar needs fixed positioning
-   or history needs max-height constraint.
+5. **Walk tab — tab bar pushed off screen after sync**
+   Tabs visible on first launch; disappear after sync even with zero log records.
+   Status strip rendering dynamically after data loads is the trigger, not list length.
+   Fix: `position: fixed; bottom: 0` on tab bar + paddingBottom on history to clear it.
    Depends on: nothing (quick fix)
 
 6. **Sprint 6 — Desktop scaffold + milestones**
