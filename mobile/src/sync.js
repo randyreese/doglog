@@ -95,18 +95,18 @@ export async function deleteEvent(id) {
 }
 
 export async function queueEvent({ dog_id, type, timestamp }) {
+  const ts = timestamp || localISOString()
   await db.eventQueue.add({
     dog_id,
     type,
-    timestamp: timestamp || localISOString(),
+    timestamp: ts,
     created_at: localISOString(),
   })
-  // also write to local events table so history shows immediately
   await db.events.add({
-    id: Date.now(),  // temp id, replaced on next sync
+    id: Date.now(),
     dog_id,
     type,
-    timestamp: timestamp || new Date().toISOString(),
+    timestamp: ts,
     _queued: true,
   })
 }
