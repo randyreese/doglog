@@ -45,7 +45,7 @@ vet log and converts historical data to the new format.
 
 - One-handed right-handed operation — active controls (carousel [>], LOG) lower-right for thumb reach
 - Hamburger menu (top-left) for infrequent actions only
-- Bottom tab bar: Walk | Meals | Adverse (Meals daily use, Adverse rare)
+- Bottom tab bar: Walk | Meals | Health (Meals daily use, Health rare)
 - Carousel pattern repeats consistently across all three tabs
 - Dogs sorted reverse-alpha everywhere (Tess first — she is the primary subject)
 - Event type labels use "Poop" not "Poo" (too visually similar to "Pee")
@@ -66,12 +66,12 @@ Dog      Tess                [>]   ← carousels at bottom for thumb reach
 Type     Pee                 [>]
                           [LOG]    ← right-aligned, lower position
 ────────────────────────────────
-[ Walk ]  [ Meals ]  [ Adverse ]
+[ Walk ]  [ Meals ]  [ Health ]
 ```
 Status strip (collapsed): one-line summary per dog, reverse-alpha order  
 Status strip (expanded): full matrix — last pee time (Tess only) + last poop time + count-today per dog, color-coded green/yellow/red, resets midnight
 
-**Adverse tab:**
+**Health tab:**
 - Same dog carousel [>]
 - Event type: bottom sheet picker (slides up, full-width rows, scrollable if needed)
   - Options: Vomit / Diarrhea / Grass eating / Stomach gurgles / Dry heaves / Other
@@ -133,6 +133,14 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Session 3 — UAT fixes + polish** ✓ COMPLETE *(2026-05-23)*
+
+- [x] Fixed: 3× event duplication — `syncInProgressRef` guard on `doSync()` prevents concurrent queue flushes
+- [x] Fixed: status strip stale after offline log — `syncVersion` counter triggers WalkPage refresh after background sync
+- [x] Fixed: tab bar pushed off screen when status strip renders — `position: fixed; bottom: 0` on tab bar
+- [x] Renamed: Health tab (was Adverse) — route `/health`, new `HealthPage.jsx`
+- [x] Style: carousel and Log buttons — outline only, white fill, black non-bold text, "Log" mixed case
+
 **Session 2 — Walk tab polish + prod deploy** ✓ COMPLETE *(2026-05-22)*
 
 - [x] Walk tab UI overhaul: history fills middle, carousels + LOG at bottom
@@ -140,7 +148,7 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 - [x] Poo → Poop in all display text; backend values unchanged
 - [x] History rows boxed with thin grey border
 - [x] Signal dot on white circle background (visible against blue header)
-- [x] Tab order: Walk | Meals | Adverse across all three pages
+- [x] Tab order: Walk | Meals | Health across all three pages
 - [x] Haptic feedback (40ms) on LOG tap
 - [x] loadDogs + loadStatus converted to api.get(); dogsError debug state removed
 - [x] First prod deploy to Mint — nginx, docker compose, both PWAs coexisting
@@ -149,7 +157,7 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 - [x] Offline event display (queued events show in history immediately)
 - [x] Offline delete (removes from eventQueue + db.events atomically; badge refreshes)
 - [x] Build timestamp on connect screen for version verification
-- [x] Adverse tab spec finalized (bottom sheet, 6 types, blob photos, comment via `…`)
+- [x] Health tab spec finalized (bottom sheet, 6 types, blob photos, comment via `…`)
 - [x] Meals tab spec finalized (slot picker, % consumed default 100, ingredient checklist)
 
 **Sprint 1 — Foundation** ✓ COMPLETE *(2026-05-20)*
@@ -172,7 +180,7 @@ logging works end-to-end, data survives app close.
 - [x] Tested end-to-end on Android (Pixel 7a) and Desktop Chrome
 
 Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
-(Walk/Adverse/Meals) shipped; Adverse and Meals are shells.
+(Walk/Health/Meals) shipped; Health and Meals are shells.
 
 ---
 
@@ -188,7 +196,7 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
    7-day pee/poo history view, daily summary screen, midnight reset for status matrix.
    Depends on: Sprint 1
 
-2. **Sprint 3 — Adverse events tab**
+2. **Sprint 3 — Health events tab**
    Spec complete (2026-05-22). Bottom sheet picker (6 types), blob photo storage, comment
    field editable post-log via `…` button, inline comment preview on history row.
    Depends on: Sprint 1
@@ -203,13 +211,7 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
    Medication schedule, dose logging, medications screen in PWA.
    Depends on: Sprint 1
 
-5. **Walk tab — tab bar pushed off screen after sync**
-   Tabs visible on first launch; disappear after sync even with zero log records.
-   Status strip rendering dynamically after data loads is the trigger, not list length.
-   Fix: `position: fixed; bottom: 0` on tab bar + paddingBottom on history to clear it.
-   Depends on: nothing (quick fix)
-
-6. **Sprint 6 — Desktop scaffold + milestones**
+5. **Sprint 6 — Desktop scaffold + milestones**
    PySide6 desktop app, dog milestones (vet visits, weight log, notable trips).
    Include Pull Prod DB utility (SSH + docker cp pattern from grow) so migrations can be
    tested against real data locally before deploying. Add to Settings widget.

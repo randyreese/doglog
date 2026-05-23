@@ -15,6 +15,8 @@
 - `backend/models.py` — full data model (all 8 tables)
 - `backend/routers/` — dogs, events, status
 - `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, history
+- `mobile/src/pages/HealthPage.jsx` — Health tab shell (Sprint 3)
+- `mobile/src/SyncContext.jsx` — sync orchestration, syncInProgressRef guard, syncVersion counter
 - `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queueEvent, deleteEvent
 - `mobile/src/api.js` — api.get/post/delete, localGet offline fallback
 - `mobile/vite.config.js` — proxy config, PWA manifest (scope: /doglog/), build timestamp
@@ -49,10 +51,18 @@ Always `return await res.json()` (not `return res.json()`). Without await, the p
 escapes the try/catch and JSON parse errors propagate uncaught instead of falling back
 to the Dexie offline store.
 
+## Sync patterns
+
+### Concurrency guard on doSync
+`SyncContext.doSync()` uses `syncInProgressRef` (a `useRef`) to prevent concurrent calls. React state (`setSyncing`) is not sufficient — state updates batch and don't take effect before the next call starts. The ref is synchronous and race-safe. Without this guard, Android's Network Information API fires the connection `change` event 2–3× on WiFi connect, causing `flushQueue()` to POST each queued event multiple times.
+
+### syncVersion — trigger page refresh after background sync
+`SyncContext` exposes a `syncVersion` counter (incremented after each successful sync). Pages watch it via `useEffect([syncVersion, ...])` to re-fetch events and status. This ensures the UI reflects server state after a background sync completes — critical for the status strip, which shows server-side computed data that doesn't update from Dexie alone.
+
 ## Mobile UI design decisions
-- One-handed right-handed: carousel [›] and LOG lower-right for thumb reach
+- One-handed right-handed: carousel [›] and Log lower-right for thumb reach
 - Layout: header → status strip → history (scrollable, flex:1) → carousels → LOG → tab bar
-- Three tabs: Walk | Meals | Adverse (Meals daily use, Adverse rare — order intentional)
+- Three tabs: Walk | Meals | Health (Meals daily use, Health rare — order intentional)
 - Dogs sorted reverse-alpha everywhere (Tess first — primary subject)
 - Event type: "Poop" not "Poo" (too visually similar to "Pee"); backend still stores 'poo'
 - Status matrix: collapsible strip at top of Walk tab, replaces fridge whiteboard
