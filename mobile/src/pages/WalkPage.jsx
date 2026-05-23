@@ -132,7 +132,7 @@ const cs = {
   row: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#fff', borderBottom: '1px solid #e2e8f0' },
   label: { fontSize: 12, color: '#888', width: 36, flexShrink: 0 },
   display: { flex: 1, fontSize: 22, fontWeight: 700, color: '#1a202c', textAlign: 'center' },
-  btn: { width: 52, height: 52, fontSize: 28, background: '#5b8dd9', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  btn: { width: 52, height: 52, fontSize: 28, background: '#fff', color: '#000', border: '2px solid #5b8dd9', borderRadius: 10, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 400 },
 }
 
 // ── History row ───────────────────────────────────────────────────────────────
@@ -306,7 +306,7 @@ export default function WalkPage() {
           onClick={handleLog}
           disabled={logging || !dogs.length}
         >
-          {logging ? 'Logging…' : 'LOG'}
+          {logging ? 'Logging…' : 'Log'}
         </button>
       </div>
 
@@ -329,7 +329,7 @@ const p = {
   queue: { background: '#e53e3e', color: '#fff', borderRadius: 10, fontSize: 12, padding: '1px 6px', fontWeight: 700 },
   loading: { padding: 16, textAlign: 'center', color: '#888', background: '#fff', borderBottom: '1px solid #e2e8f0' },
   logRow: { display: 'flex', justifyContent: 'flex-end', padding: '10px 12px', background: '#f5f5f5' },
-  logBtn: { width: 100, height: 52, background: '#5b8dd9', color: '#fff', border: 'none', borderRadius: 10, fontSize: 20, fontWeight: 700, cursor: 'pointer' },
+  logBtn: { width: 100, height: 52, background: '#fff', color: '#000', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 20, fontWeight: 400, cursor: 'pointer' },
   logBtnDisabled: { opacity: 0.5, cursor: 'default' },
   history: { flex: 1, minHeight: 0, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },
   empty: { padding: '20px 12px', color: '#aaa', textAlign: 'center', fontSize: 14 },
