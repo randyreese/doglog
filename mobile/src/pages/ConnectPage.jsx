@@ -47,6 +47,7 @@ export default function ConnectPage() {
         </button>
         {status && <p style={s.status}>{status}</p>}
       </div>
+      <p style={s.build}>build {new Date(__BUILD_TIME__).toLocaleString()}</p>
     </div>
   )
 }
@@ -60,4 +61,5 @@ const s = {
   btn: { width: '100%', padding: '0.75rem', background: '#5b8dd9', color: '#fff', border: 'none', borderRadius: 6, fontSize: '1rem', fontWeight: 600, cursor: 'pointer' },
   btnDisabled: { opacity: 0.5, cursor: 'default' },
   status: { marginTop: '1rem', color: '#c00', fontSize: '0.875rem', textAlign: 'center' },
+  build: { marginTop: '1rem', color: '#bbb', fontSize: '0.75rem', textAlign: 'center' },
 }
