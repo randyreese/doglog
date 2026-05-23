@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
-import { queueEvent, deleteEvent } from '../sync'
+import { queueEvent, deleteEvent, localISOString } from '../sync'
 import { useSyncContext } from '../SyncContext'
 
 // Color thresholds (hours elapsed)
@@ -177,7 +177,7 @@ export default function WalkPage() {
     try {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      const data = await api.get(`/events/?since=${today.toISOString()}&limit=50`)
+      const data = await api.get(`/events/?since=${localISOString(today)}&limit=50`)
       setEvents(data)
     } catch { /* offline */ }
   }, [])
@@ -209,7 +209,7 @@ export default function WalkPage() {
     setLogging(true)
     try {
       try {
-        await api.post('/events/', { dog_id: dog.id, type })
+        await api.post('/events/', { dog_id: dog.id, type, timestamp: localISOString() })
       } catch {
         await queueEvent({ dog_id: dog.id, type })
       }
