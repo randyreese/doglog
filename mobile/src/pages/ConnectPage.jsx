@@ -33,7 +33,7 @@ export default function ConnectPage() {
         <input
           style={s.input}
           type="url"
-          placeholder="https://mint.local/doglog"
+          placeholder="https://mint.local"
           value={url}
           onChange={e => setUrl(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !connecting && connect()}

@@ -28,6 +28,7 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/doglog/',
+        scope: '/doglog/',
         icons: [
           { src: '/doglog/icons/doglog-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/doglog/icons/doglog-512.png', sizes: '512x512', type: 'image/png' },
