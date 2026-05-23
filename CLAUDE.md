@@ -15,8 +15,10 @@
 - `backend/models.py` — full data model (all 8 tables)
 - `backend/routers/` — dogs, events, status
 - `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, history
-- `mobile/src/sync.js` — WiFi-gate sync, localISOString() for timestamps
-- `mobile/vite.config.js` — proxy config routes API calls through Vite in dev
+- `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queueEvent, deleteEvent
+- `mobile/src/api.js` — api.get/post/delete, localGet offline fallback
+- `mobile/vite.config.js` — proxy config, PWA manifest (scope: /doglog/), build timestamp
+- `mobile/scripts/generate-icons.cjs` — generates PWA icons (run once, outputs to public/icons/)
 
 ## Architecture & technique docs (canonical source: claude repo)
 
@@ -48,13 +50,21 @@ escapes the try/catch and JSON parse errors propagate uncaught instead of fallin
 to the Dexie offline store.
 
 ## Mobile UI design decisions
-- One-handed right-handed: carousel [›] buttons and LOG button on right side
-- Three tabs: Walk / Adverse / Meals (bottom tab bar)
+- One-handed right-handed: carousel [›] and LOG lower-right for thumb reach
+- Layout: header → status strip → history (scrollable, flex:1) → carousels → LOG → tab bar
+- Three tabs: Walk | Meals | Adverse (Meals daily use, Adverse rare — order intentional)
+- Dogs sorted reverse-alpha everywhere (Tess first — primary subject)
+- Event type: "Poop" not "Poo" (too visually similar to "Pee"); backend still stores 'poo'
 - Status matrix: collapsible strip at top of Walk tab, replaces fridge whiteboard
-- Poo thresholds: yellow > 8h, red > 12h. Pee: yellow > 4h, red > 6h
-- Meals: stepped carousel 0/25/50/75/100%
+- Poop thresholds: yellow > 8h, red > 12h. Pee: yellow > 4h, red > 6h
+- Meals: stepped carousel 0/25/50/75/100%, default 100
 - Pickles: track_pee = False (pee column always shows —)
-- Erase all data in hamburger menu (behavior TBD)
+- Signal dot: white circle background so it's visible against blue header
+- Build timestamp visible on connect screen (hamburger → connect) for version verification
+
+## ConnectPage URL
+Enter `https://mint.local` (NOT `https://mint.local/doglog`). ConnectPage appends
+`/doglog/health` to test connectivity, so the stored base URL must not include `/doglog`.
 
 ## Dogs
 Tess (track_pee=True) and Pickles (track_pee=False) seeded on first run if no dogs exist.
@@ -62,6 +72,15 @@ Dogs are configurable — no hardcoding beyond the seed.
 
 ## Deployment notes
 - Backend port 8001 (grow uses 8000 — don't conflict)
-- Add `/doglog` location block to Mint's nginx config (see `nginx/doglog-location.conf`)
+- nginx `/doglog` location block already added to Mint's grow.conf (2026-05-22)
 - Add `mint.local` to Windows hosts file before first load test (see global CLAUDE.md)
 - Windows Firewall: port 8001 needs an inbound allow rule for dev
+- Prod URL: `https://mint.local/doglog/` — installed as PWA on phone
+
+## Offline patterns
+- `queueEvent` writes to both `db.eventQueue` AND `db.events` (same timestamp, local ISO format)
+  so history shows queued events immediately without a sync
+- `deleteEvent` in sync.js handles both queued (remove from eventQueue + db.events) and
+  synced (server DELETE + db.events) events; always removes locally regardless
+- `api.js localGet` matches `/events/` with `startsWith` to handle `?since=` query params
+- `refreshQueueCount()` must be called after log AND delete to keep badge accurate

@@ -44,6 +44,17 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v0.2.0 (2026-05-22)
+- First production deploy to Mint — live at `https://mint.local/doglog/`
+- Installed as standalone PWA alongside Grow (separate scopes, no conflict)
+- Walk tab UI overhaul: history fills middle, carousels + LOG at bottom (thumb-friendly)
+- Dogs sorted reverse-alpha (Tess first); Poo → Poop; tab order Walk | Meals | Adverse
+- Signal dot on white circle for visibility; history rows boxed; haptic on LOG tap
+- Offline event display: queued events now show in history immediately
+- Offline delete: removes from queue and local DB atomically; badge updates instantly
+- Build timestamp on connect screen for version verification
+- Fixed Grow service worker scope (was intercepting `/doglog/` navigation requests)
+
 ### v0.1.0 (2026-05-20)
 - Sprint 1: Full scaffold shipped and tested on Android
 - Backend: FastAPI, dogs/events/status endpoints, SQLite, Docker

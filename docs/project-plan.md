@@ -133,6 +133,25 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Session 2 — Walk tab polish + prod deploy** ✓ COMPLETE *(2026-05-22)*
+
+- [x] Walk tab UI overhaul: history fills middle, carousels + LOG at bottom
+- [x] Dogs sorted reverse-alpha (Tess first) in strip and carousel
+- [x] Poo → Poop in all display text; backend values unchanged
+- [x] History rows boxed with thin grey border
+- [x] Signal dot on white circle background (visible against blue header)
+- [x] Tab order: Walk | Meals | Adverse across all three pages
+- [x] Haptic feedback (40ms) on LOG tap
+- [x] loadDogs + loadStatus converted to api.get(); dogsError debug state removed
+- [x] First prod deploy to Mint — nginx, docker compose, both PWAs coexisting
+- [x] Fixed Grow service worker intercepting /doglog/ (navigateFallbackAllowlist)
+- [x] PWA icons generated; explicit scope in manifests for same-origin coexistence
+- [x] Offline event display (queued events show in history immediately)
+- [x] Offline delete (removes from eventQueue + db.events atomically; badge refreshes)
+- [x] Build timestamp on connect screen for version verification
+- [x] Adverse tab spec finalized (bottom sheet, 6 types, blob photos, comment via `…`)
+- [x] Meals tab spec finalized (slot picker, % consumed default 100, ingredient checklist)
+
 **Sprint 1 — Foundation** ✓ COMPLETE *(2026-05-20)*
 
 Goal: Replace `index.html` with a real persisted mobile app. Dogs configurable, pee/poo
@@ -169,22 +188,25 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
    7-day pee/poo history view, daily summary screen, midnight reset for status matrix.
    Depends on: Sprint 1
 
-2. **Sprint 3 — Other events + camera**
-   Vomit/diarrhea/other event logging with camera capture, photo storage on backend.
+2. **Sprint 3 — Adverse events tab**
+   Spec complete (2026-05-22). Bottom sheet picker (6 types), blob photo storage, comment
+   field editable post-log via `…` button, inline comment preview on history row.
    Depends on: Sprint 1
 
-3. **Sprint 4 — Food consumption**
-   Meal logging (% consumed per slot), meal config API, food screen in PWA.
+3. **Sprint 4 — Meals tab**
+   Spec complete (2026-05-22). Dog carousel, slot bottom sheet picker (meal_slots.json config),
+   % consumed carousel (default 100), ingredient checklist post-log via `…`.
+   History: one section per dog, cols = slot | % | … | ☐, scrollable.
    Depends on: Sprint 1
 
 4. **Sprint 5 — Medications**
    Medication schedule, dose logging, medications screen in PWA.
    Depends on: Sprint 1
 
-5. **Prod deploy — first deployment to Mint**
-   Push to GitHub, clone on Mint, add `/doglog` nginx location block, docker compose up.
-   Use dev app in field until ready; data is 24-hour transient so loss on dev is acceptable.
-   Depends on: Sprint 1 (done — unblock whenever ready)
+5. **Walk tab — history overflows tab bar**
+   When > ~8 events, history pushes tab bar off screen. Tab bar needs fixed positioning
+   or history needs max-height constraint.
+   Depends on: nothing (quick fix)
 
 6. **Sprint 6 — Desktop scaffold + milestones**
    PySide6 desktop app, dog milestones (vet visits, weight log, notable trips).
