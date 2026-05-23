@@ -321,7 +321,7 @@ export default function WalkPage() {
 }
 
 const p = {
-  page: { display: 'flex', flexDirection: 'column', height: '100dvh', background: '#f5f5f5', overflow: 'hidden' },
+  page: { display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, background: '#f5f5f5', paddingBottom: 50, boxSizing: 'border-box' },
   header: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#5b8dd9', color: '#fff' },
   hamburger: { background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: '0 4px' },
   title: { flex: 1, fontWeight: 700, fontSize: 18 },
@@ -335,7 +335,7 @@ const p = {
   empty: { padding: '20px 12px', color: '#aaa', textAlign: 'center', fontSize: 14 },
   deleteRow: { padding: '8px 12px', background: '#f5f5f5', display: 'flex', justifyContent: 'flex-end' },
   deleteBtn: { padding: '10px 20px', background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
-  tabBar: { display: 'flex', borderTop: '1px solid #ddd', background: '#fff' },
+  tabBar: { position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', borderTop: '1px solid #ddd', background: '#fff', zIndex: 10 },
   tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 14, color: '#888', cursor: 'pointer', fontWeight: 500 },
   tabActive: { color: '#5b8dd9', fontWeight: 700, borderTop: '2px solid #5b8dd9' },
 }
