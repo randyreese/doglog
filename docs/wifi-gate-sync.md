@@ -64,6 +64,44 @@ This is fine — iOS isn't a target device, and desktop is never on a walk.
 | `mobile/src/SyncContext.jsx` | React context; runs the periodic ping, listens for WiFi connect event |
 | `mobile/src/db.js` | Dexie schema; `eventQueue` table holds unsynced events |
 
+## Offline log and delete — how the local DB stays in sync
+
+### Logging while offline
+
+When a LOG tap results in a queued event (backend unreachable), `queueEvent()` writes the
+event to **two** places simultaneously:
+
+1. `db.eventQueue` — the outbox. Flushed to the server when WiFi returns.
+2. `db.events` — the local mirror of server data. This is what the history display reads.
+
+Both writes use the same `localISOString()` timestamp (local time, no UTC offset). This is
+critical — if the timestamps differ, the delete logic can't match them (see below).
+
+The event appears in history immediately. The queue badge increments. No network activity.
+
+### Deleting while offline
+
+Deleting a queued event requires cleaning up both tables. `deleteEvent()` in `sync.js` handles this:
+
+- **Queued event** (`_queued: true` flag on the db.events record): removes from both
+  `db.eventQueue` (matched by dog_id + timestamp) and `db.events`. No server call needed —
+  the event was never synced.
+- **Synced event** (already on the server): attempts a server DELETE, then removes from
+  `db.events` locally regardless of whether the server call succeeded. If offline, the
+  local copy disappears; it will come back on next sync (a known limitation — offline delete
+  of already-synced events is best-effort).
+
+After any delete, `refreshQueueCount()` is called to update the badge immediately.
+
+### Key files (updated)
+
+| File | What it does |
+|---|---|
+| `mobile/src/sync.js` | `ping()`, `flushQueue()`, `syncFromBackend()`, `queueEvent()`, `deleteEvent()` |
+| `mobile/src/SyncContext.jsx` | React context; runs the periodic ping, listens for WiFi connect event |
+| `mobile/src/db.js` | Dexie schema; `eventQueue` (outbox) + `events` (local mirror) |
+| `mobile/src/api.js` | `localGet()` offline fallback — matches `/events/` with `startsWith` to handle query params |
+
 ## What the signal dot means
 
 The colored dot in the top-right of the header reflects the last ping result:
