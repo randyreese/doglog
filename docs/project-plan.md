@@ -133,6 +133,11 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Session 5 — Duplicate fix + Walk tab polish** ✓ COMPLETE *(2026-05-24)*
+
+- [x] Fixed: duplicate events (root cause: page reload mid-flushQueue left queue entries intact, causing double-POST on next sync) — UNIQUE constraint on (dog_id, type, timestamp), migration deduplicates existing rows, server returns existing event on IntegrityError
+- [x] Walk tab history rows: stacked day/time in 68px time block (ddd over h:mma) — sets shared design language for Health tab rows
+
 **Session 4 — Timestamp bug fix** ✓ COMPLETE *(2026-05-23)*
 
 - [x] Fixed: event timestamps displayed 4h ahead on EDT — Docker/Mint runs UTC; client now always sends `timestamp: localISOString()` in POST body
@@ -192,23 +197,30 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-**Sprint 2 — History screen + hamburger menu** ✓ COMPLETE *(2026-05-24)*
+**Sprint 3 — Health events tab**
 
-- [x] Backend: `/doglog/history/?days=7` endpoint — rolling daily pee/poo counts per dog
-- [x] Frontend: HamburgerMenu slide-out (History nav, backend URL + build date+time footer)
-- [x] Frontend: HistoryPage — 7-day grid per dog, poo=0 highlighted red
-- [x] Frontend: /history route wired in App.jsx
-- [x] api.js localGet: apply since= filter offline (Walk tab today-only fix)
-- [x] WalkPage: timestamp format changed to "ddd h:mma" (e.g. "Sun 8:49am")
+Goal: Implement HealthPage — log health events with type picker, optional photo, and comment. History rows share the stacked-time row design established in Walk tab.
+
+Design decisions to resolve:
+- [ ] Bottom sheet: slide-up overlay or inline dropdown?
+- [ ] Photo: capture-only at log time, or allow library pick too?
+
+Stories:
+- [ ] Backend: POST/GET `/doglog/health-events/` — dog_id, type, timestamp, notes, photo (blob)
+- [ ] Backend: PATCH `/doglog/health-events/{id}` — edit notes + photo post-log
+- [ ] Backend: DELETE `/doglog/health-events/{id}`
+- [ ] Mobile: HealthPage — dog carousel, type bottom sheet picker (6 types), LOG button
+- [ ] Mobile: Health history rows — stacked time block + dog + type + notes preview + `…` + checkbox
+- [ ] Mobile: `…` edit sheet — free-text comment, optional photo; saves via PATCH
+- [ ] Mobile: offline queue support for health events (same pattern as pee/poo)
+- [ ] Mobile: sync includes health events (syncFromBackend clears + repopulates)
+- [ ] Delete AdversePage.jsx (orphaned dead code)
 
 ---
 
 ## Backlog
 
-1. **Sprint 3 — Health events tab**
-   Spec complete (2026-05-22). Bottom sheet picker (6 types), blob photo storage, comment
-   field editable post-log via `…` button, inline comment preview on history row.
-   Depends on: Sprint 1
+1. **Sprint 4 — Meals tab**
 
 2. **Sprint 4 — Meals tab**
    Spec complete (2026-05-22). Dog carousel, slot bottom sheet picker (meal_slots.json config),

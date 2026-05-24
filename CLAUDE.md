@@ -29,6 +29,17 @@
 - `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\vite-pwa-dev-proxy.md` — why the Vite proxy is required for any PWA tested on a physical device; pattern for all future apps
 - `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\dev-prod-workflow.md` — dev/prod split pattern (shared with grow)
 
+## History row design (Walk + Health shared pattern)
+
+Three-segment flex layout: `[timeBlock] [label] [checkbox]`. Row uses `gap: 8`.
+Time block: `width: 68, flexShrink: 0, flexDirection: column` — day abbrev (`fontSize: 11, color: '#999'`) stacked over time string (`fontSize: 14, color: '#555'`).
+Health tab rows extend this: same time block, label segment adds `…` button and notes preview.
+
+## Duplicate event prevention
+
+`pee_poo_events` has UNIQUE constraint on `(dog_id, type, timestamp)` (migration 0002).
+`log_event` catches `IntegrityError` and returns the existing event — idempotent POST.
+
 ## Critical dev patterns
 
 ### Vite proxy (mandatory for mobile dev)

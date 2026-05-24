@@ -44,6 +44,10 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v0.4.1 (2026-05-24)
+- Fixed: duplicate events on Walk tab — server now enforces UNIQUE(dog_id, type, timestamp); migration deduplicates existing rows; server returns existing event on conflict (idempotent POST)
+- Changed: history rows now stack day label over time ("Sun" / "5:43pm") — consistent tall-row design shared with upcoming Health tab
+
 ### v0.4.0 (2026-05-24)
 - New: hamburger menu — slide-out drawer replacing direct ConnectPage link; shows backend URL + build date+time
 - New: History screen — rolling 7-day pee/poo grid per dog; poo=0 highlighted red for health tracking
