@@ -5,6 +5,7 @@ import ConnectPage from './pages/ConnectPage'
 import WalkPage from './pages/WalkPage'
 import HealthPage from './pages/HealthPage'
 import MealsPage from './pages/MealsPage'
+import HistoryPage from './pages/HistoryPage'
 
 function RequireBackend({ children }) {
   return getBackendUrl() ? children : <Navigate to="/connect" replace />
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/" element={<RequireBackend><WalkPage /></RequireBackend>} />
           <Route path="/health" element={<RequireBackend><HealthPage /></RequireBackend>} />
           <Route path="/meals" element={<RequireBackend><MealsPage /></RequireBackend>} />
+          <Route path="/history" element={<RequireBackend><HistoryPage /></RequireBackend>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </HashRouter>

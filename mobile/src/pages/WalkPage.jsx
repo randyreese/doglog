@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { queueEvent, deleteEvent, localISOString } from '../sync'
 import { useSyncContext } from '../SyncContext'
+import HamburgerMenu from '../components/HamburgerMenu'
 
 // Color thresholds (hours elapsed)
 const PEE_YELLOW_H = 4
@@ -26,13 +27,16 @@ function timeColor(hours, yellowH, redH) {
   return '#2f855a'
 }
 
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
 function fmtTime(isoTs) {
   if (!isoTs) return '—'
   const d = new Date(isoTs)
+  const day = DAYS[d.getDay()]
   let h = d.getHours(), m = d.getMinutes()
   const ampm = h >= 12 ? 'pm' : 'am'
   h = h % 12 || 12
-  return `${h}:${String(m).padStart(2, '0')}${ampm}`
+  return `${day} ${h}:${String(m).padStart(2, '0')}${ampm}`
 }
 
 function fmtElapsed(isoTs) {
@@ -148,7 +152,7 @@ function HistoryRow({ event, dogName, checked, onCheck }) {
 
 const hr = {
   row: { display: 'flex', alignItems: 'center', padding: '10px 12px', border: '1px solid #e8e8e8', background: '#fff', marginBottom: 2, borderRadius: 4 },
-  time: { fontSize: 14, color: '#555', width: 60, flexShrink: 0 },
+  time: { fontSize: 14, color: '#555', width: 80, flexShrink: 0 },
   label: { flex: 1, fontSize: 15, color: '#1a202c', textTransform: 'capitalize' },
   check: { width: 22, height: 22, cursor: 'pointer', accentColor: '#5b8dd9' },
 }
@@ -165,6 +169,7 @@ export default function WalkPage() {
   const [status, setStatus] = useState([])
   const [checked, setChecked] = useState({})
   const [logging, setLogging] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const loadDogs = useCallback(async () => {
     try {
@@ -245,9 +250,11 @@ export default function WalkPage() {
   return (
     <div style={p.page}>
 
+      {menuOpen && <HamburgerMenu onClose={() => setMenuOpen(false)} />}
+
       {/* Header */}
       <div style={p.header}>
-        <button style={p.hamburger} onClick={() => nav('/connect')}>☰</button>
+        <button style={p.hamburger} onClick={() => setMenuOpen(true)}>☰</button>
         <span style={p.title}>Dog Log</span>
         <span style={p.signalDot} title={signal}>
           <span style={{ color: signalColor }}>{signalLabel}</span>

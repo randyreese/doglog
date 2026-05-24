@@ -192,54 +192,64 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-*(pull from backlog at start of next session)*
+**Sprint 2 — History screen + hamburger menu** *(2026-05-24)*
+
+- [ ] Backend: `/doglog/history/?days=7` endpoint — daily pee/poo counts per dog
+- [ ] Frontend: HamburgerMenu slide-out component (replaces direct nav to ConnectPage).
+      Items: History (→ /history), divider, backend URL (tappable → ConnectPage for
+      reconfigure only), build date+time (static). Tap outside or × to close.
+- [ ] Frontend: HistoryPage — 7-day grid, one section per dog, color-coded poo counts (0=red)
+- [ ] Frontend: wire /history route in App.jsx
+- [ ] Deploy + verify on device
 
 ---
 
 ## Backlog
 
-1. **Sprint 2 — Mobile history & daily summary**
-   7-day pee/poo history view, daily summary screen, midnight reset for status matrix.
-   Depends on: Sprint 1
-
-2. **Sprint 3 — Health events tab**
+1. **Sprint 3 — Health events tab**
    Spec complete (2026-05-22). Bottom sheet picker (6 types), blob photo storage, comment
    field editable post-log via `…` button, inline comment preview on history row.
    Depends on: Sprint 1
 
-3. **Sprint 4 — Meals tab**
+2. **Sprint 4 — Meals tab**
    Spec complete (2026-05-22). Dog carousel, slot bottom sheet picker (meal_slots.json config),
    % consumed carousel (default 100), ingredient checklist post-log via `…`.
    History: one section per dog, cols = slot | % | … | ☐, scrollable.
    Depends on: Sprint 1
 
-4. **Sprint 5 — Medications**
-   Medication schedule, dose logging, medications screen in PWA.
-   Depends on: Sprint 1
+3. **Sprint 5 — Medications**
+   Config (desktop): add/edit medications per dog — name, dosage, frequency, start/end dates.
+   Data model: add `medication_doses` table (dog_id, medication_id, timestamp) for dose events.
+   Logging (mobile): integrated into Meals tab — dose logging lives alongside meal logging.
+   Current use case: Pickles takes a GI med twice daily (morning + bedtime, with snacks).
+   Flea/tick prevention is managed offline — not in scope.
+   Vet report: dose history joins to medication config for dated medication records.
+   Design note: Meals tab UX will need care to stay crisp with medications added.
+   Depends on: Sprint 1, Sprint 4
 
-5. **Sprint 6 — Desktop scaffold + milestones**
+4. **Sprint 6 — Desktop scaffold + milestones**
    PySide6 desktop app, dog milestones (vet visits, weight log, notable trips).
    Include Pull Prod DB utility (SSH + docker cp pattern from grow) so migrations can be
    tested against real data locally before deploying. Add to Settings widget.
    Depends on: Sprint 1 (shared backend)
 
-6. **Sprint 7 — Desktop: dog config + meal composition**
+5. **Sprint 7 — Desktop: dog config + meal composition**
    Dog add/edit/archive, meal config with dated versions.
    Depends on: Sprint 6
 
-7. **Sprint 8 — Desktop: dry food inventory**
+6. **Sprint 8 — Desktop: dry food inventory**
    Dry food purchase log, consumption pattern, reorder schedule display.
    Depends on: Sprint 6
 
-8. **Sprint 9 — Google Sheets import**
+7. **Sprint 9 — Google Sheets import**
    One-time migration script: read existing Google Sheet, map to data model, import to SQLite.
    Depends on: Sprints 1–5 (full data model in place)
 
-9. **Sprint 10 — Google Sheets daily export**
+8. **Sprint 10 — Google Sheets daily export**
    Daily export job: write to current month tab in new sheet format. Summary tab.
    Depends on: Sprint 9 (sheet format established)
 
-10. **Stretch — Raspberry Pi fridge display**
+9. **Stretch — Raspberry Pi fridge display**
     Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.
     Depends on: Sprint 1 (`/api/status` endpoint)
 
