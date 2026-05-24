@@ -141,9 +141,19 @@ const cs = {
 
 // ── History row ───────────────────────────────────────────────────────────────
 function HistoryRow({ event, dogName, checked, onCheck }) {
+  const d = new Date(event.timestamp)
+  const day = DAYS[d.getDay()]
+  let h = d.getHours(), m = d.getMinutes()
+  const ampm = h >= 12 ? 'pm' : 'am'
+  h = h % 12 || 12
+  const timeStr = `${h}:${String(m).padStart(2, '0')}${ampm}`
+
   return (
     <div style={hr.row}>
-      <span style={hr.time}>{fmtTime(event.timestamp)}</span>
+      <div style={hr.timeBlock}>
+        <span style={hr.day}>{day}</span>
+        <span style={hr.time}>{timeStr}</span>
+      </div>
       <span style={hr.label}>{dogName}: {EVENT_TYPE_LABELS[event.type] || event.type}</span>
       <input type="checkbox" checked={checked} onChange={e => onCheck(event.id, e.target.checked)} style={hr.check} />
     </div>
@@ -151,8 +161,10 @@ function HistoryRow({ event, dogName, checked, onCheck }) {
 }
 
 const hr = {
-  row: { display: 'flex', alignItems: 'center', padding: '10px 12px', border: '1px solid #e8e8e8', background: '#fff', marginBottom: 2, borderRadius: 4 },
-  time: { fontSize: 14, color: '#555', width: 80, flexShrink: 0 },
+  row: { display: 'flex', alignItems: 'center', padding: '8px 12px', border: '1px solid #e8e8e8', background: '#fff', marginBottom: 2, borderRadius: 4 },
+  timeBlock: { width: 52, flexShrink: 0, display: 'flex', flexDirection: 'column' },
+  day: { fontSize: 11, color: '#999', lineHeight: '1.3' },
+  time: { fontSize: 14, color: '#555', lineHeight: '1.3' },
   label: { flex: 1, fontSize: 15, color: '#1a202c', textTransform: 'capitalize' },
   check: { width: 22, height: 22, cursor: 'pointer', accentColor: '#5b8dd9' },
 }
