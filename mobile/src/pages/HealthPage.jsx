@@ -150,6 +150,7 @@ function EditSheet({ event, open, onClose, onSave }) {
   const [photoChanged, setPhotoChanged] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
+  const [lightbox, setLightbox] = useState(false)
   const fileRef = useRef(null)
 
   useEffect(() => {
@@ -203,9 +204,15 @@ function EditSheet({ event, open, onClose, onSave }) {
           rows={3}
         />
 
+        {lightbox && (
+          <div style={ed.lightbox} onClick={() => setLightbox(false)}>
+            <img src={photoSrc} alt="full size" style={ed.lightboxImg} />
+          </div>
+        )}
+
         <div style={ed.photoSection}>
           {photoSrc
-            ? <img src={photoSrc} alt="health event" style={ed.thumb} />
+            ? <img src={photoSrc} alt="health event" style={ed.thumb} onClick={() => setLightbox(true)} />
             : <div style={ed.noPhoto}>No photo</div>
           }
           <button style={ed.photoBtn} onClick={() => fileRef.current?.click()}>
@@ -243,7 +250,9 @@ const ed = {
   title: { fontSize: 16, fontWeight: 700, color: '#1a202c' },
   textarea: { width: '100%', border: '1px solid #ccc', borderRadius: 8, padding: 10, fontSize: 15, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' },
   photoSection: { display: 'flex', alignItems: 'center', gap: 12 },
-  thumb: { width: 72, height: 72, objectFit: 'cover', borderRadius: 8, border: '1px solid #ddd' },
+  lightbox: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  lightboxImg: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' },
+  thumb: { width: 72, height: 72, objectFit: 'cover', borderRadius: 8, border: '1px solid #ddd', cursor: 'pointer' },
   noPhoto: { width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', borderRadius: 8, border: '1px solid #ddd', fontSize: 12, color: '#aaa' },
   photoBtn: { padding: '10px 16px', background: '#fff', border: '1px solid #5b8dd9', borderRadius: 8, fontSize: 14, color: '#5b8dd9', cursor: 'pointer' },
   error: { fontSize: 13, color: '#e53e3e', textAlign: 'center' },
