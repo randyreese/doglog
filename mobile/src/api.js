@@ -34,6 +34,10 @@ async function localGet(path) {
     return q.limit(50).toArray()
   }
 
+  if (path.startsWith('/health-events/')) {
+    return db.healthEvents.orderBy('timestamp').reverse().limit(50).toArray()
+  }
+
   throw new Error(`No offline fallback for GET ${path}`)
 }
 

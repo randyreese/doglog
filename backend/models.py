@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, UniqueConstraint, func
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, LargeBinary, String, UniqueConstraint, func
 from database import Base
 
 
@@ -27,8 +27,8 @@ class OtherEvent(Base):
     id = Column(Integer, primary_key=True, index=True)
     dog_id = Column(Integer, nullable=False)
     timestamp = Column(DateTime, nullable=False, server_default=func.now())
-    type = Column(String, nullable=False)  # 'vomit' | 'diarrhea' | 'other'
-    photo_path = Column(String, nullable=True)
+    type = Column(String, nullable=False)  # 'vomit'|'diarrhea'|'grass_eating'|'stomach_gurgles'|'dry_heaves'|'other'
+    photo = Column(LargeBinary, nullable=True)
     notes = Column(String, nullable=True)
 
 

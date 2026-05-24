@@ -8,3 +8,12 @@ db.version(1).stores({
   eventQueue: '++id, dog_id, created_at',
   meta: 'key',
 })
+
+db.version(2).stores({
+  dogs: 'id, name, active',
+  events: 'id, dog_id, type, timestamp',
+  eventQueue: '++id, dog_id, created_at',
+  meta: 'key',
+  healthEvents: 'id, dog_id, type, timestamp',
+  healthQueue: '++id, dog_id, created_at',
+})

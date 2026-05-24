@@ -133,26 +133,7 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
-**Session 5 — Duplicate fix + Walk tab polish** ✓ COMPLETE *(2026-05-24)*
-
-- [x] Fixed: duplicate events (root cause: page reload mid-flushQueue left queue entries intact, causing double-POST on next sync) — UNIQUE constraint on (dog_id, type, timestamp), migration deduplicates existing rows, server returns existing event on IntegrityError
-- [x] Walk tab history rows: stacked day/time in 68px time block (ddd over h:mma) — sets shared design language for Health tab rows
-
-**Session 4 — Timestamp bug fix** ✓ COMPLETE *(2026-05-23)*
-
-- [x] Fixed: event timestamps displayed 4h ahead on EDT — Docker/Mint runs UTC; client now always sends `timestamp: localISOString()` in POST body
-- [x] Fixed: `since=` filter in loadEvents used `toISOString()` (UTC midnight) instead of local midnight
-- [x] Exported `localISOString(d?)` from sync.js with optional date argument
-
-**Session 3 — UAT fixes + polish** ✓ COMPLETE *(2026-05-23)*
-
-- [x] Fixed: 3× event duplication — `syncInProgressRef` guard on `doSync()` prevents concurrent queue flushes
-- [x] Fixed: status strip stale after offline log — `syncVersion` counter triggers WalkPage refresh after background sync
-- [x] Fixed: tab bar pushed off screen when status strip renders — `position: fixed; bottom: 0` on tab bar
-- [x] Renamed: Health tab (was Adverse) — route `/health`, new `HealthPage.jsx`
-- [x] Style: carousel and Log buttons — outline only, white fill, black non-bold text, "Log" mixed case
-
-**Session 2 — Walk tab polish + prod deploy** ✓ COMPLETE *(2026-05-22)*
+**Sprint 2 — Deploy + stabilization** ✓ COMPLETE *(2026-05-22 → 2026-05-24)*
 
 - [x] Walk tab UI overhaul: history fills middle, carousels + LOG at bottom
 - [x] Dogs sorted reverse-alpha (Tess first) in strip and carousel
@@ -170,6 +151,15 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 - [x] Build timestamp on connect screen for version verification
 - [x] Health tab spec finalized (bottom sheet, 6 types, blob photos, comment via `…`)
 - [x] Meals tab spec finalized (slot picker, % consumed default 100, ingredient checklist)
+- [x] Fixed: 3× event duplication — `syncInProgressRef` guard on `doSync()` prevents concurrent queue flushes
+- [x] Fixed: status strip stale after offline log — `syncVersion` counter triggers WalkPage refresh after background sync
+- [x] Fixed: tab bar pushed off screen when status strip renders — `position: fixed; bottom: 0` on tab bar
+- [x] Renamed: Health tab (was Adverse) — route `/health`, new `HealthPage.jsx`
+- [x] Style: carousel and Log buttons — outline only, white fill, black non-bold text, "Log" mixed case
+- [x] Fixed: event timestamps displayed 4h ahead on EDT — Docker/Mint runs UTC; client now always sends `timestamp: localISOString()` in POST body
+- [x] Fixed: `since=` filter in loadEvents used `toISOString()` (UTC midnight) instead of local midnight
+- [x] Fixed: duplicate events via UNIQUE constraint on (dog_id, type, timestamp); server returns existing event on IntegrityError
+- [x] Walk tab history rows: stacked day/time in 68px time block — sets shared design language for Health tab rows
 
 **Sprint 1 — Foundation** ✓ COMPLETE *(2026-05-20)*
 
@@ -220,15 +210,15 @@ Stories:
 
 ## Backlog
 
-1. **Sprint 4 — Meals tab**
+*Numbering convention: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream.*
 
-2. **Sprint 4 — Meals tab**
+1. **Sprint 4 — Meals tab**
    Spec complete (2026-05-22). Dog carousel, slot bottom sheet picker (meal_slots.json config),
    % consumed carousel (default 100), ingredient checklist post-log via `…`.
    History: one section per dog, cols = slot | % | … | ☐, scrollable.
    Depends on: Sprint 1
 
-3. **Sprint 5 — Medications**
+2. **Sprint 5 — Medications**
    Config (desktop): add/edit medications per dog — name, dosage, frequency, start/end dates.
    Data model: add `medication_doses` table (dog_id, medication_id, timestamp) for dose events.
    Logging (mobile): integrated into Meals tab — dose logging lives alongside meal logging.
@@ -238,29 +228,29 @@ Stories:
    Design note: Meals tab UX will need care to stay crisp with medications added.
    Depends on: Sprint 1, Sprint 4
 
-4. **Sprint 6 — Desktop scaffold + milestones**
+3. **Sprint 6 — Desktop scaffold + milestones**
    PySide6 desktop app, dog milestones (vet visits, weight log, notable trips).
    Include Pull Prod DB utility (SSH + docker cp pattern from grow) so migrations can be
    tested against real data locally before deploying. Add to Settings widget.
    Depends on: Sprint 1 (shared backend)
 
-5. **Sprint 7 — Desktop: dog config + meal composition**
+4. **Sprint 7 — Desktop: dog config + meal composition**
    Dog add/edit/archive, meal config with dated versions.
    Depends on: Sprint 6
 
-6. **Sprint 8 — Desktop: dry food inventory**
+5. **Sprint 8 — Desktop: dry food inventory**
    Dry food purchase log, consumption pattern, reorder schedule display.
    Depends on: Sprint 6
 
-7. **Sprint 9 — Google Sheets import**
+6. **Sprint 9 — Google Sheets import**
    One-time migration script: read existing Google Sheet, map to data model, import to SQLite.
    Depends on: Sprints 1–5 (full data model in place)
 
-8. **Sprint 10 — Google Sheets daily export**
+7. **Sprint 10 — Google Sheets daily export**
    Daily export job: write to current month tab in new sheet format. Summary tab.
    Depends on: Sprint 9 (sheet format established)
 
-9. **Stretch — Raspberry Pi fridge display**
+8. **Stretch — Raspberry Pi fridge display**
     Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.
     Depends on: Sprint 1 (`/api/status` endpoint)
 
