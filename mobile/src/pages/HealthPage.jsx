@@ -30,10 +30,24 @@ function fmtTime(isoTs) {
 
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result.split(',')[1])
-    reader.onerror = reject
-    reader.readAsDataURL(file)
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const MAX = 1200
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round(height * MAX / width); width = MAX }
+        else { width = Math.round(width * MAX / height); height = MAX }
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1])
+    }
+    img.onerror = reject
+    img.src = url
   })
 }
 
@@ -135,6 +149,7 @@ function EditSheet({ event, open, onClose, onSave }) {
   const [photo, setPhoto] = useState(null)   // base64 string or null
   const [photoChanged, setPhotoChanged] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(null)
   const fileRef = useRef(null)
 
   useEffect(() => {
@@ -142,6 +157,7 @@ function EditSheet({ event, open, onClose, onSave }) {
       setNotes(event.notes || '')
       setPhoto(event.photo || null)
       setPhotoChanged(false)
+      setSaveError(null)
     }
   }, [event])
 
@@ -155,9 +171,12 @@ function EditSheet({ event, open, onClose, onSave }) {
 
   async function handleSave() {
     setSaving(true)
+    setSaveError(null)
     try {
       await onSave(event.id, notes, photoChanged ? photo : undefined)
       onClose()
+    } catch {
+      setSaveError('Save failed — try again')
     } finally {
       setSaving(false)
     }
@@ -201,6 +220,8 @@ function EditSheet({ event, open, onClose, onSave }) {
           />
         </div>
 
+        {saveError && <div style={ed.error}>{saveError}</div>}
+
         <div style={ed.actions}>
           <button style={ed.cancel} onClick={onClose}>Cancel</button>
           <button style={ed.save} onClick={handleSave} disabled={saving}>
@@ -225,6 +246,7 @@ const ed = {
   thumb: { width: 72, height: 72, objectFit: 'cover', borderRadius: 8, border: '1px solid #ddd' },
   noPhoto: { width: 72, height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', borderRadius: 8, border: '1px solid #ddd', fontSize: 12, color: '#aaa' },
   photoBtn: { padding: '10px 16px', background: '#fff', border: '1px solid #5b8dd9', borderRadius: 8, fontSize: 14, color: '#5b8dd9', cursor: 'pointer' },
+  error: { fontSize: 13, color: '#e53e3e', textAlign: 'center' },
   actions: { display: 'flex', justifyContent: 'flex-end', gap: 10 },
   cancel: { padding: '10px 20px', background: '#fff', border: '1px solid #ccc', borderRadius: 8, fontSize: 15, cursor: 'pointer' },
   save: { padding: '10px 20px', background: '#5b8dd9', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
