@@ -28,6 +28,7 @@
 
 - `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\vite-pwa-dev-proxy.md` — why the Vite proxy is required for any PWA tested on a physical device; pattern for all future apps
 - `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\dev-prod-workflow.md` — dev/prod split pattern (shared with grow)
+- `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\offline-queue-idempotency.md` — how the offline queue creates a double-POST race, and the UNIQUE constraint + idempotent endpoint fix; applies to any app using flushQueue() pattern (doglog + grow)
 
 ## History row design (Walk + Health shared pattern)
 
