@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from datetime import datetime, date
 from typing import Optional, Literal
@@ -29,15 +30,20 @@ def log_event(body: EventIn, db: Session = Depends(get_db)):
     dog = db.query(models.Dog).filter(models.Dog.id == body.dog_id).first()
     if not dog:
         raise HTTPException(status_code=404, detail="Dog not found")
-    event = models.PeePooEvent(
-        dog_id=body.dog_id,
-        type=body.type,
-        timestamp=body.timestamp or datetime.now(),
-    )
+    ts = body.timestamp or datetime.now()
+    event = models.PeePooEvent(dog_id=body.dog_id, type=body.type, timestamp=ts)
     db.add(event)
-    db.commit()
-    db.refresh(event)
-    return event
+    try:
+        db.commit()
+        db.refresh(event)
+        return event
+    except IntegrityError:
+        db.rollback()
+        return db.query(models.PeePooEvent).filter(
+            models.PeePooEvent.dog_id == body.dog_id,
+            models.PeePooEvent.type == body.type,
+            models.PeePooEvent.timestamp == ts,
+        ).first()
 
 
 @router.get("/events/", response_model=list[EventOut])

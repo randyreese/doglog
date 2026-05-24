@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, func
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, UniqueConstraint, func
 from database import Base
 
 
@@ -18,6 +18,8 @@ class PeePooEvent(Base):
     dog_id = Column(Integer, nullable=False)
     timestamp = Column(DateTime, nullable=False, server_default=func.now())
     type = Column(String, nullable=False)  # 'pee' | 'poo'
+
+    __table_args__ = (UniqueConstraint('dog_id', 'type', 'timestamp', name='uq_pee_poo_event'),)
 
 
 class OtherEvent(Base):
