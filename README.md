@@ -44,6 +44,13 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v0.4.0 (2026-05-24)
+- New: hamburger menu — slide-out drawer replacing direct ConnectPage link; shows backend URL + build date+time
+- New: History screen — rolling 7-day pee/poo grid per dog; poo=0 highlighted red for health tracking
+- New: `/doglog/history/?days=7` backend endpoint (daily counts grouped by dog)
+- Fixed: Walk tab offline fallback now applies `since=today` filter (previously showed all historical events when offline)
+- Changed: history row timestamps now show day-of-week prefix ("Sun 8:49am")
+
 ### v0.3.1 (2026-05-23)
 - Fixed: event timestamps displayed 4h ahead on EDT — Docker/Mint server runs in UTC so `datetime.now()` was UTC; client now always sends `timestamp: localISOString()` in the POST body, server no longer generates timestamps
 - Fixed: `since=` filter in history used `toISOString()` (UTC midnight) instead of local midnight

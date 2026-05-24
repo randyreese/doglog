@@ -13,9 +13,11 @@
 ## Key files
 - `backend/main.py` — FastAPI app, migration startup, seeds Tess + Pickles on first run
 - `backend/models.py` — full data model (all 8 tables)
-- `backend/routers/` — dogs, events, status
+- `backend/routers/` — dogs, events, status (includes /history/ endpoint)
+- `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: History nav, backend URL (tappable), build timestamp
 - `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, history
 - `mobile/src/pages/HealthPage.jsx` — Health tab shell (Sprint 3)
+- `mobile/src/pages/HistoryPage.jsx` — 7-day poo/pee grid per dog
 - `mobile/src/SyncContext.jsx` — sync orchestration, syncInProgressRef guard, syncVersion counter
 - `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queueEvent, deleteEvent
 - `mobile/src/api.js` — api.get/post/delete, localGet offline fallback
@@ -72,7 +74,10 @@ to the Dexie offline store.
 - Meals: stepped carousel 0/25/50/75/100%, default 100
 - Pickles: track_pee = False (pee column always shows —)
 - Signal dot: white circle background so it's visible against blue header
-- Build timestamp visible on connect screen (hamburger → connect) for version verification
+- Timestamp format: "ddd h:mma" e.g. "Sun 8:49am" — day prefix matters for multi-day history context
+- Hamburger menu: slide-out drawer (not a route). Backend URL is tappable → ConnectPage (reconfigure only).
+  ConnectPage is first-run setup only — not a named menu item. Build date+time shown in footer.
+- History screen: rolling 7-day grid; poo=0 highlighted red (health signal)
 
 ## ConnectPage URL
 Enter `https://mint.local` (NOT `https://mint.local/doglog`). ConnectPage appends
@@ -98,5 +103,7 @@ Dogs are configurable — no hardcoding beyond the seed.
   so history shows queued events immediately without a sync
 - `deleteEvent` in sync.js handles both queued (remove from eventQueue + db.events) and
   synced (server DELETE + db.events) events; always removes locally regardless
-- `api.js localGet` matches `/events/` with `startsWith` to handle `?since=` query params
+- `api.js localGet` applies the `since=` query param when filtering `db.events` offline — uses
+  `db.events.where('timestamp').aboveOrEqual(since)` (timestamp is indexed). Without this, the
+  offline fallback returns all historical events, defeating the today-only filter on Walk tab.
 - `refreshQueueCount()` must be called after log AND delete to keep badge accurate

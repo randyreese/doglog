@@ -192,15 +192,14 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-**Sprint 2 — History screen + hamburger menu** *(2026-05-24)*
+**Sprint 2 — History screen + hamburger menu** ✓ COMPLETE *(2026-05-24)*
 
-- [ ] Backend: `/doglog/history/?days=7` endpoint — daily pee/poo counts per dog
-- [ ] Frontend: HamburgerMenu slide-out component (replaces direct nav to ConnectPage).
-      Items: History (→ /history), divider, backend URL (tappable → ConnectPage for
-      reconfigure only), build date+time (static). Tap outside or × to close.
-- [ ] Frontend: HistoryPage — 7-day grid, one section per dog, color-coded poo counts (0=red)
-- [ ] Frontend: wire /history route in App.jsx
-- [ ] Deploy + verify on device
+- [x] Backend: `/doglog/history/?days=7` endpoint — rolling daily pee/poo counts per dog
+- [x] Frontend: HamburgerMenu slide-out (History nav, backend URL + build date+time footer)
+- [x] Frontend: HistoryPage — 7-day grid per dog, poo=0 highlighted red
+- [x] Frontend: /history route wired in App.jsx
+- [x] api.js localGet: apply since= filter offline (Walk tab today-only fix)
+- [x] WalkPage: timestamp format changed to "ddd h:mma" (e.g. "Sun 8:49am")
 
 ---
 
