@@ -161,8 +161,8 @@ function HistoryRow({ event, dogName, checked, onCheck }) {
 }
 
 const hr = {
-  row: { display: 'flex', alignItems: 'center', padding: '8px 12px', border: '1px solid #e8e8e8', background: '#fff', marginBottom: 2, borderRadius: 4 },
-  timeBlock: { width: 52, flexShrink: 0, display: 'flex', flexDirection: 'column' },
+  row: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', border: '1px solid #e8e8e8', background: '#fff', marginBottom: 2, borderRadius: 4 },
+  timeBlock: { width: 68, flexShrink: 0, display: 'flex', flexDirection: 'column' },
   day: { fontSize: 11, color: '#999', lineHeight: '1.3' },
   time: { fontSize: 14, color: '#555', lineHeight: '1.3' },
   label: { flex: 1, fontSize: 15, color: '#1a202c', textTransform: 'capitalize' },
