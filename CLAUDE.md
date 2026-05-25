@@ -13,14 +13,16 @@
 ## Key files
 - `backend/main.py` — FastAPI app, migration startup, seeds Tess + Pickles on first run
 - `backend/models.py` — full data model (all 8 tables)
-- `backend/routers/` — dogs, events, status (includes /history/ endpoint)
+- `backend/routers/` — dogs, events, status, health (all routers)
+- `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/; photos as base64 in/out, LargeBinary in DB
 - `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: History nav, backend URL (tappable), build timestamp
 - `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, history
-- `mobile/src/pages/HealthPage.jsx` — Health tab shell (Sprint 3)
+- `mobile/src/pages/HealthPage.jsx` — Health tab: type picker (slide-up sheet), edit sheet (notes + photo + lightbox), offline queue
 - `mobile/src/pages/HistoryPage.jsx` — 7-day poo/pee grid per dog
-- `mobile/src/SyncContext.jsx` — sync orchestration, syncInProgressRef guard, syncVersion counter
-- `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queueEvent, deleteEvent
-- `mobile/src/api.js` — api.get/post/delete, localGet offline fallback
+- `mobile/src/SyncContext.jsx` — sync orchestration, syncInProgressRef guard, syncVersion counter, queue badge (both queues)
+- `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queueEvent/deleteEvent, queueHealthEvent/deleteHealthEvent
+- `mobile/src/api.js` — api.get/post/patch/delete, localGet offline fallback (events + health-events)
+- `mobile/src/db.js` — Dexie v2: dogs, events, eventQueue, meta, healthEvents, healthQueue
 - `mobile/vite.config.js` — proxy config, PWA manifest (scope: /doglog/), build timestamp
 - `mobile/scripts/generate-icons.cjs` — generates PWA icons (run once, outputs to public/icons/)
 
@@ -34,7 +36,21 @@
 
 Three-segment flex layout: `[timeBlock] [label] [checkbox]`. Row uses `gap: 8`.
 Time block: `width: 68, flexShrink: 0, flexDirection: column` — day abbrev (`fontSize: 11, color: '#999'`) stacked over time string (`fontSize: 14, color: '#555'`).
-Health tab rows extend this: same time block, label segment adds `…` button and notes preview.
+Health tab rows extend this: same time block, label segment (`flex:1, flexDirection:column`) holds main line + italic notes preview; `…` button between label and checkbox.
+
+## Health tab design decisions
+
+- Photo add is post-log only (via `…` edit sheet, not on main log screen) — you log first, then annotate
+- History is unfiltered (no date cutoff) — all events shown for vet reference; filtering deferred to Sprint 3B
+- Bottom sheet type picker: full-screen overlay, sheet slides from bottom, `^` button opens it
+- Photo compressed client-side before upload: max 1200px, JPEG 0.85 — avoids nginx 1MB body limit
+- Photo stored as LargeBinary in SQLite, transported as base64 string in JSON
+- Lightbox on thumbnail tap: fixed full-screen overlay, tap to dismiss
+
+## Edit sheet pattern (reusable for Meals)
+
+Slide-up overlay (same `sh.overlay` / `sh.sheet` style as type picker). Contains:
+textarea for notes, photo thumbnail (tappable → lightbox), file input (`accept="image/*"` — no `capture`, gives camera+library chooser on Android), Save/Cancel. Error state shown inline on save failure.
 
 ## Duplicate event prevention
 
@@ -113,9 +129,11 @@ Dogs are configurable — no hardcoding beyond the seed.
 ## Offline patterns
 - `queueEvent` writes to both `db.eventQueue` AND `db.events` (same timestamp, local ISO format)
   so history shows queued events immediately without a sync
-- `deleteEvent` in sync.js handles both queued (remove from eventQueue + db.events) and
-  synced (server DELETE + db.events) events; always removes locally regardless
+- `queueHealthEvent` same pattern — writes to `db.healthQueue` AND `db.healthEvents`
+- `deleteEvent` / `deleteHealthEvent` handle both queued (remove from queue + local store) and
+  synced (server DELETE + local store) events; always removes locally regardless
 - `api.js localGet` applies the `since=` query param when filtering `db.events` offline — uses
   `db.events.where('timestamp').aboveOrEqual(since)` (timestamp is indexed). Without this, the
   offline fallback returns all historical events, defeating the today-only filter on Walk tab.
-- `refreshQueueCount()` must be called after log AND delete to keep badge accurate
+- Health events offline fallback: `db.healthEvents.orderBy('timestamp').reverse().limit(50)` — no since filter (health history is always unfiltered)
+- `refreshQueueCount()` counts both `db.eventQueue` and `db.healthQueue` — call after log AND delete to keep badge accurate

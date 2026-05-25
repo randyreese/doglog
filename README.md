@@ -5,7 +5,7 @@ Daily dog care tracking — mobile PWA + desktop app.
 ## What it does
 
 - **Walk tab**: Log pee/poo events per dog with one tap. Status matrix shows time-since and count-today for each dog, replacing the fridge whiteboard.
-- **Health tab**: Log vomit, diarrhea, other events with camera *(Sprint 3)*
+- **Health tab**: Log health events (6 types), add notes + photo post-log via edit sheet. History unfiltered for vet reference.
 - **Meals tab**: Track food consumption % per meal slot *(Sprint 4)*
 - **Desktop**: Milestones, vet visits, weight log, dry food reorder *(Sprint 6+)*
 - **Google Sheets**: Daily export for vet log, one-time history import *(Sprint 9-10)*
@@ -43,6 +43,15 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 ---
 
 ## Version History
+
+### v0.5.0 (2026-05-24)
+- New: Health tab fully implemented — 6-type slide-up picker (^), dog carousel, LOG button
+- New: Health history rows — stacked time block, notes preview, `…` edit sheet (notes + photo via PATCH)
+- New: Photo storage — blob in SQLite, base64 over the wire, compressed client-side to max 1200px / JPEG 0.85 before upload
+- New: Tap photo thumbnail in edit sheet to view full screen (lightbox)
+- New: Offline queue support for health events (same pattern as pee/poo)
+- New: Sync includes health events; queue badge counts both queues
+- Sprint plan hygiene: Sessions 2–5 consolidated into Sprint 2; letter-suffix convention for unplanned sprints
 
 ### v0.4.1 (2026-05-24)
 - Fixed: duplicate events on Walk tab — server now enforces UNIQUE(dog_id, type, timestamp); migration deduplicates existing rows; server returns existing event on conflict (idempotent POST)

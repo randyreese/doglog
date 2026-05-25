@@ -133,6 +133,22 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Sprint 3 — Health events tab** ✓ COMPLETE *(2026-05-24)*
+
+- [x] Backend: POST/GET `/doglog/health-events/` — dog_id, type, timestamp, notes, photo (blob)
+- [x] Backend: PATCH `/doglog/health-events/{id}` — edit notes + photo post-log
+- [x] Backend: DELETE `/doglog/health-events/{id}`
+- [x] Mobile: HealthPage — dog carousel, type slide-up bottom sheet picker (6 types, ^ button), LOG button
+- [x] Mobile: Health history rows — stacked time block + dog + type + notes preview + `…` + checkbox
+- [x] Mobile: `…` edit sheet — free-text comment, photo (camera or library), lightbox on tap; saves via PATCH
+- [x] Mobile: offline queue support for health events (same pattern as pee/poo)
+- [x] Mobile: sync includes health events (syncFromBackend clears + repopulates)
+- [x] Mobile: photo compressed client-side (max 1200px, JPEG 0.85) before upload — avoids nginx body limit
+- [x] Mobile: queue badge counts both pee/poo and health queues
+- [x] Delete AdversePage.jsx (orphaned dead code)
+- [x] Design: photo add lives in edit sheet only (post-log) — not on main log screen
+- [x] Design: Health history unfiltered (no date cutoff) — all events shown for vet reference
+
 **Sprint 2 — Deploy + stabilization** ✓ COMPLETE *(2026-05-22 → 2026-05-24)*
 
 - [x] Walk tab UI overhaul: history fills middle, carousels + LOG at bottom
@@ -187,24 +203,7 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-**Sprint 3 — Health events tab**
-
-Goal: Implement HealthPage — log health events with type picker, optional photo, and comment. History rows share the stacked-time row design established in Walk tab.
-
-Design decisions to resolve:
-- [ ] Bottom sheet: slide-up overlay or inline dropdown?
-- [ ] Photo: capture-only at log time, or allow library pick too?
-
-Stories:
-- [ ] Backend: POST/GET `/doglog/health-events/` — dog_id, type, timestamp, notes, photo (blob)
-- [ ] Backend: PATCH `/doglog/health-events/{id}` — edit notes + photo post-log
-- [ ] Backend: DELETE `/doglog/health-events/{id}`
-- [ ] Mobile: HealthPage — dog carousel, type bottom sheet picker (6 types), LOG button
-- [ ] Mobile: Health history rows — stacked time block + dog + type + notes preview + `…` + checkbox
-- [ ] Mobile: `…` edit sheet — free-text comment, optional photo; saves via PATCH
-- [ ] Mobile: offline queue support for health events (same pattern as pee/poo)
-- [ ] Mobile: sync includes health events (syncFromBackend clears + repopulates)
-- [ ] Delete AdversePage.jsx (orphaned dead code)
+*(empty — pull from backlog at next session start)*
 
 ---
 
@@ -250,7 +249,13 @@ Stories:
    Daily export job: write to current month tab in new sheet format. Summary tab.
    Depends on: Sprint 9 (sheet format established)
 
-8. **Stretch — Raspberry Pi fridge display**
+8. **Sprint 3B — Health tab filtering**
+   Health history currently shows all events (no date filter) — correct for vet reference.
+   Review whether date range filtering or search is ever needed. Low priority; only add if
+   history grows unwieldy in practice.
+   Depends on: Sprint 3
+
+9. **Stretch — Raspberry Pi fridge display**
     Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.
     Depends on: Sprint 1 (`/api/status` endpoint)
 
@@ -261,7 +266,7 @@ Stories:
 - [ ] Status matrix color thresholds: what elapsed times trigger yellow/red per event type? (defaults: pee 4h/6h, poo 8h/12h — confirm after field use)
 - [ ] Google Sheets existing data: what columns/tabs does the current sheet use? (needed for import script)
 - [ ] Meal slots: am/pm only, or more granular (breakfast/lunch/dinner/snack)?
-- [ ] Photo storage: store on Mint filesystem (path in DB), or encode in DB?
+- [x] Photo storage: blob in SQLite, base64 over the wire, compressed to max 1200px client-side before upload
 
 ## Sprint 1 Deployment Checklist Note
 
