@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { queueHealthEvent, deleteHealthEvent, localISOString } from '../sync'
 import { useSyncContext } from '../SyncContext'
 import { useConfig } from '../ConfigContext'
 import HamburgerMenu from '../components/HamburgerMenu'
+import SwipeableRow from '../components/SwipeableRow'
 
 function fmtTime(isoTs) {
   if (!isoTs) return { date: '—', time: '—' }
@@ -42,42 +44,36 @@ function fileToBase64(file) {
 }
 
 // ── History row ───────────────────────────────────────────────────────────────
-function HealthRow({ event, dogName, typeLabel, checked, onCheck, onEdit }) {
+function HealthRow({ event, dogName, typeLabel, onDelete, onEdit }) {
   const { date, time } = fmtTime(event.timestamp)
   const canEdit = !event._queued
   return (
-    <div
-      style={{ ...hr.row, cursor: canEdit ? 'pointer' : 'default' }}
-      onClick={() => canEdit && onEdit(event)}
-    >
-      <div style={hr.timeBlock}>
-        <span style={hr.date}>{date}</span>
-        <span style={hr.time}>{time}</span>
+    <SwipeableRow onDelete={onDelete}>
+      <div
+        style={{ ...hr.row, cursor: canEdit ? 'pointer' : 'default' }}
+        onClick={() => canEdit && onEdit(event)}
+      >
+        <div style={hr.timeBlock}>
+          <span style={hr.date}>{date}</span>
+          <span style={hr.time}>{time}</span>
+        </div>
+        <div style={hr.label}>
+          <span style={hr.labelMain}>{dogName}: {typeLabel}</span>
+          {event.notes ? <span style={hr.notes}>{event.notes}</span> : null}
+        </div>
       </div>
-      <div style={hr.label}>
-        <span style={hr.labelMain}>{dogName}: {typeLabel}</span>
-        {event.notes ? <span style={hr.notes}>{event.notes}</span> : null}
-      </div>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={e => onCheck(event.id, e.target.checked)}
-        onClick={e => e.stopPropagation()}
-        style={hr.check}
-      />
-    </div>
+    </SwipeableRow>
   )
 }
 
 const hr = {
-  row: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', border: '1px solid #e8e8e8', background: '#fff', marginBottom: 2, borderRadius: 4 },
+  row: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', border: '1px solid #e8e8e8', background: '#fff' },
   timeBlock: { width: 68, flexShrink: 0, display: 'flex', flexDirection: 'column' },
   date: { fontSize: 11, color: '#999', lineHeight: '1.3' },
   time: { fontSize: 14, color: '#555', lineHeight: '1.3' },
   label: { flex: 1, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 },
   labelMain: { fontSize: 15, color: '#1a202c' },
   notes: { fontSize: 12, color: '#888', fontStyle: 'italic', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  check: { width: 22, height: 22, cursor: 'pointer', accentColor: '#5b8dd9', flexShrink: 0 },
 }
 
 // ── Type picker row (opens bottom sheet) ─────────────────────────────────────
@@ -195,10 +191,11 @@ function EditSheet({ event, open, onClose, onSave }) {
           rows={3}
         />
 
-        {lightbox && (
+        {lightbox && createPortal(
           <div style={ed.lightbox} onClick={() => setLightbox(false)}>
             <img src={photoSrc} alt="full size" style={ed.lightboxImg} />
-          </div>
+          </div>,
+          document.body
         )}
 
         <div style={ed.photoSection}>
@@ -331,7 +328,6 @@ export default function HealthPage() {
   const [dogIdx, setDogIdx] = useState(0)
   const [selectedType, setSelectedType] = useState('')
   const [events, setEvents] = useState([])
-  const [checked, setChecked] = useState({})
   const [logging, setLogging] = useState(false)
   const [typeSheetOpen, setTypeSheetOpen] = useState(false)
   const [editEvent, setEditEvent] = useState(null)
@@ -378,12 +374,8 @@ export default function HealthPage() {
     }
   }
 
-  async function handleDelete() {
-    const ids = Object.entries(checked).filter(([, v]) => v).map(([k]) => parseInt(k))
-    for (const id of ids) {
-      await deleteHealthEvent(id)
-    }
-    setChecked({})
+  async function handleDeleteSingle(id) {
+    await deleteHealthEvent(id)
     await refreshQueueCount()
     await loadEvents()
   }
@@ -408,7 +400,6 @@ export default function HealthPage() {
   })
 
   const typeMap = Object.fromEntries((healthTypes || []).map(t => [t.value, t.label]))
-  const anyChecked = Object.values(checked).some(Boolean)
   const signalColor = signal === 'good' ? '#2f855a' : signal === 'weak' ? '#d97706' : '#e53e3e'
   const signalLabel = signal === 'good' ? '●' : signal === 'weak' ? '◑' : '○'
   const currentTypeLabel = typeMap[selectedType] || selectedType
@@ -439,8 +430,7 @@ export default function HealthPage() {
               event={ev}
               dogName={dogMap[ev.dog_id] || '?'}
               typeLabel={typeMap[ev.type] || ev.type}
-              checked={!!checked[ev.id]}
-              onCheck={(id, val) => setChecked(prev => ({ ...prev, [id]: val }))}
+              onDelete={() => handleDeleteSingle(ev.id)}
               onEdit={setEditEvent}
             />
           ))}
@@ -450,13 +440,6 @@ export default function HealthPage() {
             </div>
           )}
         </div>
-
-        {/* Delete button */}
-        {anyChecked && (
-          <div style={p.deleteRow}>
-            <button style={p.deleteBtn} onClick={handleDelete}>Delete selected</button>
-          </div>
-        )}
 
         {/* Dog carousel */}
         {dogs.length > 0 ? (

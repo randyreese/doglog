@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import SwipeableRow from '../components/SwipeableRow'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { queueEvent, deleteEvent, localISOString } from '../sync'
@@ -141,7 +142,7 @@ const cs = {
 }
 
 // ── History row ───────────────────────────────────────────────────────────────
-function HistoryRow({ event, dogName, checked, onCheck }) {
+function HistoryRow({ event, dogName, onDelete }) {
   const d = new Date(event.timestamp)
   const day = DAYS[d.getDay()]
   let h = d.getHours(), m = d.getMinutes()
@@ -150,24 +151,24 @@ function HistoryRow({ event, dogName, checked, onCheck }) {
   const timeStr = `${h}:${String(m).padStart(2, '0')}${ampm}`
 
   return (
-    <div style={hr.row}>
-      <div style={hr.timeBlock}>
-        <span style={hr.day}>{day}</span>
-        <span style={hr.time}>{timeStr}</span>
+    <SwipeableRow onDelete={onDelete}>
+      <div style={hr.row}>
+        <div style={hr.timeBlock}>
+          <span style={hr.day}>{day}</span>
+          <span style={hr.time}>{timeStr}</span>
+        </div>
+        <span style={hr.label}>{dogName}: {EVENT_TYPE_LABELS[event.type] || event.type}</span>
       </div>
-      <span style={hr.label}>{dogName}: {EVENT_TYPE_LABELS[event.type] || event.type}</span>
-      <input type="checkbox" checked={checked} onChange={e => onCheck(event.id, e.target.checked)} style={hr.check} />
-    </div>
+    </SwipeableRow>
   )
 }
 
 const hr = {
-  row: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', border: '1px solid #e8e8e8', background: '#fff', marginBottom: 2, borderRadius: 4 },
+  row: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', border: '1px solid #e8e8e8', background: '#fff' },
   timeBlock: { width: 68, flexShrink: 0, display: 'flex', flexDirection: 'column' },
   day: { fontSize: 11, color: '#999', lineHeight: '1.3' },
   time: { fontSize: 14, color: '#555', lineHeight: '1.3' },
   label: { flex: 1, fontSize: 15, color: '#1a202c', textTransform: 'capitalize' },
-  check: { width: 22, height: 22, cursor: 'pointer', accentColor: '#5b8dd9' },
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -180,7 +181,6 @@ export default function WalkPage() {
   const [eventIdx, setEventIdx] = useState(0)
   const [events, setEvents] = useState([])
   const [status, setStatus] = useState([])
-  const [checked, setChecked] = useState({})
   const [logging, setLogging] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -231,22 +231,13 @@ export default function WalkPage() {
     }
   }
 
-  async function handleDelete() {
-    const ids = Object.entries(checked).filter(([, v]) => v).map(([k]) => parseInt(k))
-    for (const id of ids) {
-      await deleteEvent(id)
-    }
-    setChecked({})
+  async function handleDeleteSingle(id) {
+    await deleteEvent(id)
     await refreshQueueCount()
     await loadEvents()
     await loadStatus()
   }
 
-  function toggleCheck(id, val) {
-    setChecked(prev => ({ ...prev, [id]: val }))
-  }
-
-  const anyChecked = Object.values(checked).some(Boolean)
   const dogMap = Object.fromEntries(dogs.map(d => [d.id, d.name]))
 
   const signalColor = signal === 'good' ? '#2f855a' : signal === 'weak' ? '#d97706' : '#e53e3e'
@@ -277,19 +268,11 @@ export default function WalkPage() {
             key={ev.id}
             event={ev}
             dogName={dogMap[ev.dog_id] || '?'}
-            checked={!!checked[ev.id]}
-            onCheck={toggleCheck}
+            onDelete={() => handleDeleteSingle(ev.id)}
           />
         ))}
         {events.length === 0 && <div style={p.empty}>No events today</div>}
       </div>
-
-      {/* Delete button */}
-      {anyChecked && (
-        <div style={p.deleteRow}>
-          <button style={p.deleteBtn} onClick={handleDelete}>Delete selected</button>
-        </div>
-      )}
 
       {/* Dog carousel */}
       {dogs.length > 0 ? (
