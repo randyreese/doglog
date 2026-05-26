@@ -21,6 +21,7 @@
 - `backend/meal_ingredients.ini` — user-editable ingredient checklist items
 - `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients; fetched once at startup, cached in localStorage, refreshed on sync
 - `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: History nav, backend URL (tappable), build timestamp
+- `mobile/src/components/SwipeableRow.jsx` — swipe-left-to-delete wrapper; used on Walk + Health history rows
 - `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, history; dogs from ConfigContext
 - `mobile/src/pages/HealthPage.jsx` — Health tab: filter bar (date/dog/type), row-tap edit sheet, type list from ConfigContext
 - `mobile/src/pages/MealsPage.jsx` — Meals tab: date pager, per-dog slot grids, tap-to-edit with % chips + notes + ingredients
@@ -41,9 +42,13 @@
 
 ## History row design (Walk + Health shared pattern)
 
-Three-segment flex layout: `[timeBlock] [label] [checkbox]`. Row uses `gap: 8`.
+Three-segment flex layout: `[timeBlock] [label]`. Row uses `gap: 8`. Wrapped in `SwipeableRow` — swipe left to reveal red Delete button, tap to confirm.
 Time block: `width: 68, flexShrink: 0, flexDirection: column` — `mm/dd/yy` date (`fontSize: 11, color: '#999'`) stacked over time string (`fontSize: 14, color: '#555'`).
-Health tab rows: same time block, label segment (`flex:1, flexDirection:column`) holds main line + italic notes preview. Row tap opens edit sheet (no `…` button). Checkbox has `stopPropagation`.
+Health tab rows: same time block, label segment (`flex:1, flexDirection:column`) holds main line + italic notes preview. Row tap opens edit sheet.
+
+## SwipeableRow pattern
+
+`mobile/src/components/SwipeableRow.jsx` — reusable swipe-to-delete wrapper. Tracks touch delta, reveals 80px red Delete zone past 72px threshold, snaps back otherwise. Suppresses child `onClick` when tapping to dismiss a revealed delete zone (via `suppressNextClick` ref). Apply `marginBottom: 2, borderRadius: 4` on the outer SwipeableRow wrapper — remove from the inner row style.
 
 ## Health tab design decisions
 

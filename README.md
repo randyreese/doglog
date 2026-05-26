@@ -44,6 +44,17 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v0.7.0 (2026-05-26)
+- New: Swipe left to delete on Walk and Health tabs — replaces checkbox delete; swipe reveals red Delete button, tap to confirm; snap-back if threshold not met
+- New: `SwipeableRow` shared component (`mobile/src/components/SwipeableRow.jsx`)
+- Fixed: Lightbox photo now fills full screen correctly — was clipped to edit sheet due to `position:fixed` inside `transform`. Fixed with `ReactDOM.createPortal` to `document.body`
+- Fixed: `flushQueue` no longer deletes queue entries on 5xx responses — `fetch()` resolves on 502 without throwing; added `res.ok` check before delete across all three queues (events, health, meals). Same fix applied to grow
+- Fixed: nginx `proxy_pass` changed from `localhost` to `127.0.0.1` — after clean reboot Linux resolves `localhost` to `::1` (IPv6) but Docker only binds IPv4; caused all requests to 502 after power outage
+- New: ConnectPage pre-fills `https://mint.local` on fresh install
+- New: `mint.local` dashboard — landing page at `https://mint.local/` with prod app links + container start times + dev step instructions
+- New: `/doglog/version` endpoint returns container start time
+- New: `docs/android-site-settings-shortcut.md` — plain-English guide to the Chrome Site Settings shortcut for PWA cache management
+
 ### v0.6.0 (2026-05-25)
 - New: Meals tab — date pager (← Mon May 25 →), per-dog slot grids built from `meal_slots.ini`; tap any row to open edit sheet
 - New: Meal edit sheet — % chips (0/25/50/75/100), notes, ingredient checklist (from `meal_ingredients.ini`); upsert by (dog, slot, date)

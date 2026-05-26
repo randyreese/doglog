@@ -133,6 +133,17 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Sprint 4b — Maintenance + polish** ✓ COMPLETE *(2026-05-26)*
+- [x] Fixed: nginx `proxy_pass localhost` → `127.0.0.1` — after reboot Linux resolves localhost to ::1 (IPv6) but Docker only binds IPv4; caused all requests to 502 after power outage
+- [x] Fixed: `flushQueue` deleting queue entries on 5xx — `fetch()` resolves on 502 without throwing; all three queues (events, health, meals) now check `res.ok` before delete
+- [x] Fixed: lightbox photo now fills full screen — `position:fixed` inside `transform` was clipping it; fixed with `createPortal` to `document.body`
+- [x] New: swipe-to-delete on Walk and Health tabs — replaces checkbox; `SwipeableRow` shared component
+- [x] New: ConnectPage pre-fills `https://mint.local` on fresh install
+- [x] New: `mint.local` dashboard — app links with container start times + dev step instructions
+- [x] New: `/doglog/version` endpoint returns container start time
+- [x] New: `docs/android-site-settings-shortcut.md` — plain-English PWA cache management guide
+- [x] Infra: Samba mounts on Mint use `x-systemd.automount` + `nofail` — mounts on first access, not at boot
+
 **Sprint 4 — Meals tab + Health tab refinements** ✓ COMPLETE *(2026-05-25)*
 
 Health tab refinements:
