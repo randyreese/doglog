@@ -69,11 +69,12 @@ export async function flushQueue() {
   const entries = await db.eventQueue.toArray()
   for (const entry of entries) {
     try {
-      await fetch(`${base}/doglog/events/`, {
+      const res = await fetch(`${base}/doglog/events/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dog_id: entry.dog_id, type: entry.type, timestamp: entry.timestamp }),
       })
+      if (!res.ok) break
       await db.eventQueue.delete(entry.id)
     } catch {
       break
@@ -84,7 +85,7 @@ export async function flushQueue() {
   const healthEntries = await db.healthQueue.toArray()
   for (const entry of healthEntries) {
     try {
-      await fetch(`${base}/doglog/health-events/`, {
+      const res = await fetch(`${base}/doglog/health-events/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,6 +96,7 @@ export async function flushQueue() {
           photo: entry.photo,
         }),
       })
+      if (!res.ok) break
       await db.healthQueue.delete(entry.id)
     } catch {
       break
@@ -105,7 +107,7 @@ export async function flushQueue() {
   const mealEntries = await db.mealQueue.toArray()
   for (const entry of mealEntries) {
     try {
-      await fetch(`${base}/doglog/meal-logs/`, {
+      const res = await fetch(`${base}/doglog/meal-logs/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -117,6 +119,7 @@ export async function flushQueue() {
           ingredients: entry.ingredients,
         }),
       })
+      if (!res.ok) break
       await db.mealQueue.delete(entry.id)
     } catch {
       break
