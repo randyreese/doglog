@@ -78,3 +78,16 @@ class DryFood(Base):
     product = Column(String, nullable=False)
     purchase_date = Column(Date, nullable=False)
     weight_kg = Column(Float, nullable=True)
+
+
+class MealLog(Base):
+    __tablename__ = "meal_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    dog_id = Column(Integer, nullable=False)
+    slot = Column(String, nullable=False)       # key from meal_slots.ini
+    meal_date = Column(Date, nullable=False)
+    percent_consumed = Column(Integer, nullable=True)  # null=not logged, 0=skipped, 0-100
+    notes = Column(String, nullable=True)
+    ingredients = Column(String, nullable=True)  # JSON: {"kibble": true, "wet_food": false}
+
+    __table_args__ = (UniqueConstraint('dog_id', 'slot', 'meal_date', name='uq_meal_log'),)

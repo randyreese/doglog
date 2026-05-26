@@ -15,6 +15,9 @@ export default defineConfig({
       '/doglog/events': 'http://127.0.0.1:8001',
       '/doglog/status': 'http://127.0.0.1:8001',
       '/doglog/health': 'http://127.0.0.1:8001',
+      '/doglog/meal-slots': 'http://127.0.0.1:8001',
+      '/doglog/meal-ingredients': 'http://127.0.0.1:8001',
+      '/doglog/meal-logs': 'http://127.0.0.1:8001',
       '/doglog/lan-url': 'http://127.0.0.1:8001',
       '/doglog/connect-qr': 'http://127.0.0.1:8001',
     },
@@ -35,6 +38,7 @@ export default defineConfig({
         icons: [
           { src: '/doglog/icons/doglog-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/doglog/icons/doglog-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/doglog/icons/doglog.svg', sizes: 'any', type: 'image/svg+xml' },
         ],
       },
       workbox: {

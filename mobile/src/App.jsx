@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { getBackendUrl } from './api'
 import { SyncProvider } from './SyncContext'
+import { ConfigProvider } from './ConfigContext'
 import ConnectPage from './pages/ConnectPage'
 import WalkPage from './pages/WalkPage'
 import HealthPage from './pages/HealthPage'
@@ -14,6 +15,7 @@ function RequireBackend({ children }) {
 export default function App() {
   return (
     <SyncProvider>
+      <ConfigProvider>
       <HashRouter>
         <Routes>
           <Route path="/connect" element={<ConnectPage />} />
@@ -24,6 +26,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </HashRouter>
+      </ConfigProvider>
     </SyncProvider>
   )
 }

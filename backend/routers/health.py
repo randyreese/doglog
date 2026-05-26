@@ -4,12 +4,25 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import Optional
 import base64
+import configparser
+from pathlib import Path
 import models
 from database import get_db
 
 router = APIRouter()
 
-VALID_TYPES = {'vomit', 'diarrhea', 'grass_eating', 'stomach_gurgles', 'dry_heaves', 'other'}
+_INI_PATH = Path(__file__).parent.parent / 'health_types.ini'
+
+
+def _load_types() -> dict:
+    config = configparser.ConfigParser()
+    config.read(_INI_PATH)
+    return dict(config['types']) if 'types' in config else {}
+
+
+@router.get("/health-types")
+def get_health_types():
+    return [{"value": k, "label": v} for k, v in _load_types().items()]
 
 
 class HealthEventIn(BaseModel):
@@ -49,7 +62,7 @@ def _to_out(event) -> HealthEventOut:
 
 @router.post("/health-events/", response_model=HealthEventOut, status_code=201)
 def log_health_event(body: HealthEventIn, db: Session = Depends(get_db)):
-    if body.type not in VALID_TYPES:
+    if body.type not in _load_types():
         raise HTTPException(status_code=422, detail=f"Invalid type: {body.type}")
     dog = db.query(models.Dog).filter(models.Dog.id == body.dog_id).first()
     if not dog:

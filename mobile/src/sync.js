@@ -100,6 +100,28 @@ export async function flushQueue() {
       break
     }
   }
+
+  // Flush meal queue
+  const mealEntries = await db.mealQueue.toArray()
+  for (const entry of mealEntries) {
+    try {
+      await fetch(`${base}/doglog/meal-logs/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dog_id: entry.dog_id,
+          slot: entry.slot,
+          meal_date: entry.meal_date,
+          percent_consumed: entry.percent_consumed,
+          notes: entry.notes,
+          ingredients: entry.ingredients,
+        }),
+      })
+      await db.mealQueue.delete(entry.id)
+    } catch {
+      break
+    }
+  }
 }
 
 export function localISOString(d = new Date()) {
@@ -156,6 +178,11 @@ export async function queueHealthEvent({ dog_id, type, timestamp, notes, photo }
     photo: photo || null,
     _queued: true,
   })
+}
+
+export async function queueMealLog({ dog_id, slot, meal_date, percent_consumed, notes, ingredients }) {
+  await db.mealQueue.add({ dog_id, slot, meal_date, percent_consumed, notes, ingredients, created_at: localISOString() })
+  await db.mealLogs.put({ dog_id, slot, meal_date, percent_consumed, notes, ingredients, _queued: true })
 }
 
 export async function deleteHealthEvent(id) {

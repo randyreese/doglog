@@ -6,7 +6,7 @@ import socket as _socket, io as _io
 from alembic.config import Config
 from alembic import command
 import models  # noqa: F401
-from routers import dogs, events, status, health
+from routers import dogs, events, status, health, meals
 
 
 def _run_migrations():
@@ -68,6 +68,7 @@ app.include_router(dogs.router, prefix="/doglog")
 app.include_router(events.router, prefix="/doglog")
 app.include_router(status.router, prefix="/doglog")
 app.include_router(health.router, prefix="/doglog")
+app.include_router(meals.router, prefix="/doglog")
 
 
 @app.get("/doglog/health")

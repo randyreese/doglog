@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { queueEvent, deleteEvent, localISOString } from '../sync'
 import { useSyncContext } from '../SyncContext'
+import { useConfig } from '../ConfigContext'
 import HamburgerMenu from '../components/HamburgerMenu'
 
 // Color thresholds (hours elapsed)
@@ -173,8 +174,8 @@ const hr = {
 export default function WalkPage() {
   const nav = useNavigate()
   const { signal, queueCount, syncVersion, syncNow, refreshQueueCount } = useSyncContext()
+  const { dogs } = useConfig()
 
-  const [dogs, setDogs] = useState([])
   const [dogIdx, setDogIdx] = useState(0)
   const [eventIdx, setEventIdx] = useState(0)
   const [events, setEvents] = useState([])
@@ -182,13 +183,6 @@ export default function WalkPage() {
   const [checked, setChecked] = useState({})
   const [logging, setLogging] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-
-  const loadDogs = useCallback(async () => {
-    try {
-      const data = await api.get('/dogs/')
-      setDogs([...data].sort((a, b) => b.name.localeCompare(a.name)))
-    } catch { /* offline */ }
-  }, [])
 
   const loadEvents = useCallback(async () => {
     try {
@@ -207,10 +201,9 @@ export default function WalkPage() {
   }, [])
 
   useEffect(() => {
-    loadDogs()
     loadEvents()
     loadStatus()
-  }, [loadDogs, loadEvents, loadStatus])
+  }, [loadEvents, loadStatus])
 
   useEffect(() => {
     if (syncVersion === 0) return
