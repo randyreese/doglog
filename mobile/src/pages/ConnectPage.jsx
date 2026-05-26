@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getBackendUrl, setBackendUrl } from '../api'
 
 export default function ConnectPage() {
-  const [url, setUrl] = useState(getBackendUrl)
+  const [url, setUrl] = useState(() => getBackendUrl() || 'https://mint.local')
   const [status, setStatus] = useState('')
   const [connecting, setConnecting] = useState(false)
   const nav = useNavigate()
