@@ -44,6 +44,21 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v0.6.0 (2026-05-25)
+- New: Meals tab — date pager (← Mon May 25 →), per-dog slot grids built from `meal_slots.ini`; tap any row to open edit sheet
+- New: Meal edit sheet — % chips (0/25/50/75/100), notes, ingredient checklist (from `meal_ingredients.ini`); upsert by (dog, slot, date)
+- New: null = not yet logged (—), 0% = skipped (red), >0% = consumed (green)
+- New: Ingredients stored as JSON snapshot per record — history preserved when ini changes
+- New: Offline meal queue (mealQueue in Dexie v3); queue badge includes meal queue
+- New: `health_types.ini`, `meal_slots.ini`, `meal_ingredients.ini` — edit on Mint, no rebuild needed
+- New: ConfigContext — dogs + health types + meal slots + ingredients fetched once at startup, cached in localStorage, refreshed on sync; eliminates per-tab fetch delay
+- Changed: Health row tap opens edit sheet; `…` button removed
+- Changed: Health history rows show `mm/dd/yy` date instead of day abbreviation
+- Changed: Health filter bar — 7d/30d/90d/All date pills + dog chips + type picker (defaults to 30d)
+- Changed: Health lightbox fills full screen (was max 100% of container)
+- Changed: Health history limit increased to 200 records
+- New: PWA icon — dog emoji 🐶 SVG on blue background
+
 ### v0.5.0 (2026-05-24)
 - New: Health tab fully implemented — 6-type slide-up picker (^), dog carousel, LOG button
 - New: Health history rows — stacked time block, notes preview, `…` edit sheet (notes + photo via PATCH)

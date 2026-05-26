@@ -133,6 +133,29 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Sprint 4 — Meals tab + Health tab refinements** ✓ COMPLETE *(2026-05-25)*
+
+Health tab refinements:
+- [x] Health event types configurable via `health_types.ini` — edit on Mint, no rebuild
+- [x] ConfigContext: dogs + health types + meal slots + ingredients loaded once at startup, cached in localStorage, refreshed on sync
+- [x] WalkPage dogs from ConfigContext — eliminates per-tab fetch delay
+- [x] Health row tap opens edit sheet; `…` button removed
+- [x] Health row date format changed from day abbreviation to `mm/dd/yy`
+- [x] Lightbox fills full screen (`width: 100vw, height: 100vh`)
+- [x] Filter bar above history: 7d/30d/90d/All date pills + dog chips + type picker (defaults to 30d)
+- [x] Health history limit increased to 200 records
+
+Meals tab:
+- [x] Backend: `meal_logs` table + migration 0004 (unique on dog_id + slot + meal_date)
+- [x] Backend: `meal_slots.ini` + `meal_ingredients.ini` — configurable on server
+- [x] Backend: `GET /meal-slots`, `GET /meal-ingredients`, `GET /meal-logs/?meal_date=`, `POST /meal-logs/` (upsert)
+- [x] Mobile: MealsPage — date pager, per-dog slot grids from ini
+- [x] Mobile: Tap row → edit sheet: % chips (0/25/50/75/100) + notes + ingredient checklist
+- [x] Mobile: null = not logged (—), 0% = skipped (red), >0% = consumed (green)
+- [x] Mobile: ingredients stored as JSON snapshot per record
+- [x] Mobile: offline queue (mealQueue) + Dexie v3; queue badge includes meal queue
+- [x] PWA icon: dog emoji SVG on blue background
+
 **Sprint 3 — Health events tab** ✓ COMPLETE *(2026-05-24)*
 
 - [x] Backend: POST/GET `/doglog/health-events/` — dog_id, type, timestamp, notes, photo (blob)
@@ -211,11 +234,13 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 *Numbering convention: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream.*
 
-1. **Sprint 4 — Meals tab**
-   Spec complete (2026-05-22). Dog carousel, slot bottom sheet picker (meal_slots.json config),
-   % consumed carousel (default 100), ingredient checklist post-log via `…`.
-   History: one section per dog, cols = slot | % | … | ☐, scrollable.
-   Depends on: Sprint 1
+1. **Sprint 4a — Meals tab refinements**
+   After field use from Sprint 4. Two items to design together once patterns are clear:
+   - **Meal row indicators**: small visual flags on logged rows hinting at what's in the edit sheet
+     (e.g. notes dot, ingredient dot) — design after seeing what's actually useful in practice.
+   - **Exception/substitution handling**: how to record when a meal deviates from the default
+     (different ingredient, treat substitution, etc.) — design TBD from real use.
+   Depends on: Sprint 4
 
 2. **Sprint 5 — Medications**
    Config (desktop): add/edit medications per dog — name, dosage, frequency, start/end dates.

@@ -12,19 +12,26 @@
 
 ## Key files
 - `backend/main.py` — FastAPI app, migration startup, seeds Tess + Pickles on first run
-- `backend/models.py` — full data model (all 8 tables)
-- `backend/routers/` — dogs, events, status, health (all routers)
-- `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/; photos as base64 in/out, LargeBinary in DB
+- `backend/models.py` — full data model (MealLog + legacy placeholder tables)
+- `backend/routers/` — dogs, events, status, health, meals (all routers)
+- `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/; GET /health-types (reads ini); photos as base64 in/out, LargeBinary in DB
+- `backend/routers/meals.py` — GET /meal-slots, GET /meal-ingredients, GET/POST /meal-logs/ (upsert by dog+slot+date)
+- `backend/health_types.ini` — user-editable health event types; edit on Mint, no rebuild needed
+- `backend/meal_slots.ini` — user-editable meal slot names
+- `backend/meal_ingredients.ini` — user-editable ingredient checklist items
+- `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients; fetched once at startup, cached in localStorage, refreshed on sync
 - `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: History nav, backend URL (tappable), build timestamp
-- `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, history
-- `mobile/src/pages/HealthPage.jsx` — Health tab: type picker (slide-up sheet), edit sheet (notes + photo + lightbox), offline queue
+- `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, history; dogs from ConfigContext
+- `mobile/src/pages/HealthPage.jsx` — Health tab: filter bar (date/dog/type), row-tap edit sheet, type list from ConfigContext
+- `mobile/src/pages/MealsPage.jsx` — Meals tab: date pager, per-dog slot grids, tap-to-edit with % chips + notes + ingredients
 - `mobile/src/pages/HistoryPage.jsx` — 7-day poo/pee grid per dog
-- `mobile/src/SyncContext.jsx` — sync orchestration, syncInProgressRef guard, syncVersion counter, queue badge (both queues)
-- `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queueEvent/deleteEvent, queueHealthEvent/deleteHealthEvent
+- `mobile/src/SyncContext.jsx` — sync orchestration, syncInProgressRef guard, syncVersion counter, queue badge (all three queues)
+- `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queue/delete functions for all event types
 - `mobile/src/api.js` — api.get/post/patch/delete, localGet offline fallback (events + health-events)
-- `mobile/src/db.js` — Dexie v2: dogs, events, eventQueue, meta, healthEvents, healthQueue
+- `mobile/src/db.js` — Dexie v3: dogs, events, eventQueue, meta, healthEvents, healthQueue, mealLogs, mealQueue
 - `mobile/vite.config.js` — proxy config, PWA manifest (scope: /doglog/), build timestamp
-- `mobile/scripts/generate-icons.cjs` — generates PWA icons (run once, outputs to public/icons/)
+- `mobile/public/icons/doglog.svg` — dog emoji PWA icon (SVG, referenced in manifest)
+- `mobile/scripts/generate-icons.cjs` — generates solid-color PNG fallback icons
 
 ## Architecture & technique docs (canonical source: claude repo)
 
@@ -35,22 +42,32 @@
 ## History row design (Walk + Health shared pattern)
 
 Three-segment flex layout: `[timeBlock] [label] [checkbox]`. Row uses `gap: 8`.
-Time block: `width: 68, flexShrink: 0, flexDirection: column` — day abbrev (`fontSize: 11, color: '#999'`) stacked over time string (`fontSize: 14, color: '#555'`).
-Health tab rows extend this: same time block, label segment (`flex:1, flexDirection:column`) holds main line + italic notes preview; `…` button between label and checkbox.
+Time block: `width: 68, flexShrink: 0, flexDirection: column` — `mm/dd/yy` date (`fontSize: 11, color: '#999'`) stacked over time string (`fontSize: 14, color: '#555'`).
+Health tab rows: same time block, label segment (`flex:1, flexDirection:column`) holds main line + italic notes preview. Row tap opens edit sheet (no `…` button). Checkbox has `stopPropagation`.
 
 ## Health tab design decisions
 
-- Photo add is post-log only (via `…` edit sheet, not on main log screen) — you log first, then annotate
-- History is unfiltered (no date cutoff) — all events shown for vet reference; filtering deferred to Sprint 3B
+- Photo add is post-log only (via edit sheet, not on main log screen) — you log first, then annotate
+- History filtered by default to 30d; filter bar (7d/30d/90d/All + dog chips + type picker) always visible above list
+- Health event types driven from `health_types.ini` via ConfigContext — no hardcoded list in frontend
 - Bottom sheet type picker: full-screen overlay, sheet slides from bottom, `^` button opens it
 - Photo compressed client-side before upload: max 1200px, JPEG 0.85 — avoids nginx 1MB body limit
 - Photo stored as LargeBinary in SQLite, transported as base64 string in JSON
-- Lightbox on thumbnail tap: fixed full-screen overlay, tap to dismiss
+- Lightbox fills full screen: `width: 100vw, height: 100vh, objectFit: contain`
 
-## Edit sheet pattern (reusable for Meals)
+## Meals tab design decisions
 
-Slide-up overlay (same `sh.overlay` / `sh.sheet` style as type picker). Contains:
-textarea for notes, photo thumbnail (tappable → lightbox), file input (`accept="image/*"` — no `capture`, gives camera+library chooser on Android), Save/Cancel. Error state shown inline on save failure.
+- Date pager at top (← Mon May 25 →); forward disabled on today
+- Per-dog sections with all meal slots always shown (pre-built from `meal_slots.ini`) — no Log button, no carousels
+- null = not yet logged (shows —); 0% = explicitly skipped (shows red); >0% = consumed (shows green)
+- Tap any row → edit sheet: % chips [0][25][50][75][100] + notes textarea + ingredient checklist
+- Ingredients from `meal_ingredients.ini`; stored as JSON snapshot per record (preserves history when ini changes)
+- Offline: mealQueue + Dexie mealLogs; upsert on flush; queue badge includes meal queue
+- Desktop admin UI for ini-managed lists (health types, meal slots, ingredients) deferred to Sprint 6
+
+## Edit sheet pattern (Health + Meals)
+
+Slide-up overlay (`sh.overlay` / `sh.sheet`). Health: textarea + photo thumbnail (tappable → lightbox) + file input. Meals: % chips + textarea + ingredient checklist. Both: Save/Cancel, inline error on failure.
 
 ## Duplicate event prevention
 
