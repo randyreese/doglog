@@ -71,9 +71,18 @@ app.include_router(health.router, prefix="/doglog")
 app.include_router(meals.router, prefix="/doglog")
 
 
+from datetime import datetime as _dt
+_START_TIME = _dt.now()
+
+
 @app.get("/doglog/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/doglog/version")
+def version():
+    return {"app": "doglog", "started_at": _START_TIME.isoformat()}
 
 
 def _lan_ip() -> str:
