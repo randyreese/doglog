@@ -149,6 +149,7 @@ Dogs are configurable — no hardcoding beyond the seed.
   `ssh mini@mint.local "cd ~/doglog && docker compose up -d --build"`
 
 ## Offline patterns
+- Online POST success (walk + health) also writes the server response to `db.events` / `db.healthEvents` via `db.events.put(event)` — prevents history gap if connectivity drops immediately after a successful POST. Without this, the event appears in React state (status matrix) but is invisible to the Dexie offline fallback in the history rows.
 - `queueEvent` writes to both `db.eventQueue` AND `db.events` (same timestamp, local ISO format)
   so history shows queued events immediately without a sync
 - `queueHealthEvent` same pattern — writes to `db.healthQueue` AND `db.healthEvents`

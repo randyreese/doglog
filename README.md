@@ -44,6 +44,9 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v0.7.1 (2026-05-27)
+- Fixed: online-posted walk and health events now written to Dexie immediately after a successful POST — previously, if connectivity dropped after the POST succeeded, the event appeared in the status matrix (React state) but was missing from the history rows (which fall back to Dexie when offline)
+
 ### v0.7.0 (2026-05-26)
 - New: Swipe left to delete on Walk and Health tabs — replaces checkbox delete; swipe reveals red Delete button, tap to confirm; snap-back if threshold not met
 - New: `SwipeableRow` shared component (`mobile/src/components/SwipeableRow.jsx`)

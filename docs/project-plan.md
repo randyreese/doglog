@@ -133,7 +133,8 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
-**Sprint 4b — Maintenance + polish** ✓ COMPLETE *(2026-05-26)*
+**Sprint 4b — Maintenance + polish** ✓ COMPLETE *(2026-05-26 → 2026-05-27)*
+- [x] Fixed: online-posted walk and health events now written to Dexie immediately — previously, if connectivity dropped after a successful POST, the event appeared in the status matrix (React state) but was invisible in the history rows (offline fallback reads Dexie only)
 - [x] Fixed: nginx `proxy_pass localhost` → `127.0.0.1` — after reboot Linux resolves localhost to ::1 (IPv6) but Docker only binds IPv4; caused all requests to 502 after power outage
 - [x] Fixed: `flushQueue` deleting queue entries on 5xx — `fetch()` resolves on 502 without throwing; all three queues (events, health, meals) now check `res.ok` before delete
 - [x] Fixed: lightbox photo now fills full screen — `position:fixed` inside `transform` was clipping it; fixed with `createPortal` to `document.body`
@@ -237,7 +238,26 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-*(empty — pull from backlog at next session start)*
+**Sprint 4a — Meals refinements + history views**
+
+Goal: Add meal row indicators, retire the existing HistoryPage in favor of two purpose-built history views launched from their respective tabs.
+
+### Meal row indicators
+- [ ] Note icon on meal rows when notes field is non-empty
+- [ ] Exception icon on meal rows when any ingredient in the snapshot is `checked: false`
+- Note: exception icon will fire on all current records (ingredients currently default unchecked); becomes meaningful when Sprint 7 flips to default-checked
+
+### Walk history view
+- [ ] History button at bottom-left of Walk tab (far left of Log button)
+- [ ] New history route: dog filter chips (All | Tess | Pickles, default All), reverse-chronological pee/poo list, fixed 7-day window, fetched from server (LAN-only)
+- [ ] Remove History link from hamburger menu
+- [ ] Retire HistoryPage.jsx
+
+### Meals multi-day summary
+- [ ] Multi Day button at bottom-left of Meals tab (far left of Log button)
+- [ ] New multi-day route: dog chips (required selection, no All chip), fixed 30-day window, LAN-only (no offline cache)
+- [ ] One row per date, five narrow bars (one per slot): 100%=green, 25/50/75%=yellow, 0%=red, null=grey
+- [ ] Reverse sort, newest at top
 
 ---
 
@@ -245,55 +265,49 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 *Numbering convention: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream.*
 
-1. **Sprint 4a — Meals tab refinements**
-   After field use from Sprint 4. Two items to design together once patterns are clear:
-   - **Meal row indicators**: small visual flags on logged rows hinting at what's in the edit sheet
-     (e.g. notes dot, ingredient dot) — design after seeing what's actually useful in practice.
-   - **Exception/substitution handling**: how to record when a meal deviates from the default
-     (different ingredient, treat substitution, etc.) — design TBD from real use.
-   Depends on: Sprint 4
-
-2. **Sprint 5 — Medications**
-   Config (desktop): add/edit medications per dog — name, dosage, frequency, start/end dates.
-   Data model: add `medication_doses` table (dog_id, medication_id, timestamp) for dose events.
-   Logging (mobile): integrated into Meals tab — dose logging lives alongside meal logging.
-   Current use case: Pickles takes a GI med twice daily (morning + bedtime, with snacks).
-   Flea/tick prevention is managed offline — not in scope.
-   Vet report: dose history joins to medication config for dated medication records.
-   Design note: Meals tab UX will need care to stay crisp with medications added.
-   Depends on: Sprint 1, Sprint 4
-
-3. **Sprint 6 — Desktop scaffold + milestones**
+1. **Sprint 6 — Desktop scaffold + milestones**
    PySide6 desktop app, dog milestones (vet visits, weight log, notable trips).
    Include Pull Prod DB utility (SSH + docker cp pattern from grow) so migrations can be
    tested against real data locally before deploying. Add to Settings widget.
    Depends on: Sprint 1 (shared backend)
 
-4. **Sprint 7 — Desktop: dog config + meal composition**
-   Dog add/edit/archive, meal config with dated versions.
+2. **Sprint 7 — Desktop: dog config + meal composition + medication config**
+   Dog add/edit/archive, meal config with dated versions (ingredients default to checked from this point).
+   Medication builder: per-dog medications with flexible dose schedule labels (e.g. Morning / Afternoon / Evening — not hardcoded AM/PM), start/end dates, dosage.
    Depends on: Sprint 6
 
-5. **Sprint 8 — Desktop: dry food inventory**
+3. **Sprint 5 — Medications (mobile logging)**
+   Mobile: one row per medication at the bottom of each dog's section in the Meals tab.
+   Tap → detail sheet with dynamic dose checkboxes (labels from desktop config), default all checked; uncheck to record a missed dose.
+   Data model: `medication_doses` table (dog_id, medication_id, dose_date, doses_given JSON).
+   Flea/tick prevention managed offline — not in scope.
+   Depends on: Sprint 7 (medication config must exist before mobile logging is useful)
+
+4. **Sprint 8 — Desktop: dry food inventory**
    Dry food purchase log, consumption pattern, reorder schedule display.
    Depends on: Sprint 6
 
-6. **Sprint 9 — Google Sheets import**
+5. **Sprint 9 — Google Sheets import**
    One-time migration script: read existing Google Sheet, map to data model, import to SQLite.
    Depends on: Sprints 1–5 (full data model in place)
 
-7. **Sprint 10 — Google Sheets daily export**
+6. **Sprint 10 — Google Sheets daily export**
    Daily export job: write to current month tab in new sheet format. Summary tab.
    Depends on: Sprint 9 (sheet format established)
 
-8. **Sprint 3B — Health tab filtering**
+7. **Sprint 3B — Health tab filtering**
    Health history currently shows all events (no date filter) — correct for vet reference.
    Review whether date range filtering or search is ever needed. Low priority; only add if
    history grows unwieldy in practice.
    Depends on: Sprint 3
 
-9. **Stretch — Raspberry Pi fridge display**
-    Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.
-    Depends on: Sprint 1 (`/api/status` endpoint)
+8. **Stretch — Raspberry Pi fridge display**
+   Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.
+   Depends on: Sprint 1 (`/api/status` endpoint)
+
+## Maintenance Backlog
+
+- Prune pee/poo events older than 7 days on backend startup (one SQL DELETE in `main.py`)
 
 ---
 
