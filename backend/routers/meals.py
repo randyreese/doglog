@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from datetime import date
+from datetime import date, timedelta
 from typing import Optional
 import configparser
 import json
@@ -71,6 +71,22 @@ def list_meal_logs(meal_date: date = Query(...), db: Session = Depends(get_db)):
         _to_out(log)
         for log in db.query(models.MealLog)
         .filter(models.MealLog.meal_date == meal_date)
+        .all()
+    ]
+
+
+@router.get("/meal-logs/range/", response_model=list[MealLogOut])
+def list_meal_logs_range(
+    dog_id: int = Query(...),
+    days: int = Query(30),
+    db: Session = Depends(get_db),
+):
+    since = date.today() - timedelta(days=days - 1)
+    return [
+        _to_out(log)
+        for log in db.query(models.MealLog)
+        .filter(models.MealLog.dog_id == dog_id, models.MealLog.meal_date >= since)
+        .order_by(models.MealLog.meal_date.desc())
         .all()
     ]
 

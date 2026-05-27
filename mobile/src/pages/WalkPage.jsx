@@ -145,17 +145,17 @@ const cs = {
 // ── History row ───────────────────────────────────────────────────────────────
 function HistoryRow({ event, dogName, onDelete }) {
   const d = new Date(event.timestamp)
-  const day = DAYS[d.getDay()]
   let h = d.getHours(), m = d.getMinutes()
   const ampm = h >= 12 ? 'pm' : 'am'
   h = h % 12 || 12
   const timeStr = `${h}:${String(m).padStart(2, '0')}${ampm}`
+  const dateStr = `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(2)}`
 
   return (
     <SwipeableRow onDelete={onDelete}>
       <div style={hr.row}>
         <div style={hr.timeBlock}>
-          <span style={hr.day}>{day}</span>
+          <span style={hr.day}>{dateStr}</span>
           <span style={hr.time}>{timeStr}</span>
         </div>
         <span style={hr.label}>{dogName}: {EVENT_TYPE_LABELS[event.type] || event.type}</span>
@@ -184,6 +184,10 @@ export default function WalkPage() {
   const [status, setStatus] = useState([])
   const [logging, setLogging] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyDogId, setHistoryDogId] = useState(null)
+  const [historyEvents, setHistoryEvents] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
 
   const loadEvents = useCallback(async () => {
     try {
@@ -211,6 +215,24 @@ export default function WalkPage() {
     loadEvents()
     loadStatus()
   }, [syncVersion, loadEvents, loadStatus])
+
+  const loadHistoryEvents = useCallback(async () => {
+    setHistoryLoading(true)
+    try {
+      const since = new Date()
+      since.setDate(since.getDate() - 7)
+      since.setHours(0, 0, 0, 0)
+      let url = `/events/?since=${localISOString(since)}&limit=200`
+      if (historyDogId !== null) url += `&dog_id=${historyDogId}`
+      const data = await api.get(url)
+      setHistoryEvents(data)
+    } catch { /* LAN only */ }
+    finally { setHistoryLoading(false) }
+  }, [historyDogId])
+
+  useEffect(() => {
+    if (historyOpen) loadHistoryEvents()
+  }, [historyOpen, loadHistoryEvents])
 
   async function handleLog() {
     if (!dogs.length || logging) return
@@ -240,6 +262,13 @@ export default function WalkPage() {
     await loadStatus()
   }
 
+  async function handleDeleteHistory(id) {
+    await deleteEvent(id)
+    await refreshQueueCount()
+    await loadHistoryEvents()
+    await loadStatus()
+  }
+
   const dogMap = Object.fromEntries(dogs.map(d => [d.id, d.name]))
 
   const signalColor = signal === 'good' ? '#2f855a' : signal === 'weak' ? '#d97706' : '#e53e3e'
@@ -263,17 +292,34 @@ export default function WalkPage() {
       {/* Status strip */}
       <StatusStrip dogs={dogs} status={status} />
 
+      {/* Dog filter chips — only in history mode */}
+      {historyOpen && (
+        <div style={p.chipRow}>
+          <button style={{ ...p.chip, ...(historyDogId === null ? p.chipActive : {}) }} onClick={() => setHistoryDogId(null)}>All</button>
+          {dogs.map(dog => (
+            <button key={dog.id} style={{ ...p.chip, ...(historyDogId === dog.id ? p.chipActive : {}) }} onClick={() => setHistoryDogId(dog.id)}>{dog.name}</button>
+          ))}
+        </div>
+      )}
+
       {/* History — fills available space */}
       <div style={p.history}>
-        {events.map(ev => (
-          <HistoryRow
-            key={ev.id}
-            event={ev}
-            dogName={dogMap[ev.dog_id] || '?'}
-            onDelete={() => handleDeleteSingle(ev.id)}
-          />
-        ))}
-        {events.length === 0 && <div style={p.empty}>No events today</div>}
+        {historyOpen ? (
+          <>
+            {historyLoading && <div style={p.empty}>Loading…</div>}
+            {!historyLoading && historyEvents.map(ev => (
+              <HistoryRow key={ev.id} event={ev} dogName={dogMap[ev.dog_id] || '?'} onDelete={() => handleDeleteHistory(ev.id)} />
+            ))}
+            {!historyLoading && historyEvents.length === 0 && <div style={p.empty}>No events in last 7 days</div>}
+          </>
+        ) : (
+          <>
+            {events.map(ev => (
+              <HistoryRow key={ev.id} event={ev} dogName={dogMap[ev.dog_id] || '?'} onDelete={() => handleDeleteSingle(ev.id)} />
+            ))}
+            {events.length === 0 && <div style={p.empty}>No events today</div>}
+          </>
+        )}
       </div>
 
       {/* Dog carousel */}
@@ -296,8 +342,14 @@ export default function WalkPage() {
         onAdvance={() => setEventIdx(i => (i + 1) % EVENT_TYPES.length)}
       />
 
-      {/* Log button */}
+      {/* Action row */}
       <div style={p.logRow}>
+        <button
+          style={{ ...p.historyBtn, ...(historyOpen ? p.historyBtnActive : {}) }}
+          onClick={() => setHistoryOpen(o => !o)}
+        >
+          History
+        </button>
         <button
           style={{ ...p.logBtn, ...(logging || !dogs.length ? p.logBtnDisabled : {}) }}
           onClick={handleLog}
@@ -325,7 +377,12 @@ const p = {
   signalDot: { background: '#fff', borderRadius: '50%', width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 },
   queue: { background: '#e53e3e', color: '#fff', borderRadius: 10, fontSize: 12, padding: '1px 6px', fontWeight: 700 },
   loading: { padding: 16, textAlign: 'center', color: '#888', background: '#fff', borderBottom: '1px solid #e2e8f0' },
-  logRow: { display: 'flex', justifyContent: 'flex-end', padding: '10px 12px', background: '#f5f5f5' },
+  logRow: { display: 'flex', justifyContent: 'space-between', padding: '10px 12px', background: '#f5f5f5' },
+  historyBtn: { height: 52, padding: '0 16px', background: '#fff', color: '#5b8dd9', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: 'pointer' },
+  historyBtnActive: { background: '#5b8dd9', color: '#fff' },
+  chipRow: { display: 'flex', gap: 8, padding: '8px 12px', background: '#fff', borderBottom: '1px solid #e2e8f0', flexShrink: 0 },
+  chip: { padding: '6px 14px', borderRadius: 20, border: '1px solid #ccc', background: '#f5f5f5', fontSize: 14, color: '#555', cursor: 'pointer' },
+  chipActive: { background: '#5b8dd9', color: '#fff', borderColor: '#5b8dd9' },
   logBtn: { width: 100, height: 52, background: '#fff', color: '#000', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 20, fontWeight: 400, cursor: 'pointer' },
   logBtnDisabled: { opacity: 0.5, cursor: 'default' },
   history: { flex: 1, minHeight: 0, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },

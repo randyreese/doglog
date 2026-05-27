@@ -29,8 +29,6 @@ export default function HamburgerMenu({ onClose }) {
           <button style={s.close} onClick={onClose}>✕</button>
         </div>
 
-        <button style={s.item} onClick={() => go('/history')}>History</button>
-
         <div style={s.divider} />
 
         <button style={s.itemMeta} onClick={() => go('/connect')} title="Tap to reconfigure">

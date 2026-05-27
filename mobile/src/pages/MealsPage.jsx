@@ -27,6 +27,18 @@ function offsetDate(dateStr, days) {
   return localDateString(d)
 }
 
+function fmtShortDate(dateStr) {
+  const [, m, d] = dateStr.split('-').map(Number)
+  return `${m}/${d}`
+}
+
+function barColor(log) {
+  if (!log || log.percent_consumed === null || log.percent_consumed === undefined) return '#d1d5db'
+  if (log.percent_consumed === 0) return '#ef4444'
+  if (log.percent_consumed === 100) return '#22c55e'
+  return '#f59e0b'
+}
+
 // ── Edit sheet ────────────────────────────────────────────────────────────────
 function EditSheet({ target, open, mealIngredients, onClose, onSave }) {
   const [pct, setPct] = useState(100)
@@ -157,9 +169,15 @@ function MealRow({ slot, log, onTap }) {
   const logged = log && log.percent_consumed !== null && log.percent_consumed !== undefined
   const pctDisplay = logged ? `${log.percent_consumed}%` : '—'
   const isSkipped = logged && log.percent_consumed === 0
+  const hasNote = !!(log?.notes?.trim())
+  const hasException = logged && log.ingredients && Object.values(log.ingredients).some(v => v === false)
   return (
     <div style={mr.row} onClick={onTap}>
       <span style={mr.slot}>{slot.label}</span>
+      <span style={mr.icons}>
+        {hasNote && <span style={mr.noteIcon}>✎</span>}
+        {hasException && <span style={mr.exceptIcon}>!</span>}
+      </span>
       <span style={{ ...mr.pct, color: isSkipped ? '#e53e3e' : logged ? '#2f855a' : '#bbb' }}>
         {pctDisplay}
       </span>
@@ -170,7 +188,67 @@ function MealRow({ slot, log, onTap }) {
 const mr = {
   row: { display: 'flex', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #f0f0f0', background: '#fff', cursor: 'pointer' },
   slot: { flex: 1, fontSize: 15, color: '#1a202c' },
+  icons: { display: 'flex', gap: 4, marginRight: 8, alignItems: 'center' },
+  noteIcon: { fontSize: 14, color: '#5b8dd9', lineHeight: 1 },
+  exceptIcon: { width: 18, height: 18, background: '#fee2e2', color: '#e53e3e', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 },
   pct: { fontSize: 15, fontWeight: 600, width: 44, textAlign: 'right' },
+}
+
+// ── Multi-day summary ─────────────────────────────────────────────────────────
+function MultiDayView({ dogId, mealSlots }) {
+  const [logs, setLogs] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    setLoading(true)
+    api.get(`/meal-logs/range/?dog_id=${dogId}&days=30`)
+      .then(data => { setLogs(data); setLoading(false) })
+      .catch(() => { setLogs([]); setLoading(false) })
+  }, [dogId])
+
+  const byDate = {}
+  logs.forEach(log => {
+    if (!byDate[log.meal_date]) byDate[log.meal_date] = {}
+    byDate[log.meal_date][log.slot] = log
+  })
+
+  const dates = []
+  for (let i = 0; i < 30; i++) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    dates.push(localDateString(d))
+  }
+
+  if (loading) return <div style={{ padding: 24, textAlign: 'center', color: '#aaa', fontSize: 14 }}>Loading…</div>
+
+  return (
+    <div>
+      {dates.map(dateStr => {
+        const dayLogs = byDate[dateStr] || {}
+        return (
+          <div key={dateStr} style={md.row}>
+            <span style={md.dateLabel}>{fmtShortDate(dateStr)}</span>
+            <div style={md.bars}>
+              {mealSlots.map(slot => (
+                <div
+                  key={slot.value}
+                  style={{ ...md.bar, background: barColor(dayLogs[slot.value]) }}
+                  title={`${slot.label}: ${dayLogs[slot.value]?.percent_consumed ?? 'not logged'}%`}
+                />
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+const md = {
+  row: { display: 'flex', alignItems: 'center', padding: '6px 16px', borderBottom: '1px solid #f0f0f0', background: '#fff' },
+  dateLabel: { width: 40, flexShrink: 0, fontSize: 12, color: '#555', fontWeight: 500 },
+  bars: { display: 'flex', gap: 4, flex: 1 },
+  bar: { flex: 1, height: 22, borderRadius: 4 },
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -184,6 +262,8 @@ export default function MealsPage() {
   const [logs, setLogs] = useState([])
   const [editTarget, setEditTarget] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [multiDayOpen, setMultiDayOpen] = useState(false)
+  const [multiDayDogId, setMultiDayDogId] = useState(null)
 
   const loadLogs = useCallback(async () => {
     try {
@@ -236,34 +316,72 @@ export default function MealsPage() {
           {queueCount > 0 && <span style={p.queue}>{queueCount}</span>}
         </div>
 
-        {/* Date pager */}
-        <div style={p.pager}>
-          <button style={p.pagerBtn} onClick={goBack}>‹</button>
-          <span style={p.pagerDate}>{formatDateDisplay(currentDate)}</span>
-          <button style={{ ...p.pagerBtn, ...(isToday ? p.pagerBtnDisabled : {}) }} onClick={goForward} disabled={isToday}>›</button>
+        {/* Date pager — hidden in multi-day mode */}
+        {!multiDayOpen && (
+          <div style={p.pager}>
+            <button style={p.pagerBtn} onClick={goBack}>‹</button>
+            <span style={p.pagerDate}>{formatDateDisplay(currentDate)}</span>
+            <button style={{ ...p.pagerBtn, ...(isToday ? p.pagerBtnDisabled : {}) }} onClick={goForward} disabled={isToday}>›</button>
+          </div>
+        )}
+
+        {/* Dog chips for multi-day — shown above scrollable content */}
+        {multiDayOpen && (
+          <div style={p.chipRow}>
+            {dogs.map(dog => {
+              const activeDogId = multiDayDogId ?? dogs[0]?.id
+              return (
+                <button
+                  key={dog.id}
+                  style={{ ...p.chip, ...(activeDogId === dog.id ? p.chipActive : {}) }}
+                  onClick={() => setMultiDayDogId(dog.id)}
+                >
+                  {dog.name}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Content */}
+        <div style={p.content}>
+          {multiDayOpen ? (
+            (multiDayDogId ?? dogs[0]?.id) != null && (
+              <MultiDayView dogId={multiDayDogId ?? dogs[0]?.id} mealSlots={mealSlots} />
+            )
+          ) : (
+            <>
+              {dogs.map(dog => (
+                <div key={dog.id} style={p.dogSection}>
+                  <div style={p.dogHeader}>{dog.name}</div>
+                  {mealSlots.map(slot => (
+                    <MealRow
+                      key={slot.value}
+                      slot={slot}
+                      log={logMap[`${dog.id}:${slot.value}`] || null}
+                      onTap={() => setEditTarget({
+                        dog,
+                        slot,
+                        meal_date: currentDate,
+                        log: logMap[`${dog.id}:${slot.value}`] || null,
+                      })}
+                    />
+                  ))}
+                </div>
+              ))}
+              {dogs.length === 0 && <div style={p.empty}>Loading…</div>}
+            </>
+          )}
         </div>
 
-        {/* Meal grids */}
-        <div style={p.content}>
-          {dogs.map(dog => (
-            <div key={dog.id} style={p.dogSection}>
-              <div style={p.dogHeader}>{dog.name}</div>
-              {mealSlots.map(slot => (
-                <MealRow
-                  key={slot.value}
-                  slot={slot}
-                  log={logMap[`${dog.id}:${slot.value}`] || null}
-                  onTap={() => setEditTarget({
-                    dog,
-                    slot,
-                    meal_date: currentDate,
-                    log: logMap[`${dog.id}:${slot.value}`] || null,
-                  })}
-                />
-              ))}
-            </div>
-          ))}
-          {dogs.length === 0 && <div style={p.empty}>Loading…</div>}
+        {/* Action row */}
+        <div style={p.actionRow}>
+          <button
+            style={{ ...p.multiDayBtn, ...(multiDayOpen ? p.multiDayBtnActive : {}) }}
+            onClick={() => setMultiDayOpen(o => !o)}
+          >
+            Multi Day
+          </button>
         </div>
 
         {/* Tab bar */}
@@ -300,6 +418,12 @@ const p = {
   dogSection: { marginBottom: 8 },
   dogHeader: { padding: '10px 16px 6px', fontSize: 12, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, background: '#f5f5f5' },
   empty: { padding: 24, textAlign: 'center', color: '#aaa', fontSize: 14 },
+  actionRow: { display: 'flex', justifyContent: 'flex-start', padding: '10px 12px', background: '#f5f5f5', flexShrink: 0 },
+  multiDayBtn: { height: 44, padding: '0 16px', background: '#fff', color: '#5b8dd9', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: 'pointer' },
+  multiDayBtnActive: { background: '#5b8dd9', color: '#fff' },
+  chipRow: { display: 'flex', gap: 8, padding: '10px 16px', background: '#f5f5f5', borderBottom: '1px solid #e2e8f0', flexShrink: 0 },
+  chip: { padding: '6px 16px', borderRadius: 20, border: '1px solid #ccc', background: '#fff', fontSize: 14, color: '#555', cursor: 'pointer' },
+  chipActive: { background: '#5b8dd9', color: '#fff', borderColor: '#5b8dd9' },
   tabBar: { position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', borderTop: '1px solid #ddd', background: '#fff', zIndex: 10 },
   tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 14, color: '#888', cursor: 'pointer', fontWeight: 500 },
   tabActive: { color: '#5b8dd9', fontWeight: 700, borderTop: '2px solid #5b8dd9' },
