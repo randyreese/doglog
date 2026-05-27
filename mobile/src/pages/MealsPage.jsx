@@ -32,6 +32,11 @@ function fmtShortDate(dateStr) {
   return `${m}/${d}`
 }
 
+function abbrevSlot(label) {
+  const first = label.trim().split(/\s+/)[0].toLowerCase()
+  return first.length <= 3 ? first : first.slice(0, 3)
+}
+
 function barColor(log) {
   if (!log || log.percent_consumed === null || log.percent_consumed === undefined) return '#d1d5db'
   if (log.percent_consumed === 0) return '#ef4444'
@@ -223,6 +228,15 @@ function MultiDayView({ dogId, mealSlots }) {
 
   return (
     <div>
+      {/* Header row */}
+      <div style={{ ...md.row, position: 'sticky', top: 0, background: '#f0f4ff', borderBottom: '1px solid #d0d8f0' }}>
+        <span style={md.dateLabel} />
+        <div style={md.bars}>
+          {mealSlots.map(slot => (
+            <div key={slot.value} style={md.barHeader}>{abbrevSlot(slot.label)}</div>
+          ))}
+        </div>
+      </div>
       {dates.map(dateStr => {
         const dayLogs = byDate[dateStr] || {}
         return (
@@ -249,6 +263,7 @@ const md = {
   dateLabel: { width: 40, flexShrink: 0, fontSize: 12, color: '#555', fontWeight: 500 },
   bars: { display: 'flex', gap: 4, flex: 1 },
   bar: { flex: 1, height: 22, borderRadius: 4 },
+  barHeader: { flex: 1, textAlign: 'center', fontSize: 11, color: '#666', fontWeight: 600 },
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
