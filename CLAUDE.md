@@ -15,17 +15,16 @@
 - `backend/models.py` — full data model (MealLog + legacy placeholder tables)
 - `backend/routers/` — dogs, events, status, health, meals (all routers)
 - `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/; GET /health-types (reads ini); photos as base64 in/out, LargeBinary in DB
-- `backend/routers/meals.py` — GET /meal-slots, GET /meal-ingredients, GET/POST /meal-logs/ (upsert by dog+slot+date)
+- `backend/routers/meals.py` — GET /meal-slots, GET /meal-ingredients, GET/POST /meal-logs/ (upsert by dog+slot+date); GET /meal-logs/range/?dog_id=X&days=30 (multi-day summary)
 - `backend/health_types.ini` — user-editable health event types; edit on Mint, no rebuild needed
 - `backend/meal_slots.ini` — user-editable meal slot names
 - `backend/meal_ingredients.ini` — user-editable ingredient checklist items
 - `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients; fetched once at startup, cached in localStorage, refreshed on sync
-- `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: History nav, backend URL (tappable), build timestamp
+- `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: backend URL (tappable), build timestamp
 - `mobile/src/components/SwipeableRow.jsx` — swipe-left-to-delete wrapper; used on Walk + Health history rows
-- `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, history; dogs from ConfigContext
+- `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, today history + inline 7-day history toggle (History button); dogs from ConfigContext
 - `mobile/src/pages/HealthPage.jsx` — Health tab: filter bar (date/dog/type), row-tap edit sheet, type list from ConfigContext
-- `mobile/src/pages/MealsPage.jsx` — Meals tab: date pager, per-dog slot grids, tap-to-edit with % chips + notes + ingredients
-- `mobile/src/pages/HistoryPage.jsx` — 7-day poo/pee grid per dog
+- `mobile/src/pages/MealsPage.jsx` — Meals tab: date pager, per-dog slot grids, tap-to-edit; Multi Day toggle for 30-day bar summary
 - `mobile/src/SyncContext.jsx` — sync orchestration, syncInProgressRef guard, syncVersion counter, queue badge (all three queues)
 - `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queue/delete functions for all event types
 - `mobile/src/api.js` — api.get/post/patch/delete, localGet offline fallback (events + health-events)

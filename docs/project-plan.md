@@ -133,6 +133,15 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Sprint 4a — Meals refinements + history views** ✓ COMPLETE *(2026-05-27)*
+
+- [x] Meal row indicators: note icon (✎) when notes non-empty; exception badge (!) when any ingredient unchecked
+- [x] Walk tab: History toggle button (bottom-left of Log); inline 7-day view with All/Tess/Pickles dog chips; server-fetched LAN-only
+- [x] Walk history rows updated to mm/dd/yy date format
+- [x] Meals tab: Multi Day toggle (bottom-left); 30-day colored bar grid; sticky header with abbreviated slot labels (bre/am/lun/din/pm); dog chips required (no All)
+- [x] Backend: GET /meal-logs/range/?dog_id=X&days=30
+- [x] Retired HistoryPage.jsx and hamburger History link
+
 **Sprint 4b — Maintenance + polish** ✓ COMPLETE *(2026-05-26 → 2026-05-27)*
 - [x] Fixed: online-posted walk and health events now written to Dexie immediately — previously, if connectivity dropped after a successful POST, the event appeared in the status matrix (React state) but was invisible in the history rows (offline fallback reads Dexie only)
 - [x] Fixed: nginx `proxy_pass localhost` → `127.0.0.1` — after reboot Linux resolves localhost to ::1 (IPv6) but Docker only binds IPv4; caused all requests to 502 after power outage
@@ -238,26 +247,7 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-**Sprint 4a — Meals refinements + history views**
-
-Goal: Add meal row indicators, retire the existing HistoryPage in favor of two purpose-built history views launched from their respective tabs.
-
-### Meal row indicators
-- [ ] Note icon on meal rows when notes field is non-empty
-- [ ] Exception icon on meal rows when any ingredient in the snapshot is `checked: false`
-- Note: exception icon will fire on all current records (ingredients currently default unchecked); becomes meaningful when Sprint 7 flips to default-checked
-
-### Walk history view
-- [ ] History button at bottom-left of Walk tab (far left of Log button)
-- [ ] New history route: dog filter chips (All | Tess | Pickles, default All), reverse-chronological pee/poo list, fixed 7-day window, fetched from server (LAN-only)
-- [ ] Remove History link from hamburger menu
-- [ ] Retire HistoryPage.jsx
-
-### Meals multi-day summary
-- [ ] Multi Day button at bottom-left of Meals tab (far left of Log button)
-- [ ] New multi-day route: dog chips (required selection, no All chip), fixed 30-day window, LAN-only (no offline cache)
-- [ ] One row per date, five narrow bars (one per slot): 100%=green, 25/50/75%=yellow, 0%=red, null=grey
-- [ ] Reverse sort, newest at top
+*(empty — pull next sprint from backlog)*
 
 ---
 

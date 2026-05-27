@@ -44,6 +44,14 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v0.8.0 (2026-05-27)
+- New: Walk tab — "History" toggle button (bottom-left) opens inline 7-day view with All / Tess / Pickles dog filter chips; server-fetched, LAN-only; replaces the separate HistoryPage route
+- New: Meals tab — "Multi Day" toggle button (bottom-left) opens 30-day bar grid; one row per date, one bar per slot; 100%=green, 25–75%=yellow, 0%=red, null=grey; dog chips (required, no All); sticky header row with abbreviated slot labels (bre / am / lun / din / pm)
+- New: Meal row indicators — note icon (✎) when notes are present; exception badge (!) when any ingredient is unchecked
+- New: Backend `GET /meal-logs/range/?dog_id=X&days=30` endpoint
+- Changed: Walk history rows now show `mm/dd/yy` date instead of day-of-week abbreviation
+- Removed: Standalone HistoryPage route (`/history`) and hamburger History link — history is now inline on the Walk tab
+
 ### v0.7.1 (2026-05-27)
 - Fixed: online-posted walk and health events now written to Dexie immediately after a successful POST — previously, if connectivity dropped after the POST succeeded, the event appeared in the status matrix (React state) but was missing from the history rows (which fall back to Dexie when offline)
 
