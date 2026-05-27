@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
+import { db } from '../db'
 import { queueHealthEvent, deleteHealthEvent, localISOString } from '../sync'
 import { useSyncContext } from '../SyncContext'
 import { useConfig } from '../ConfigContext'
@@ -363,7 +364,8 @@ export default function HealthPage() {
     setLogging(true)
     try {
       try {
-        await api.post('/health-events/', { dog_id: dog.id, type: selectedType, timestamp: ts })
+        const event = await api.post('/health-events/', { dog_id: dog.id, type: selectedType, timestamp: ts })
+        await db.healthEvents.put(event)
       } catch {
         await queueHealthEvent({ dog_id: dog.id, type: selectedType, timestamp: ts })
       }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import SwipeableRow from '../components/SwipeableRow'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
+import { db } from '../db'
 import { queueEvent, deleteEvent, localISOString } from '../sync'
 import { useSyncContext } from '../SyncContext'
 import { useConfig } from '../ConfigContext'
@@ -219,7 +220,8 @@ export default function WalkPage() {
     setLogging(true)
     try {
       try {
-        await api.post('/events/', { dog_id: dog.id, type, timestamp: localISOString() })
+        const event = await api.post('/events/', { dog_id: dog.id, type, timestamp: localISOString() })
+        await db.events.put(event)
       } catch {
         await queueEvent({ dog_id: dog.id, type })
       }
