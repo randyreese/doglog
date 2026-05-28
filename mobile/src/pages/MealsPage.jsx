@@ -58,7 +58,8 @@ function EditSheet({ target, open, mealIngredients, onClose, onSave }) {
       setPct(log?.percent_consumed ?? 100)
       setNotes(log?.notes || '')
       const saved = log?.ingredients || {}
-      setIngredients(Object.fromEntries(mealIngredients.map(i => [i.value, saved[i.value] ?? false])))
+      // Default all ingredients to checked unless explicitly saved as false
+      setIngredients(Object.fromEntries(mealIngredients.map(i => [i.value, saved[i.value] ?? true])))
       setSaveError(null)
     }
   }, [target, mealIngredients])
@@ -176,6 +177,7 @@ function MealRow({ slot, log, onTap }) {
   const isSkipped = logged && log.percent_consumed === 0
   const hasNote = !!(log?.notes?.trim())
   const hasException = logged && log.ingredients && Object.values(log.ingredients).some(v => v === false)
+  const isQueued = !!(log?._queued)
   return (
     <div style={mr.row} onClick={onTap}>
       <span style={mr.slot}>{slot.label}</span>
@@ -183,6 +185,7 @@ function MealRow({ slot, log, onTap }) {
         {hasNote && <span style={mr.noteIcon}>✎</span>}
         {hasException && <span style={mr.exceptIcon}>!</span>}
       </span>
+      {isQueued && <span style={mr.queueDot} />}
       <span style={{ ...mr.pct, color: isSkipped ? '#e53e3e' : logged ? '#2f855a' : '#bbb' }}>
         {pctDisplay}
       </span>
@@ -196,6 +199,7 @@ const mr = {
   icons: { display: 'flex', gap: 4, marginRight: 8, alignItems: 'center' },
   noteIcon: { fontSize: 14, color: '#5b8dd9', lineHeight: 1 },
   exceptIcon: { width: 18, height: 18, background: '#fee2e2', color: '#e53e3e', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 },
+  queueDot: { width: 8, height: 8, borderRadius: '50%', background: '#e53e3e', flexShrink: 0, marginRight: 6 },
   pct: { fontSize: 15, fontWeight: 600, width: 44, textAlign: 'right' },
 }
 
@@ -280,12 +284,32 @@ export default function MealsPage() {
   const [multiDayOpen, setMultiDayOpen] = useState(false)
   const [multiDayDogId, setMultiDayDogId] = useState(null)
 
+  // Swipe navigation
+  const swipeStartX = useRef(null)
+  const swipeStartY = useRef(null)
+
+  function onPageTouchStart(e) {
+    if (multiDayOpen) return
+    swipeStartX.current = e.touches[0].clientX
+    swipeStartY.current = e.touches[0].clientY
+  }
+
+  function onPageTouchEnd(e) {
+    if (swipeStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - swipeStartX.current
+    const dy = e.changedTouches[0].clientY - swipeStartY.current
+    swipeStartX.current = null
+    if (multiDayOpen) return
+    if (Math.abs(dx) < 100 || Math.abs(dx) < Math.abs(dy) * 2) return
+    if (dx < 0) nav('/health')
+    else nav('/')
+  }
+
   const loadLogs = useCallback(async () => {
     try {
       const data = await api.get(`/meal-logs/?meal_date=${currentDate}`)
       setLogs(data)
     } catch {
-      // offline fallback: load from Dexie
       const local = await db.mealLogs.where('meal_date').equals(currentDate).toArray()
       setLogs(local)
     }
@@ -301,6 +325,12 @@ export default function MealsPage() {
 
   function goBack() { setCurrentDate(d => offsetDate(d, -1)) }
   function goForward() { if (!isToday) setCurrentDate(d => offsetDate(d, 1)) }
+
+  function toggleHistory() {
+    const next = !multiDayOpen
+    setMultiDayOpen(next)
+    if (!next) loadLogs()
+  }
 
   async function handleSave(dogId, slot, meal_date, pct, notes, ingredients) {
     const body = { dog_id: dogId, slot, meal_date, percent_consumed: pct, notes: notes || null, ingredients }
@@ -318,7 +348,7 @@ export default function MealsPage() {
 
   return (
     <>
-      <div style={p.page}>
+      <div style={p.page} onTouchStart={onPageTouchStart} onTouchEnd={onPageTouchEnd}>
         {menuOpen && <HamburgerMenu onClose={() => setMenuOpen(false)} />}
 
         {/* Header */}
@@ -331,7 +361,7 @@ export default function MealsPage() {
           {queueCount > 0 && <span style={p.queue}>{queueCount}</span>}
         </div>
 
-        {/* Date pager — hidden in multi-day mode */}
+        {/* Date pager — hidden in history mode */}
         {!multiDayOpen && (
           <div style={p.pager}>
             <button style={p.pagerBtn} onClick={goBack}>‹</button>
@@ -340,7 +370,7 @@ export default function MealsPage() {
           </div>
         )}
 
-        {/* Dog chips for multi-day — shown above scrollable content */}
+        {/* Dog chips for history mode */}
         {multiDayOpen && (
           <div style={p.chipRow}>
             {dogs.map(dog => {
@@ -392,10 +422,10 @@ export default function MealsPage() {
         {/* Action row */}
         <div style={p.actionRow}>
           <button
-            style={{ ...p.multiDayBtn, ...(multiDayOpen ? p.multiDayBtnActive : {}) }}
-            onClick={() => setMultiDayOpen(o => !o)}
+            style={{ ...p.historyBtn, ...(multiDayOpen ? p.historyBtnActive : {}) }}
+            onClick={toggleHistory}
           >
-            Multi Day
+            History
           </button>
         </div>
 
@@ -434,12 +464,12 @@ const p = {
   dogHeader: { padding: '10px 16px 6px', fontSize: 12, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, background: '#f5f5f5' },
   empty: { padding: 24, textAlign: 'center', color: '#aaa', fontSize: 14 },
   actionRow: { display: 'flex', justifyContent: 'flex-start', padding: '10px 12px', background: '#f5f5f5', flexShrink: 0 },
-  multiDayBtn: { height: 44, padding: '0 16px', background: '#fff', color: '#5b8dd9', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: 'pointer' },
-  multiDayBtnActive: { background: '#5b8dd9', color: '#fff' },
+  historyBtn: { height: 52, padding: '0 16px', background: '#fff', color: '#5b8dd9', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 20, fontWeight: 400, cursor: 'pointer' },
+  historyBtnActive: { background: '#5b8dd9', color: '#fff' },
   chipRow: { display: 'flex', gap: 8, padding: '10px 16px', background: '#f5f5f5', borderBottom: '1px solid #e2e8f0', flexShrink: 0 },
   chip: { padding: '6px 16px', borderRadius: 20, border: '1px solid #ccc', background: '#fff', fontSize: 14, color: '#555', cursor: 'pointer' },
   chipActive: { background: '#5b8dd9', color: '#fff', borderColor: '#5b8dd9' },
   tabBar: { position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', borderTop: '1px solid #ddd', background: '#fff', zIndex: 10 },
-  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 14, color: '#888', cursor: 'pointer', fontWeight: 500 },
+  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 20, color: '#888', cursor: 'pointer', fontWeight: 500 },
   tabActive: { color: '#5b8dd9', fontWeight: 700, borderTop: '2px solid #5b8dd9' },
 }

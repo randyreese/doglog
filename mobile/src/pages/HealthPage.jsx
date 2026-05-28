@@ -62,6 +62,7 @@ function HealthRow({ event, dogName, typeLabel, onDelete, onEdit }) {
           <span style={hr.labelMain}>{dogName}: {typeLabel}</span>
           {event.notes ? <span style={hr.notes}>{event.notes}</span> : null}
         </div>
+        {event._queued && <span style={hr.queueDot} />}
       </div>
     </SwipeableRow>
   )
@@ -75,24 +76,25 @@ const hr = {
   label: { flex: 1, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 },
   labelMain: { fontSize: 15, color: '#1a202c' },
   notes: { fontSize: 12, color: '#888', fontStyle: 'italic', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  queueDot: { width: 8, height: 8, borderRadius: '50%', background: '#e53e3e', flexShrink: 0 },
 }
 
 // ── Type picker row (opens bottom sheet) ─────────────────────────────────────
-function TypePickerRow({ selectedType, typeLabel, onOpen }) {
+function TypePickerRow({ typeLabel, onOpen }) {
   return (
     <div style={cs.row}>
-      <div style={cs.label}>Type</div>
       <div style={cs.display}>{typeLabel}</div>
-      <button style={cs.btn} onClick={onOpen}>^</button>
+      <button style={cs.btn} onClick={onOpen}>
+        <span style={{ display: 'block', width: 11, height: 11, borderTop: '2px solid #5b8dd9', borderRight: '2px solid #5b8dd9', transform: 'rotate(-45deg) translateY(2px)' }} />
+      </button>
     </div>
   )
 }
 
-// ── Dog carousel ─────────────────────────────────────────────────────────────
-function Carousel({ label, items, index, onAdvance }) {
+// ── Dog carousel (no label) ───────────────────────────────────────────────────
+function Carousel({ items, index, onAdvance }) {
   return (
     <div style={cs.row}>
-      <div style={cs.label}>{label}</div>
       <div style={cs.display}>{items[index]}</div>
       <button style={cs.btn} onClick={onAdvance}>›</button>
     </div>
@@ -101,9 +103,8 @@ function Carousel({ label, items, index, onAdvance }) {
 
 const cs = {
   row: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#fff', borderBottom: '1px solid #e2e8f0' },
-  label: { fontSize: 12, color: '#888', width: 36, flexShrink: 0 },
   display: { flex: 1, fontSize: 22, fontWeight: 700, color: '#1a202c', textAlign: 'center' },
-  btn: { width: 52, height: 52, fontSize: 28, background: '#fff', color: '#000', border: '2px solid #5b8dd9', borderRadius: 10, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 400 },
+  btn: { width: 52, height: 52, fontSize: 32, background: 'transparent', color: '#5b8dd9', border: '1.5px solid #5b8dd9', borderRadius: '50%', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 400 },
 }
 
 // ── Bottom sheet (type picker) ────────────────────────────────────────────────
@@ -250,7 +251,7 @@ const ed = {
   save: { padding: '10px 20px', background: '#5b8dd9', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
 }
 
-// ── Filter bar ────────────────────────────────────────────────────────────────
+// ── Filter bar (dogs row first, days row second) ──────────────────────────────
 const DATE_OPTIONS = [
   { label: '7d',  days: 7 },
   { label: '30d', days: 30 },
@@ -268,17 +269,7 @@ function FilterBar({ dogs, healthTypes, filter, setFilter }) {
 
   return (
     <div style={fb.container}>
-      <div style={fb.row}>
-        {DATE_OPTIONS.map(opt => (
-          <button
-            key={opt.label}
-            style={{ ...fb.pill, ...(filter.days === opt.days ? fb.pillActive : {}) }}
-            onClick={() => setFilter(f => ({ ...f, days: opt.days }))}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+      {/* Row 1: Dogs + Type picker */}
       <div style={fb.row}>
         <button
           style={{ ...fb.pill, ...(filter.dogId === null ? fb.pillActive : {}) }}
@@ -301,6 +292,18 @@ function FilterBar({ dogs, healthTypes, filter, setFilter }) {
         >
           {activeTypeLabel} ▾
         </button>
+      </div>
+      {/* Row 2: Day range */}
+      <div style={fb.row}>
+        {DATE_OPTIONS.map(opt => (
+          <button
+            key={opt.label}
+            style={{ ...fb.pill, ...(filter.days === opt.days ? fb.pillActive : {}) }}
+            onClick={() => setFilter(f => ({ ...f, days: opt.days }))}
+          >
+            {opt.label}
+          </button>
+        ))}
       </div>
       <TypeSheet
         open={typeSheetOpen}
@@ -335,12 +338,26 @@ export default function HealthPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [filter, setFilter] = useState({ days: 30, dogId: null, type: null })
 
-  // default selectedType to first in list once loaded
-  useEffect(() => {
-    if (healthTypes.length > 0 && !selectedType) {
-      setSelectedType(healthTypes[0].value)
-    }
-  }, [healthTypes, selectedType])
+  // Swipe navigation
+  const swipeStartX = useRef(null)
+  const swipeStartY = useRef(null)
+  const swipeFromRow = useRef(false)
+
+  function onPageTouchStart(e) {
+    swipeStartX.current = e.touches[0].clientX
+    swipeStartY.current = e.touches[0].clientY
+    swipeFromRow.current = !!e.target.closest('[data-swipeable]')
+  }
+
+  function onPageTouchEnd(e) {
+    if (swipeStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - swipeStartX.current
+    const dy = e.changedTouches[0].clientY - swipeStartY.current
+    swipeStartX.current = null
+    if (swipeFromRow.current) return
+    if (Math.abs(dx) < 100 || Math.abs(dx) < Math.abs(dy) * 2) return
+    if (dx > 0) nav('/meals')
+  }
 
   const loadEvents = useCallback(async () => {
     try {
@@ -404,11 +421,11 @@ export default function HealthPage() {
   const typeMap = Object.fromEntries((healthTypes || []).map(t => [t.value, t.label]))
   const signalColor = signal === 'good' ? '#2f855a' : signal === 'weak' ? '#d97706' : '#e53e3e'
   const signalLabel = signal === 'good' ? '●' : signal === 'weak' ? '◑' : '○'
-  const currentTypeLabel = typeMap[selectedType] || selectedType
+  const currentTypeLabel = selectedType ? (typeMap[selectedType] || selectedType) : '(select)'
 
   return (
     <>
-      <div style={p.page}>
+      <div style={p.page} onTouchStart={onPageTouchStart} onTouchEnd={onPageTouchEnd}>
         {menuOpen && <HamburgerMenu onClose={() => setMenuOpen(false)} />}
 
         {/* Header */}
@@ -446,7 +463,6 @@ export default function HealthPage() {
         {/* Dog carousel */}
         {dogs.length > 0 ? (
           <Carousel
-            label="Dog"
             items={dogs.map(d => d.name)}
             index={dogIdx}
             onAdvance={() => setDogIdx(i => (i + 1) % dogs.length)}
@@ -457,7 +473,6 @@ export default function HealthPage() {
 
         {/* Type picker */}
         <TypePickerRow
-          selectedType={selectedType}
           typeLabel={currentTypeLabel}
           onOpen={() => setTypeSheetOpen(true)}
         />
@@ -508,13 +523,11 @@ const p = {
   queue: { background: '#e53e3e', color: '#fff', borderRadius: 10, fontSize: 12, padding: '1px 6px', fontWeight: 700 },
   history: { flex: 1, minHeight: 0, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },
   empty: { padding: '20px 12px', color: '#aaa', textAlign: 'center', fontSize: 14 },
-  deleteRow: { padding: '8px 12px', background: '#f5f5f5', display: 'flex', justifyContent: 'flex-end' },
-  deleteBtn: { padding: '10px 20px', background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
   loading: { padding: 16, textAlign: 'center', color: '#888', background: '#fff', borderBottom: '1px solid #e2e8f0' },
   logRow: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, padding: '10px 12px', background: '#f5f5f5' },
   logBtn: { width: 100, height: 52, background: '#fff', color: '#000', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 20, fontWeight: 400, cursor: 'pointer' },
   logBtnDisabled: { opacity: 0.5, cursor: 'default' },
   tabBar: { position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', borderTop: '1px solid #ddd', background: '#fff', zIndex: 10 },
-  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 14, color: '#888', cursor: 'pointer', fontWeight: 500 },
+  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 20, color: '#888', cursor: 'pointer', fontWeight: 500 },
   tabActive: { color: '#5b8dd9', fontWeight: 700, borderTop: '2px solid #5b8dd9' },
 }

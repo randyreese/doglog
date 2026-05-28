@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import SwipeableRow from '../components/SwipeableRow'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
@@ -8,13 +8,11 @@ import { useSyncContext } from '../SyncContext'
 import { useConfig } from '../ConfigContext'
 import HamburgerMenu from '../components/HamburgerMenu'
 
-// Color thresholds (hours elapsed)
 const PEE_YELLOW_H = 4
 const PEE_RED_H = 6
 const POO_YELLOW_H = 8
 const POO_RED_H = 12
 
-// Display labels vs backend values for event types
 const EVENT_TYPES = ['Pee', 'Poop']
 const EVENT_TYPE_VALUES = { Pee: 'pee', Poop: 'poo' }
 const EVENT_TYPE_LABELS = { pee: 'Pee', poo: 'Poop' }
@@ -49,38 +47,12 @@ function fmtElapsed(isoTs) {
   return `${h.toFixed(1)}h ago`
 }
 
-// ── Status strip ──────────────────────────────────────────────────────────────
+// ── Status strip (always expanded) ────────────────────────────────────────────
 function StatusStrip({ dogs, status }) {
-  const [expanded, setExpanded] = useState(false)
-
   if (!status || status.length === 0) return null
-
   const statusByDog = Object.fromEntries(status.map(d => [d.id, d]))
-
-  if (!expanded) {
-    const summary = dogs.map(dog => {
-      const s = statusByDog[dog.id]
-      if (!s) return null
-      const pooH = elapsedHours(s.last_poo)
-      const color = timeColor(pooH, POO_YELLOW_H, POO_RED_H)
-      return (
-        <span key={dog.id} style={{ marginRight: 12 }}>
-          <span style={{ fontWeight: 600 }}>{dog.name}</span>
-          {' poop '}
-          <span style={{ color }}>{fmtElapsed(s.last_poo) || 'none today'}</span>
-        </span>
-      )
-    }).filter(Boolean)
-
-    return (
-      <div style={ss.strip} onClick={() => setExpanded(true)}>
-        <div style={ss.stripRow}>{summary}<span style={ss.chevron}>▼</span></div>
-      </div>
-    )
-  }
-
   return (
-    <div style={ss.strip} onClick={() => setExpanded(false)}>
+    <div style={ss.strip}>
       <table style={ss.table}>
         <thead>
           <tr>
@@ -109,26 +81,22 @@ function StatusStrip({ dogs, status }) {
           })}
         </tbody>
       </table>
-      <div style={{ textAlign: 'right', fontSize: 11, color: '#999', marginTop: 2 }}>▲ collapse</div>
     </div>
   )
 }
 
 const ss = {
-  strip: { background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '8px 12px', cursor: 'pointer', userSelect: 'none' },
-  stripRow: { display: 'flex', alignItems: 'center', fontSize: 13, color: '#333', flexWrap: 'wrap', gap: 4 },
-  chevron: { marginLeft: 'auto', color: '#999', fontSize: 11 },
+  strip: { background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '8px 12px' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 14 },
   th: { textAlign: 'center', fontWeight: 600, padding: '2px 8px', color: '#555', fontSize: 12 },
   td: { textAlign: 'center', padding: '4px 8px', fontWeight: 600 },
   tdName: { textAlign: 'left', padding: '4px 8px', fontWeight: 700, color: '#333' },
 }
 
-// ── Carousel ──────────────────────────────────────────────────────────────────
-function Carousel({ items, index, onAdvance, label }) {
+// ── Carousel (no label) ───────────────────────────────────────────────────────
+function Carousel({ items, index, onAdvance }) {
   return (
     <div style={cs.row}>
-      <div style={cs.label}>{label}</div>
       <div style={cs.display}>{items[index]}</div>
       <button style={cs.btn} onClick={onAdvance}>›</button>
     </div>
@@ -137,19 +105,20 @@ function Carousel({ items, index, onAdvance, label }) {
 
 const cs = {
   row: { display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#fff', borderBottom: '1px solid #e2e8f0' },
-  label: { fontSize: 12, color: '#888', width: 36, flexShrink: 0 },
   display: { flex: 1, fontSize: 22, fontWeight: 700, color: '#1a202c', textAlign: 'center' },
-  btn: { width: 52, height: 52, fontSize: 28, background: '#fff', color: '#000', border: '2px solid #5b8dd9', borderRadius: 10, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 400 },
+  btn: { width: 52, height: 52, fontSize: 32, background: 'transparent', color: '#5b8dd9', border: '1.5px solid #5b8dd9', borderRadius: '50%', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 400 },
 }
 
 // ── History row ───────────────────────────────────────────────────────────────
-function HistoryRow({ event, dogName, onDelete }) {
+function HistoryRow({ event, dogName, onDelete, useDayName }) {
   const d = new Date(event.timestamp)
   let h = d.getHours(), m = d.getMinutes()
   const ampm = h >= 12 ? 'pm' : 'am'
   h = h % 12 || 12
   const timeStr = `${h}:${String(m).padStart(2, '0')}${ampm}`
-  const dateStr = `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(2)}`
+  const dateStr = useDayName
+    ? DAYS[d.getDay()]
+    : `${d.getMonth() + 1}/${d.getDate()}/${String(d.getFullYear()).slice(2)}`
 
   return (
     <SwipeableRow onDelete={onDelete}>
@@ -159,6 +128,7 @@ function HistoryRow({ event, dogName, onDelete }) {
           <span style={hr.time}>{timeStr}</span>
         </div>
         <span style={hr.label}>{dogName}: {EVENT_TYPE_LABELS[event.type] || event.type}</span>
+        {event._queued && <span style={hr.queueDot} />}
       </div>
     </SwipeableRow>
   )
@@ -170,12 +140,13 @@ const hr = {
   day: { fontSize: 11, color: '#999', lineHeight: '1.3' },
   time: { fontSize: 14, color: '#555', lineHeight: '1.3' },
   label: { flex: 1, fontSize: 15, color: '#1a202c', textTransform: 'capitalize' },
+  queueDot: { width: 8, height: 8, borderRadius: '50%', background: '#e53e3e', flexShrink: 0 },
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function WalkPage() {
   const nav = useNavigate()
-  const { signal, queueCount, syncVersion, syncNow, refreshQueueCount } = useSyncContext()
+  const { signal, queueCount, syncVersion, refreshQueueCount } = useSyncContext()
   const { dogs } = useConfig()
 
   const [dogIdx, setDogIdx] = useState(0)
@@ -188,6 +159,28 @@ export default function WalkPage() {
   const [historyDogId, setHistoryDogId] = useState(null)
   const [historyEvents, setHistoryEvents] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
+
+  // Swipe navigation
+  const swipeStartX = useRef(null)
+  const swipeStartY = useRef(null)
+  const swipeFromRow = useRef(false)
+
+  function onPageTouchStart(e) {
+    if (historyOpen) return
+    swipeStartX.current = e.touches[0].clientX
+    swipeStartY.current = e.touches[0].clientY
+    swipeFromRow.current = !!e.target.closest('[data-swipeable]')
+  }
+
+  function onPageTouchEnd(e) {
+    if (swipeStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - swipeStartX.current
+    const dy = e.changedTouches[0].clientY - swipeStartY.current
+    swipeStartX.current = null
+    if (historyOpen || swipeFromRow.current) return
+    if (Math.abs(dx) < 100 || Math.abs(dx) < Math.abs(dy) * 2) return
+    if (dx < 0) nav('/meals')
+  }
 
   const loadEvents = useCallback(async () => {
     try {
@@ -270,12 +263,11 @@ export default function WalkPage() {
   }
 
   const dogMap = Object.fromEntries(dogs.map(d => [d.id, d.name]))
-
   const signalColor = signal === 'good' ? '#2f855a' : signal === 'weak' ? '#d97706' : '#e53e3e'
   const signalLabel = signal === 'good' ? '●' : signal === 'weak' ? '◑' : '○'
 
   return (
-    <div style={p.page}>
+    <div style={p.page} onTouchStart={onPageTouchStart} onTouchEnd={onPageTouchEnd}>
 
       {menuOpen && <HamburgerMenu onClose={() => setMenuOpen(false)} />}
 
@@ -302,20 +294,20 @@ export default function WalkPage() {
         </div>
       )}
 
-      {/* History — fills available space */}
+      {/* History list — fills available space */}
       <div style={p.history}>
         {historyOpen ? (
           <>
             {historyLoading && <div style={p.empty}>Loading…</div>}
             {!historyLoading && historyEvents.map(ev => (
-              <HistoryRow key={ev.id} event={ev} dogName={dogMap[ev.dog_id] || '?'} onDelete={() => handleDeleteHistory(ev.id)} />
+              <HistoryRow key={ev.id} event={ev} dogName={dogMap[ev.dog_id] || '?'} onDelete={() => handleDeleteHistory(ev.id)} useDayName={false} />
             ))}
             {!historyLoading && historyEvents.length === 0 && <div style={p.empty}>No events in last 7 days</div>}
           </>
         ) : (
           <>
             {events.map(ev => (
-              <HistoryRow key={ev.id} event={ev} dogName={dogMap[ev.dog_id] || '?'} onDelete={() => handleDeleteSingle(ev.id)} />
+              <HistoryRow key={ev.id} event={ev} dogName={dogMap[ev.dog_id] || '?'} onDelete={() => handleDeleteSingle(ev.id)} useDayName={true} />
             ))}
             {events.length === 0 && <div style={p.empty}>No events today</div>}
           </>
@@ -325,7 +317,6 @@ export default function WalkPage() {
       {/* Dog carousel */}
       {dogs.length > 0 ? (
         <Carousel
-          label="Dog"
           items={dogs.map(d => d.name)}
           index={dogIdx}
           onAdvance={() => setDogIdx(i => (i + 1) % dogs.length)}
@@ -336,7 +327,6 @@ export default function WalkPage() {
 
       {/* Event type carousel */}
       <Carousel
-        label="Type"
         items={EVENT_TYPES}
         index={eventIdx}
         onAdvance={() => setEventIdx(i => (i + 1) % EVENT_TYPES.length)}
@@ -378,7 +368,7 @@ const p = {
   queue: { background: '#e53e3e', color: '#fff', borderRadius: 10, fontSize: 12, padding: '1px 6px', fontWeight: 700 },
   loading: { padding: 16, textAlign: 'center', color: '#888', background: '#fff', borderBottom: '1px solid #e2e8f0' },
   logRow: { display: 'flex', justifyContent: 'space-between', padding: '10px 12px', background: '#f5f5f5' },
-  historyBtn: { height: 52, padding: '0 16px', background: '#fff', color: '#5b8dd9', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 15, fontWeight: 500, cursor: 'pointer' },
+  historyBtn: { height: 52, padding: '0 16px', background: '#fff', color: '#5b8dd9', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 20, fontWeight: 400, cursor: 'pointer' },
   historyBtnActive: { background: '#5b8dd9', color: '#fff' },
   chipRow: { display: 'flex', gap: 8, padding: '8px 12px', background: '#fff', borderBottom: '1px solid #e2e8f0', flexShrink: 0 },
   chip: { padding: '6px 14px', borderRadius: 20, border: '1px solid #ccc', background: '#f5f5f5', fontSize: 14, color: '#555', cursor: 'pointer' },
@@ -387,9 +377,7 @@ const p = {
   logBtnDisabled: { opacity: 0.5, cursor: 'default' },
   history: { flex: 1, minHeight: 0, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },
   empty: { padding: '20px 12px', color: '#aaa', textAlign: 'center', fontSize: 14 },
-  deleteRow: { padding: '8px 12px', background: '#f5f5f5', display: 'flex', justifyContent: 'flex-end' },
-  deleteBtn: { padding: '10px 20px', background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
   tabBar: { position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', borderTop: '1px solid #ddd', background: '#fff', zIndex: 10 },
-  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 14, color: '#888', cursor: 'pointer', fontWeight: 500 },
+  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 20, color: '#888', cursor: 'pointer', fontWeight: 500 },
   tabActive: { color: '#5b8dd9', fontWeight: 700, borderTop: '2px solid #5b8dd9' },
 }

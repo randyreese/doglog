@@ -36,6 +36,10 @@ export default function SwipeableRow({ onDelete, children }) {
 
   function handleDelete(e) {
     e.stopPropagation()
+    if (!window.confirm('Delete this entry?')) {
+      setOffset(0)
+      return
+    }
     setOffset(0)
     onDelete()
   }
@@ -50,7 +54,7 @@ export default function SwipeableRow({ onDelete, children }) {
   const isDragging = startX.current !== null
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden', marginBottom: 2, borderRadius: 4 }}>
+    <div data-swipeable="true" style={{ position: 'relative', overflow: 'hidden', marginBottom: 2, borderRadius: 4 }}>
       <div
         style={{
           position: 'absolute', right: 0, top: 0, bottom: 0, width: REVEAL_WIDTH,
