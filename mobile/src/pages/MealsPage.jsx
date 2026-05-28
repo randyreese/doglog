@@ -461,7 +461,7 @@ const p = {
   pagerDate: { fontSize: 16, fontWeight: 600, color: '#1a202c' },
   content: { flex: 1, minHeight: 0, overflowY: 'auto' },
   dogSection: { marginBottom: 8 },
-  dogHeader: { padding: '10px 16px 6px', fontSize: 12, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, background: '#f5f5f5' },
+  dogHeader: { padding: '6px 16px 4px', fontSize: 16, fontWeight: 600, color: '#1a202c', background: '#f5f5f5' },
   empty: { padding: 24, textAlign: 'center', color: '#aaa', fontSize: 14 },
   actionRow: { display: 'flex', justifyContent: 'flex-start', padding: '10px 12px', background: '#f5f5f5', flexShrink: 0 },
   historyBtn: { height: 52, padding: '0 16px', background: '#fff', color: '#5b8dd9', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 20, fontWeight: 400, cursor: 'pointer' },
