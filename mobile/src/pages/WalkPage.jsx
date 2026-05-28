@@ -314,8 +314,8 @@ export default function WalkPage() {
         )}
       </div>
 
-      {/* Dog carousel */}
-      {dogs.length > 0 ? (
+      {/* Dog + type carousels — hidden in history mode */}
+      {!historyOpen && (dogs.length > 0 ? (
         <Carousel
           items={dogs.map(d => d.name)}
           index={dogIdx}
@@ -323,14 +323,15 @@ export default function WalkPage() {
         />
       ) : (
         <div style={p.loading}>Loading dogs…</div>
-      )}
+      ))}
 
-      {/* Event type carousel */}
-      <Carousel
-        items={EVENT_TYPES}
-        index={eventIdx}
-        onAdvance={() => setEventIdx(i => (i + 1) % EVENT_TYPES.length)}
-      />
+      {!historyOpen && (
+        <Carousel
+          items={EVENT_TYPES}
+          index={eventIdx}
+          onAdvance={() => setEventIdx(i => (i + 1) % EVENT_TYPES.length)}
+        />
+      )}
 
       {/* Action row */}
       <div style={p.logRow}>
@@ -340,13 +341,15 @@ export default function WalkPage() {
         >
           History
         </button>
-        <button
-          style={{ ...p.logBtn, ...(logging || !dogs.length ? p.logBtnDisabled : {}) }}
-          onClick={handleLog}
-          disabled={logging || !dogs.length}
-        >
-          {logging ? 'Logging…' : 'Log'}
-        </button>
+        {!historyOpen && (
+          <button
+            style={{ ...p.logBtn, ...(logging || !dogs.length ? p.logBtnDisabled : {}) }}
+            onClick={handleLog}
+            disabled={logging || !dogs.length}
+          >
+            {logging ? 'Logging…' : 'Log'}
+          </button>
+        )}
       </div>
 
       {/* Bottom tab bar */}
