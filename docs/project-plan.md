@@ -133,6 +133,24 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Sprint 4c — Full mobile UI/UX polish** ✓ COMPLETE *(2026-05-28)*
+
+- [x] Swipe navigation between tabs (Walk↔Meals↔Health); disabled in History/Multi Day sub-views; skips swipeable rows
+- [x] Confirm dialog on swipe-delete (Walk + Health)
+- [x] Queue dot on pending-sync rows — Walk, Health, Meals; count matches header badge
+- [x] Status strip always expanded — removed collapse toggle
+- [x] Walk primary rows: day abbreviation ("Thu"); History sub-view keeps mm/dd/yy
+- [x] Dog/Type carousel labels removed (Walk + Health)
+- [x] History button (Walk + Meals) font matched to Log (20px); "Multi Day" renamed "History"
+- [x] Tab bar font size 20px
+- [x] Health filter bar: dogs+type row on top, day range on bottom
+- [x] Health type defaults to "(select)"; Log disabled until type chosen
+- [x] Carousel/type picker buttons: hairline ring style (1.5px blue border, circular); CSS border chevron replaces ^ ASCII caret
+- [x] Meals dog section headers: mixed case, pager date style, tightened padding
+- [x] Walk History mode hides carousels and Log button — full height for list
+- [x] Fixed: Meals empty page on history toggle-off — explicit loadLogs() call
+- [x] Fixed: Meal ingredients default to checked on new records
+
 **Sprint 4a — Meals refinements + history views** ✓ COMPLETE *(2026-05-27)*
 
 - [x] Meal row indicators: note icon (✎) when notes non-empty; exception badge (!) when any ingredient unchecked

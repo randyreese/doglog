@@ -44,6 +44,23 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v0.9.0 (2026-05-28)
+- New: Horizontal swipe navigation between tabs — swipe left/right to switch Walk↔Meals↔Health; disabled while in History or Multi Day sub-views; skips swipeable delete rows
+- New: Confirm dialog before swipe-delete (Walk + Health) — tap Delete reveals confirm prompt instead of deleting immediately
+- New: Queue dot — small red circle on any history row (Walk, Health) or meal row that is pending sync; count matches the badge in the header
+- New: Walk History mode — carousels and Log button now hidden when History is open, giving the list full height
+- Changed: Status strip (Walk) — always expanded; removed collapse/expand toggle
+- Changed: Walk primary rows now show day abbreviation ("Thu") instead of mm/dd/yy; History sub-view rows keep mm/dd/yy
+- Changed: Dog and Type labels removed from carousel rows (Walk + Health)
+- Changed: History button (Walk) and History button (Meals, formerly "Multi Day") — font matched to Log button (20px); renamed "Multi Day" → "History"
+- Changed: Tab bar labels — font size increased to 20px to match action buttons
+- Changed: Health filter bar — Dogs + Type picker row is now on top; Day range row on bottom
+- Changed: Health type picker — defaults to "(select)" instead of first type; Log button disabled until a type is chosen
+- Changed: Carousel and type picker buttons (Walk + Health) — restyled to hairline ring (circular, 1.5px blue border, transparent fill); `^` replaced with CSS border chevron for precise centering
+- Changed: Meals dog section headers — mixed case, matched to date pager style (16px, weight 600, #1a202c); padding tightened to preserve row height for future medication rows
+- Fixed: Meals page occasionally showed empty — `loadLogs()` now called explicitly when toggling back from History view
+- Fixed: Meal edit sheet ingredients now default to checked when no prior record exists (`?? true`)
+
 ### v0.8.0 (2026-05-27)
 - New: Walk tab — "History" toggle button (bottom-left) opens inline 7-day view with All / Tess / Pickles dog filter chips; server-fetched, LAN-only; replaces the separate HistoryPage route
 - New: Meals tab — "Multi Day" toggle button (bottom-left) opens 30-day bar grid; one row per date, one bar per slot; 100%=green, 25–75%=yellow, 0%=red, null=grey; dog chips (required, no All); sticky header row with abbreviated slot labels (bre / am / lun / din / pm)
