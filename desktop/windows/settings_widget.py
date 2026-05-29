@@ -6,8 +6,10 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QTableWidget, QTableWidgetItem, QHeaderView, QMessageBox,
     QTabWidget, QInputDialog, QFormLayout, QFrame,
+    QDialog, QDialogButtonBox, QLineEdit, QDateEdit, QCheckBox,
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QDate
+from PySide6.QtGui import QColor, QBrush
 import api
 
 
@@ -146,51 +148,205 @@ class _IniListTab(QWidget):
             QMessageBox.critical(self, "Error", str(e))
 
 
-# ── Milestone Dogs tab (read-only, reflects dogs table) ───────────────────────
+# ── Dogs tab ──────────────────────────────────────────────────────────────────
 
-class _MilestoneDogsTab(QWidget):
+class _DogDialog(QDialog):
+    def __init__(self, record: dict = None, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Dog" if record else "Add Dog")
+        self.setFixedWidth(400)
+        layout = QFormLayout(self)
+        layout.setSpacing(10)
+
+        self._name = QLineEdit()
+        self._name.setMaxLength(60)
+
+        self._bd_chk = QCheckBox()
+        self._bd_edit = QDateEdit()
+        self._bd_edit.setCalendarPopup(True)
+        self._bd_edit.setDisplayFormat("yyyy-MM-dd")
+        self._bd_edit.setDate(QDate.currentDate())
+        self._bd_edit.setEnabled(False)
+        self._bd_chk.toggled.connect(self._bd_edit.setEnabled)
+        bd_row = QHBoxLayout()
+        bd_row.setContentsMargins(0, 0, 0, 0)
+        bd_row.addWidget(self._bd_chk)
+        bd_row.addWidget(self._bd_edit)
+        bd_row.addStretch()
+
+        self._breed = QLineEdit()
+        self._breed.setMaxLength(60)
+
+        self._track_pee = QCheckBox("Track pee events")
+        self._track_pee.setChecked(True)
+
+        self._active_chk = QCheckBox("Active")
+        self._active_chk.setChecked(True)
+
+        layout.addRow("Name *", self._name)
+        layout.addRow("Birthdate", bd_row)
+        layout.addRow("Breed", self._breed)
+        layout.addRow("", self._track_pee)
+        if record:
+            layout.addRow("", self._active_chk)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self._validate)
+        buttons.rejected.connect(self.reject)
+        layout.addRow(buttons)
+
+        if record:
+            self._name.setText(record.get("name", ""))
+            bd = record.get("birthdate")
+            if bd:
+                self._bd_chk.setChecked(True)
+                self._bd_edit.setDate(QDate.fromString(str(bd)[:10], "yyyy-MM-dd"))
+            self._breed.setText(record.get("breed") or "")
+            self._track_pee.setChecked(record.get("track_pee", True))
+            self._active_chk.setChecked(record.get("active", True))
+
+    def _validate(self):
+        if not self._name.text().strip():
+            QMessageBox.warning(self, "Validation", "Name is required.")
+            return
+        self.accept()
+
+    def get_data(self) -> dict:
+        return {
+            "name": self._name.text().strip(),
+            "birthdate": self._bd_edit.date().toString("yyyy-MM-dd") if self._bd_chk.isChecked() else None,
+            "breed": self._breed.text().strip() or None,
+            "track_pee": self._track_pee.isChecked(),
+            "active": self._active_chk.isChecked(),
+        }
+
+
+class _DogsTab(QWidget):
     def __init__(self):
         super().__init__()
+        self._dogs: list = []
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(8)
 
         toolbar = QHBoxLayout()
+        self._add_btn = QPushButton("+ Add")
+        self._edit_btn = QPushButton("Edit")
+        self._arch_btn = QPushButton("Archive")
+        self._ref_btn = QPushButton("Refresh")
+        for btn in (self._add_btn, self._edit_btn, self._arch_btn, self._ref_btn):
+            toolbar.addWidget(btn)
         toolbar.addStretch()
-        ref_btn = QPushButton("Refresh")
-        ref_btn.clicked.connect(self._load)
-        toolbar.addWidget(ref_btn)
+        self._add_btn.clicked.connect(self._add)
+        self._edit_btn.clicked.connect(self._edit)
+        self._arch_btn.clicked.connect(self._toggle_archive)
+        self._ref_btn.clicked.connect(self._load)
         layout.addLayout(toolbar)
 
-        self._table = QTableWidget(0, 2)
-        self._table.setHorizontalHeaderLabels(["Name", "Track Pee"])
+        self._table = QTableWidget(0, 5)
+        self._table.setHorizontalHeaderLabels(["Name", "Birthdate", "Breed", "Track Pee", "Status"])
         hh = self._table.horizontalHeader()
         hh.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         hh.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        hh.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        hh.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
         self._table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self._table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self._table.doubleClicked.connect(self._edit)
+        self._table.currentItemChanged.connect(self._on_selection)
         layout.addWidget(self._table)
-
-        note = QLabel("\"All\" is always available as a milestone dog option.\nDog add/edit/archive coming in Sprint 7.")
-        note.setStyleSheet("color: #888; font-size: 11px;")
-        layout.addWidget(note)
 
         self._load()
 
     def _load(self):
         try:
-            dogs = api.get("/dogs/")
+            self._dogs = api.get("/dogs/", params={"active_only": False})
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
-            dogs = []
+            return
+        self._populate()
+
+    def _populate(self):
+        grey = QBrush(QColor("#aaa"))
+        self._table.setUpdatesEnabled(False)
         self._table.setRowCount(0)
-        for i, dog in enumerate(dogs):
+        for i, dog in enumerate(self._dogs):
             self._table.insertRow(i)
-            self._table.setItem(i, 0, QTableWidgetItem(dog.get("name", "")))
-            track = "Yes" if dog.get("track_pee") else "No"
-            item = QTableWidgetItem(track)
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self._table.setItem(i, 1, item)
+            active = dog.get("active", True)
+
+            def _item(text, center=False, dog=dog, active=active):
+                it = QTableWidgetItem(str(text) if text is not None else "")
+                it.setData(Qt.ItemDataRole.UserRole, dog)
+                if center:
+                    it.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                if not active:
+                    it.setForeground(grey)
+                return it
+
+            self._table.setItem(i, 0, _item(dog.get("name", "")))
+            self._table.setItem(i, 1, _item(dog.get("birthdate") or ""))
+            self._table.setItem(i, 2, _item(dog.get("breed") or ""))
+            self._table.setItem(i, 3, _item("Yes" if dog.get("track_pee") else "No", center=True))
+            self._table.setItem(i, 4, _item("Archived" if not active else "", center=True))
+
+        self._table.setUpdatesEnabled(True)
+
+    def _on_selection(self, *_):
+        dog = self._selected()
+        if dog:
+            self._arch_btn.setText("Restore" if not dog.get("active", True) else "Archive")
+
+    def _selected(self) -> dict | None:
+        row = self._table.currentRow()
+        if row < 0:
+            return None
+        item = self._table.item(row, 0)
+        return item.data(Qt.ItemDataRole.UserRole) if item else None
+
+    def _add(self):
+        dlg = _DogDialog(parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            try:
+                api.post("/dogs/", json=dlg.get_data())
+                self._load()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", str(e))
+
+    def _edit(self):
+        dog = self._selected()
+        if not dog:
+            return
+        dlg = _DogDialog(record=dog, parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            try:
+                api.patch(f"/dogs/{dog['id']}", json=dlg.get_data())
+                self._load()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", str(e))
+
+    def _toggle_archive(self):
+        dog = self._selected()
+        if not dog:
+            return
+        active = dog.get("active", True)
+        action = "Restore" if not active else "Archive"
+        if QMessageBox.question(self, f"Confirm {action}", f"{action} {dog['name']}?") == QMessageBox.StandardButton.Yes:
+            try:
+                data = {
+                    "name": dog["name"],
+                    "birthdate": str(dog["birthdate"]) if dog.get("birthdate") else None,
+                    "breed": dog.get("breed"),
+                    "track_pee": dog.get("track_pee", True),
+                    "active": not active,
+                }
+                api.patch(f"/dogs/{dog['id']}", json=data)
+                self._load()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", str(e))
 
 
 # ── App tab ───────────────────────────────────────────────────────────────────
@@ -287,7 +443,7 @@ class SettingsWidget(QWidget):
 
         tabs = QTabWidget()
 
-        tabs.addTab(_placeholder_tab("Dogs — coming in Sprint 7"), "Dogs")
+        tabs.addTab(_DogsTab(), "Dogs")
         tabs.addTab(
             _IniListTab("/meal-slots", "/meal-slots", "/meal-slots", "/meal-slots"),
             "Meal Slots",

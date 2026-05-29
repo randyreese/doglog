@@ -14,10 +14,15 @@ import api
 def _age_str(milestone_date: _date, birthdate: _date) -> str:
     delta = milestone_date - birthdate
     weeks = delta.days // 7
-    if weeks <= 26:
+    if weeks <= 16:
         return f"{weeks} wks"
     months = round(delta.days / 30.44)
-    return f"{months} mo"
+    if months < 12:
+        return f"{months} mo"
+    years = months // 12
+    rem = months % 12
+    yr = "yr" if years == 1 else "yrs"
+    return f"{years} {yr}" if rem == 0 else f"{years} {yr} {rem} mo"
 
 
 class DiaryEntryDialog(QDialog):
