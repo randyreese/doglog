@@ -7,7 +7,7 @@ Daily dog care tracking — mobile PWA + desktop app.
 - **Walk tab**: Log pee/poo events per dog with one tap. Status matrix shows time-since and count-today for each dog, replacing the fridge whiteboard.
 - **Health tab**: Log health events (6 types), add notes + photo post-log via edit sheet. History unfiltered for vet reference.
 - **Meals tab**: Track food consumption % per meal slot *(Sprint 4)*
-- **Desktop**: Milestones, vet visits, weight log, dry food reorder *(Sprint 6+)*
+- **Desktop**: Milestones (vet visits, weight log, travel, training), full Settings editor *(Sprint 6)*; meal config, medications, dry food forecast coming in Sprint 7–8
 - **Google Sheets**: Daily export for vet log, one-time history import *(Sprint 9-10)*
 
 ## Stack
@@ -16,7 +16,7 @@ Daily dog care tracking — mobile PWA + desktop app.
 |---|---|
 | Backend | FastAPI + SQLAlchemy + SQLite, Docker on Mint (port 8001) |
 | Mobile | Vite + React PWA, WiFi-gate sync (silent on cellular) |
-| Desktop | PySide6 *(Sprint 6+)* |
+| Desktop | PySide6 (`desktop/main.py --dev` for local) |
 
 ## Dev setup
 
@@ -43,6 +43,16 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 ---
 
 ## Version History
+
+### v1.0.0 (2026-05-28)
+- New: PySide6 desktop app — sidebar nav (Milestones, Meal Config, Medications Config, Dry Food Forecast, Settings)
+- New: Milestones tab — full CRUD table (Date, Dog, Age calc, Type, Notes 1, Notes 2, Weight); three-checkbox dog filter (Tess / Pickles / All); double-click to edit
+- New: Settings page — QTabWidget with Dogs / Meal Slots / Meal Ingredients / Medications / Health Types / Milestone Types / App tabs; all ini-backed lists support Add / Edit / Delete / Reorder
+- New: Pull Prod DB button in Settings → App tab (SSH + docker cp pattern from grow)
+- New: `milestone_event_types.ini` (Life/Travel/Vet/Train/Experience) and `medication_names.ini`
+- New: CRUD endpoints for all ini-managed lists (health-types, meal-slots, meal-ingredients, milestone-event-types, medication-names)
+- New: `scripts/import_milestones.py` — one-time Excel→DB import; auto-classifies vet/travel/train/life; 113 historical records imported for Tess + Pickles
+- New: Migration 0005 — milestones table rebuilt with nullable dog_id, event_type, notes1, notes2, weight_lbs
 
 ### v0.9.0 (2026-05-28)
 - New: Horizontal swipe navigation between tabs — swipe left/right to switch Walk↔Meals↔Health; disabled while in History or Multi Day sub-views; skips swipeable delete rows

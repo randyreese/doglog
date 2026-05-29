@@ -133,6 +133,22 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ## Sprint History
 
+**Sprint 6 — Desktop scaffold + milestones** ✓ COMPLETE *(2026-05-28)*
+
+- [x] PySide6 desktop app: sidebar nav (Milestones, Meal Config, Medications Config, Dry Food Forecast, Settings)
+- [x] Milestones tab: full CRUD table, Date/Dog/Age/Type/Notes1/Notes2/Weight columns
+- [x] Dog filter: three independent checkboxes (Tess / Pickles / All) — five distinct filter states
+- [x] Milestones Add/Edit dialog: date picker, dog combo, type combo, notes, weight
+- [x] Age column: calculated from dog birthdate + milestone date (blank until birthdates added in Sprint 7)
+- [x] Settings page: QTabWidget with Dogs/Meal Slots/Meal Ingredients/Medications/Health Types/Milestone Types/App
+- [x] All ini-backed Settings tabs: Add/Edit/Delete/▲ Up/▼ Down/Refresh; delete warns about orphaned records
+- [x] Pull Prod DB in Settings → App tab
+- [x] Backend: migration 0005 rebuilds milestones table; milestones router full CRUD
+- [x] ini CRUD endpoints added to health-types, meal-slots, meal-ingredients, milestone-event-types, medication-names
+- [x] milestone_event_types.ini, medication_names.ini added
+- [x] scripts/import_milestones.py: Excel→DB import, auto-classifies vet/travel/train/life; 113 records imported to prod
+- [ ] Bug: PATCH /milestones/{id} returns 422 — undiagnosed; see memory/bug_milestone_patch_422.md
+
 **Sprint 4c — Full mobile UI/UX polish** ✓ COMPLETE *(2026-05-28)*
 
 - [x] Swipe navigation between tabs (Walk↔Meals↔Health); disabled in History/Multi Day sub-views; skips swipeable rows
@@ -273,43 +289,40 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 *Numbering convention: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream.*
 
-1. **Sprint 6 — Desktop scaffold + milestones**
-   PySide6 desktop app, dog milestones (vet visits, weight log, notable trips).
-   Include Pull Prod DB utility (SSH + docker cp pattern from grow) so migrations can be
-   tested against real data locally before deploying. Add to Settings widget.
-   Depends on: Sprint 1 (shared backend)
-
-2. **Sprint 7 — Desktop: dog config + meal composition + medication config**
-   Dog add/edit/archive, meal config with dated versions (ingredients default to checked from this point).
-   Medication builder: per-dog medications with flexible dose schedule labels (e.g. Morning / Afternoon / Evening — not hardcoded AM/PM), start/end dates, dosage.
+1. **Sprint 7 — Desktop: dog config + meal composition + medication config**
+   Dog add/edit/archive (with birthdates — unlocks Age column on Milestones).
+   Meal Config sidebar page: per-dog, per-slot, free-form ingredient description with effective date.
+   Medications Config sidebar page: per-dog medication records with dose schedule labels, start/end dates, dosage.
+   Milestone Type filter: single-select dropdown on Milestones tab toolbar.
+   Fix: 422 on PATCH /milestones/{id} — see memory/bug_milestone_patch_422.md for diagnosis steps.
    Depends on: Sprint 6
 
-3. **Sprint 5 — Medications (mobile logging)**
+2. **Sprint 5 — Medications (mobile logging)**
    Mobile: one row per medication at the bottom of each dog's section in the Meals tab.
    Tap → detail sheet with dynamic dose checkboxes (labels from desktop config), default all checked; uncheck to record a missed dose.
    Data model: `medication_doses` table (dog_id, medication_id, dose_date, doses_given JSON).
    Flea/tick prevention managed offline — not in scope.
    Depends on: Sprint 7 (medication config must exist before mobile logging is useful)
 
-4. **Sprint 8 — Desktop: dry food inventory**
+3. **Sprint 8 — Desktop: dry food inventory**
    Dry food purchase log, consumption pattern, reorder schedule display.
    Depends on: Sprint 6
 
-5. **Sprint 9 — Google Sheets import**
+4. **Sprint 9 — Google Sheets import**
    One-time migration script: read existing Google Sheet, map to data model, import to SQLite.
    Depends on: Sprints 1–5 (full data model in place)
 
-6. **Sprint 10 — Google Sheets daily export**
+5. **Sprint 10 — Google Sheets daily export**
    Daily export job: write to current month tab in new sheet format. Summary tab.
    Depends on: Sprint 9 (sheet format established)
 
-7. **Sprint 3B — Health tab filtering**
+6. **Sprint 3B — Health tab filtering**
    Health history currently shows all events (no date filter) — correct for vet reference.
    Review whether date range filtering or search is ever needed. Low priority; only add if
    history grows unwieldy in practice.
    Depends on: Sprint 3
 
-8. **Stretch — Raspberry Pi fridge display**
+7. **Stretch — Raspberry Pi fridge display**
    Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.
    Depends on: Sprint 1 (`/api/status` endpoint)
 
