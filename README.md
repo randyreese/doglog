@@ -7,7 +7,7 @@ Daily dog care tracking — mobile PWA + desktop app.
 - **Walk tab**: Log pee/poo events per dog with one tap. Status matrix shows time-since and count-today for each dog, replacing the fridge whiteboard.
 - **Health tab**: Log health events (6 types), add notes + photo post-log via edit sheet. History unfiltered for vet reference.
 - **Meals tab**: Track food consumption % per meal slot *(Sprint 4)*
-- **Desktop**: Milestones (vet visits, weight log, travel, training), full Settings editor *(Sprint 6)*; meal config, medications, dry food forecast coming in Sprint 7–8
+- **Desktop**: Diary (vet visits, weight log, travel, training — type filter, clickable Instagram links, age column); Settings → Dogs CRUD (add/edit/archive, birthdates) *(Sprint 7)*; meal config, medications, dry food forecast coming
 - **Google Sheets**: Daily export for vet log, one-time history import *(Sprint 9-10)*
 
 ## Stack
@@ -43,6 +43,14 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 ---
 
 ## Version History
+
+### v1.1.0 (2026-05-29)
+- New: Desktop "Milestones" page renamed to **Diary** throughout UI and widget files; DB/API endpoints unchanged
+- New: Diary toolbar — single-select Type filter dropdown (all types from ini)
+- New: Diary Notes 2 — URLs render as clickable "View post →" links opening Windows default browser
+- New: Diary Age column format — `# wks` (0–16), `# mo` (17 wks–11 mo), `# yr(s) [# mo]` (12+ mo)
+- New: Settings → Dogs tab — full CRUD (add/edit/archive); archived dogs shown grey; birthdate, breed, track pee all editable
+- New: Mobile Diary tab spec finalized (4th tab, full offline queue, build deferred to future sprint)
 
 ### v1.0.1 (2026-05-28)
 - Fixed: PATCH /milestones/{id} returned 422 — Python 3.13 evaluated `Optional[date]` as `NoneType` because the field name `date` shadowed the imported `datetime.date` type; fixed by aliasing the import to `Date`

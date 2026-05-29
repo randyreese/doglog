@@ -283,15 +283,22 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 **Sprint 7 — Desktop: Diary polish + dog config + meal composition + medication config**
 
-Goal: Polish the Milestones/Diary desktop page, add dog management, and build out meal and medication config pages.
+Goal: Complete Diary desktop polish, add dog management (unlocks Age column), and build out meal and medication config pages.
 
-- [ ] Milestone Type filter: single-select dropdown on Milestones tab toolbar (do first)
-- [ ] Rename "Milestones" → "Diary" throughout UI and desktop files (sidebar, page title, dialogs, widget file/class); keep DB table and API endpoints as `milestones` (no migration needed)
-- [ ] Notes 2 column: detect URLs, render as clickable links that open in Windows default browser
-- [ ] Mobile Diary tab spec (design, no build this sprint): 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first; dog chips + type dropdown filter; rows show date/dog/type/notes preview/"View post →" if Notes2 is URL; swipe-to-delete; add/edit sheet with date picker (defaults today), dog, type, notes1, notes2 URL, optional weight; offline queue (diaryEntries + diaryQueue in Dexie, same pattern as healthQueue); build after Dog work stabilizes dog list
-- [ ] Dog add/edit/archive (with birthdates — unlocks Age column)
-- [ ] Meal Config sidebar page: per-dog, per-slot, free-form ingredient description with effective date
-- [ ] Medications Config sidebar page: per-dog medication records with dose schedule labels, start/end dates, dosage
+- [x] Milestone Type filter: single-select dropdown on Diary tab toolbar
+- [x] Rename "Milestones" → "Diary" throughout UI and desktop files (sidebar, page title, dialogs, `diary_widget.py`); DB table and API endpoints remain `milestones` (no migration needed)
+- [x] Notes 2 column: detect URLs, render as clickable "View post →" links opening Windows default browser
+- [x] Mobile Diary tab spec (design complete, build deferred): 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first; dog chips + type dropdown filter; rows show date/dog chip/type/notes preview/"View post →" if Notes 2 is URL; swipe-to-delete; add/edit sheet with date picker (defaults today), dog, type, notes1, notes2 URL, optional weight; full offline queue (diaryEntries + diaryQueue in Dexie, same pattern as healthQueue); build after Dog work stabilizes dog list
+- [x] Dog add/edit/archive
+  - Backend was already complete (birthdate, breed, active, track_pee all in model; full CRUD endpoints existed)
+  - Desktop Settings → Dogs tab: full CRUD (name, birthdate checkbox+picker, breed, track pee, active); archived dogs shown grey with "Archived" status
+  - Diary Age column: 0–16 wks → # mo → # yr(s) [# mo if non-zero]; auto-populates from dog birthdate
+- [ ] Meal Config sidebar page
+  - Backend: `meal_configs` table (dog_id, slot, food_name, amount, effective_date); GET/POST/PATCH/DELETE /meal-configs/; effective-date versioning (latest config on or before a given date wins)
+  - Desktop: sidebar page with per-dog sections, per-slot rows; Add/Edit dialog (dog, slot, food name, amount, effective date); history of past configs shown below current
+- [ ] Medications Config sidebar page
+  - Backend: `medications` table (dog_id, name, dose_label, dosage, frequency, start_date, end_date); GET/POST/PATCH/DELETE /medications/
+  - Desktop: sidebar page with per-dog medication list; Add/Edit dialog (name, dose label, dosage, frequency, start/end dates); foundation for Sprint 5 mobile logging
 
 Depends on: Sprint 6
 
@@ -302,33 +309,31 @@ Depends on: Sprint 6
 *Numbering convention: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream.*
 
 1. **Sprint 5 — Medications (mobile logging)**
-
-2. **Sprint 5 — Medications (mobile logging)**
    Mobile: one row per medication at the bottom of each dog's section in the Meals tab.
    Tap → detail sheet with dynamic dose checkboxes (labels from desktop config), default all checked; uncheck to record a missed dose.
    Data model: `medication_doses` table (dog_id, medication_id, dose_date, doses_given JSON).
    Flea/tick prevention managed offline — not in scope.
    Depends on: Sprint 7 (medication config must exist before mobile logging is useful)
 
-3. **Sprint 8 — Desktop: dry food inventory**
+2. **Sprint 8 — Desktop: dry food inventory**
    Dry food purchase log, consumption pattern, reorder schedule display.
    Depends on: Sprint 6
 
-4. **Sprint 9 — Google Sheets import**
+3. **Sprint 9 — Google Sheets import**
    One-time migration script: read existing Google Sheet, map to data model, import to SQLite.
    Depends on: Sprints 1–5 (full data model in place)
 
-5. **Sprint 10 — Google Sheets daily export**
+4. **Sprint 10 — Google Sheets daily export**
    Daily export job: write to current month tab in new sheet format. Summary tab.
    Depends on: Sprint 9 (sheet format established)
 
-6. **Sprint 3B — Health tab filtering**
+5. **Sprint 3B — Health tab filtering**
    Health history currently shows all events (no date filter) — correct for vet reference.
    Review whether date range filtering or search is ever needed. Low priority; only add if
    history grows unwieldy in practice.
    Depends on: Sprint 3
 
-7. **Stretch — Raspberry Pi fridge display**
+6. **Stretch — Raspberry Pi fridge display**
    Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.
    Depends on: Sprint 1 (`/api/status` endpoint)
 

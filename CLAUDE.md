@@ -3,7 +3,7 @@
 ## Stack
 - Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
-- Desktop: PySide6 (`desktop/`), Sprint 6 scaffold complete
+- Desktop: PySide6 (`desktop/`), Sprint 7 in progress
 - Project plan: `docs/project-plan.md`
 
 ## Dev commands
@@ -24,8 +24,9 @@
 - `desktop/main.py` — entry point; `--dev` flag points to localhost:8001
 - `desktop/api.py` — httpx client with configure(); get/post/patch/put/delete helpers
 - `desktop/windows/main_window.py` — sidebar (180px) + QStackedWidget; 6 nav items
-- `desktop/windows/milestones_widget.py` — full CRUD table: Date/Dog/Age/Type/Notes1/Notes2/Weight; dog filter
-- `desktop/windows/settings_widget.py` — QTabWidget: Health Types/Meal Slots/Meal Ingredients/Milestone Types/Milestone Dogs/Dogs/Meal Config/Medications/App
+- `desktop/windows/diary_widget.py` — Diary page: full CRUD table (Date/Dog/Age/Type/Notes1/Notes2/Weight); type filter dropdown; dog checkboxes; Notes2 URLs render as "View post →" clickable links; age format 0–16 wks / mo / yr(s)
+- `desktop/windows/milestones_widget.py` — superseded by diary_widget.py; safe to delete
+- `desktop/windows/settings_widget.py` — QTabWidget: Dogs/Meal Slots/Meal Ingredients/Medications/Health Types/Milestone Types/App; Dogs tab has full CRUD with archive/restore
 - `desktop/windows/placeholder.py` — generic placeholder for unbuilt nav pages
 - `scripts/import_milestones.py` — one-time Excel→DB import; auto-classifies vet/travel/train/life
 - `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients; fetched once at startup, cached in localStorage, refreshed on sync
