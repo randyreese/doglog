@@ -265,7 +265,9 @@ class MilestonesWidget(QWidget):
                 api.patch(f"/milestones/{record['id']}", json=dlg.get_data())
                 self._load()
             except Exception as e:
-                QMessageBox.critical(self, "Error", str(e))
+                detail = getattr(getattr(e, "response", None), "text", "")
+                msg = f"{e}\n\n{detail}" if detail else str(e)
+                QMessageBox.critical(self, "Error", msg)
 
     def _delete(self):
         record = self._selected()

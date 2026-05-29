@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from datetime import date
+from datetime import date as Date
 from typing import Optional, List
 import configparser
 from pathlib import Path
@@ -136,7 +136,7 @@ def reorder_medication_names(items: List[dict]):
 
 class MilestoneIn(BaseModel):
     dog_id: Optional[int] = None
-    date: date
+    date: Date
     event_type: str
     notes1: Optional[str] = None
     notes2: Optional[str] = None
@@ -145,7 +145,7 @@ class MilestoneIn(BaseModel):
 
 class MilestonePatch(BaseModel):
     dog_id: Optional[int] = None
-    date: Optional[date] = None
+    date: Optional[Date] = None
     event_type: Optional[str] = None
     notes1: Optional[str] = None
     notes2: Optional[str] = None
@@ -155,7 +155,7 @@ class MilestonePatch(BaseModel):
 class MilestoneOut(BaseModel):
     id: int
     dog_id: Optional[int]
-    date: date
+    date: Date
     event_type: str
     notes1: Optional[str]
     notes2: Optional[str]
