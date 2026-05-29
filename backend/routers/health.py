@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 import base64
 import configparser
 from pathlib import Path
@@ -20,9 +20,61 @@ def _load_types() -> dict:
     return dict(config['types']) if 'types' in config else {}
 
 
+def _save_types(data: dict):
+    config = configparser.ConfigParser()
+    config['types'] = data
+    with open(_INI_PATH, 'w') as f:
+        config.write(f)
+
+
 @router.get("/health-types")
 def get_health_types():
     return [{"value": k, "label": v} for k, v in _load_types().items()]
+
+
+class HealthTypeIn(BaseModel):
+    label: str
+
+
+@router.post("/health-types")
+def add_health_type(body: HealthTypeIn):
+    label = body.label.strip()
+    if not label:
+        raise HTTPException(400, "label required")
+    types = _load_types()
+    key = label.lower().replace(" ", "_")
+    if key in types:
+        raise HTTPException(409, "type already exists")
+    types[key] = label
+    _save_types(types)
+    return {"value": key, "label": label}
+
+
+@router.delete("/health-types/{key}")
+def delete_health_type(key: str):
+    types = _load_types()
+    if key not in types:
+        raise HTTPException(404, "type not found")
+    del types[key]
+    _save_types(types)
+    return {"ok": True}
+
+
+@router.patch("/health-types/{key}")
+def edit_health_type(key: str, body: HealthTypeIn):
+    types = _load_types()
+    if key not in types:
+        raise HTTPException(404, "type not found")
+    types[key] = body.label.strip()
+    _save_types(types)
+    return {"value": key, "label": types[key]}
+
+
+@router.put("/health-types")
+def reorder_health_types(items: List[dict]):
+    new_dict = {item["value"]: item["label"] for item in items}
+    _save_types(new_dict)
+    return [{"value": k, "label": v} for k, v in new_dict.items()]
 
 
 class HealthEventIn(BaseModel):

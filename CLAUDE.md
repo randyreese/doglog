@@ -3,7 +3,7 @@
 ## Stack
 - Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
-- Desktop: PySide6 (Sprint 6+, not started yet)
+- Desktop: PySide6 (`desktop/`), Sprint 6 scaffold complete
 - Project plan: `docs/project-plan.md`
 
 ## Dev commands
@@ -13,12 +13,21 @@
 ## Key files
 - `backend/main.py` — FastAPI app, migration startup, seeds Tess + Pickles on first run
 - `backend/models.py` — full data model (MealLog + legacy placeholder tables)
-- `backend/routers/` — dogs, events, status, health, meals (all routers)
-- `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/; GET /health-types (reads ini); photos as base64 in/out, LargeBinary in DB
-- `backend/routers/meals.py` — GET /meal-slots, GET /meal-ingredients, GET/POST /meal-logs/ (upsert by dog+slot+date); GET /meal-logs/range/?dog_id=X&days=30 (multi-day summary)
-- `backend/health_types.ini` — user-editable health event types; edit on Mint, no rebuild needed
-- `backend/meal_slots.ini` — user-editable meal slot names
-- `backend/meal_ingredients.ini` — user-editable ingredient checklist items
+- `backend/routers/` — dogs, events, status, health, meals, milestones (all routers)
+- `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/; GET/POST/DELETE/PUT /health-types (ini CRUD)
+- `backend/routers/meals.py` — GET /meal-slots, GET /meal-ingredients with CRUD; GET/POST /meal-logs/ (upsert by dog+slot+date); GET /meal-logs/range/?dog_id=X&days=30
+- `backend/routers/milestones.py` — GET/POST/PATCH/DELETE /milestones/; GET/POST/DELETE/PUT /milestone-event-types
+- `backend/health_types.ini` — health event types; editable via Settings desktop tab
+- `backend/meal_slots.ini` — meal slot names; editable via Settings desktop tab
+- `backend/meal_ingredients.ini` — ingredient checklist; editable via Settings desktop tab
+- `backend/milestone_event_types.ini` — milestone event types (Life/Travel/Vet/Train/Experience); editable via Settings desktop tab
+- `desktop/main.py` — entry point; `--dev` flag points to localhost:8001
+- `desktop/api.py` — httpx client with configure(); get/post/patch/put/delete helpers
+- `desktop/windows/main_window.py` — sidebar (180px) + QStackedWidget; 6 nav items
+- `desktop/windows/milestones_widget.py` — full CRUD table: Date/Dog/Age/Type/Notes1/Notes2/Weight; dog filter
+- `desktop/windows/settings_widget.py` — QTabWidget: Health Types/Meal Slots/Meal Ingredients/Milestone Types/Milestone Dogs/Dogs/Meal Config/Medications/App
+- `desktop/windows/placeholder.py` — generic placeholder for unbuilt nav pages
+- `scripts/import_milestones.py` — one-time Excel→DB import; auto-classifies vet/travel/train/life
 - `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients; fetched once at startup, cached in localStorage, refreshed on sync
 - `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: backend URL (tappable), build timestamp
 - `mobile/src/components/SwipeableRow.jsx` — swipe-left-to-delete wrapper; used on Walk + Health history rows

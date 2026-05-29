@@ -65,10 +65,12 @@ class Medication(Base):
 class Milestone(Base):
     __tablename__ = "milestones"
     id = Column(Integer, primary_key=True, index=True)
-    dog_id = Column(Integer, nullable=False)
+    dog_id = Column(Integer, nullable=True)  # NULL = All
     date = Column(Date, nullable=False)
-    type = Column(String, nullable=False)  # 'vet_visit' | 'weight' | 'trip' | 'other'
-    notes = Column(String, nullable=True)
+    event_type = Column(String, nullable=False)  # Life|Travel|Vet|Train|Experience
+    notes1 = Column(String, nullable=True)
+    notes2 = Column(String, nullable=True)
+    weight_lbs = Column(Float, nullable=True)
 
 
 class DryFood(Base):
