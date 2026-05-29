@@ -281,7 +281,19 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-*(empty — pull next sprint from backlog)*
+**Sprint 7 — Desktop: Diary polish + dog config + meal composition + medication config**
+
+Goal: Polish the Milestones/Diary desktop page, add dog management, and build out meal and medication config pages.
+
+- [ ] Milestone Type filter: single-select dropdown on Milestones tab toolbar (do first)
+- [ ] Rename "Milestones" → "Diary" throughout UI and desktop files (sidebar, page title, dialogs, widget file/class); keep DB table and API endpoints as `milestones` (no migration needed)
+- [ ] Notes 2 column: detect URLs, render as clickable links that open in Windows default browser
+- [ ] Mobile Diary tab spec (design, no build this sprint): 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first; dog chips + type dropdown filter; rows show date/dog/type/notes preview/"View post →" if Notes2 is URL; swipe-to-delete; add/edit sheet with date picker (defaults today), dog, type, notes1, notes2 URL, optional weight; offline queue (diaryEntries + diaryQueue in Dexie, same pattern as healthQueue); build after Dog work stabilizes dog list
+- [ ] Dog add/edit/archive (with birthdates — unlocks Age column)
+- [ ] Meal Config sidebar page: per-dog, per-slot, free-form ingredient description with effective date
+- [ ] Medications Config sidebar page: per-dog medication records with dose schedule labels, start/end dates, dosage
+
+Depends on: Sprint 6
 
 ---
 
@@ -289,12 +301,7 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 *Numbering convention: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream.*
 
-1. **Sprint 7 — Desktop: dog config + meal composition + medication config**
-   Dog add/edit/archive (with birthdates — unlocks Age column on Milestones).
-   Meal Config sidebar page: per-dog, per-slot, free-form ingredient description with effective date.
-   Medications Config sidebar page: per-dog medication records with dose schedule labels, start/end dates, dosage.
-   Milestone Type filter: single-select dropdown on Milestones tab toolbar.
-   Depends on: Sprint 6
+1. **Sprint 5 — Medications (mobile logging)**
 
 2. **Sprint 5 — Medications (mobile logging)**
    Mobile: one row per medication at the bottom of each dog's section in the Meals tab.

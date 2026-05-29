@@ -4,13 +4,13 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
-from windows.milestones_widget import MilestonesWidget
+from windows.diary_widget import DiaryWidget
 from windows.settings_widget import SettingsWidget
 from windows.placeholder import Placeholder
 
 
 _NAV_ITEMS = [
-    "Milestones",
+    "Diary",
     "Meal Config",
     "Medications Config",
     "Dry Food Forecast",
@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
         self._stack = QStackedWidget()
 
         pages = [
-            MilestonesWidget(),
+            DiaryWidget(),
             Placeholder("Meal Config — coming in Sprint 7"),
             Placeholder("Medications Config — coming in Sprint 7"),
             Placeholder("Dry Food Forecast — coming in Sprint 8"),
