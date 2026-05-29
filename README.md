@@ -44,6 +44,10 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v1.0.1 (2026-05-28)
+- Fixed: PATCH /milestones/{id} returned 422 — Python 3.13 evaluated `Optional[date]` as `NoneType` because the field name `date` shadowed the imported `datetime.date` type; fixed by aliasing the import to `Date`
+- Improved: milestone edit error dialog now surfaces the Pydantic validation detail from the response body
+
 ### v1.0.0 (2026-05-28)
 - New: PySide6 desktop app — sidebar nav (Milestones, Meal Config, Medications Config, Dry Food Forecast, Settings)
 - New: Milestones tab — full CRUD table (Date, Dog, Age calc, Type, Notes 1, Notes 2, Weight); three-checkbox dog filter (Tess / Pickles / All); double-click to edit

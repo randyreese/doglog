@@ -147,7 +147,7 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 - [x] ini CRUD endpoints added to health-types, meal-slots, meal-ingredients, milestone-event-types, medication-names
 - [x] milestone_event_types.ini, medication_names.ini added
 - [x] scripts/import_milestones.py: Excel→DB import, auto-classifies vet/travel/train/life; 113 records imported to prod
-- [ ] Bug: PATCH /milestones/{id} returns 422 — undiagnosed; see memory/bug_milestone_patch_422.md
+- [x] Bug fixed: PATCH /milestones/{id} 422 — Python 3.13 name-shadowing; `date as Date` import alias
 
 **Sprint 4c — Full mobile UI/UX polish** ✓ COMPLETE *(2026-05-28)*
 
@@ -294,7 +294,6 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
    Meal Config sidebar page: per-dog, per-slot, free-form ingredient description with effective date.
    Medications Config sidebar page: per-dog medication records with dose schedule labels, start/end dates, dosage.
    Milestone Type filter: single-select dropdown on Milestones tab toolbar.
-   Fix: 422 on PATCH /milestones/{id} — see memory/bug_milestone_patch_422.md for diagnosis steps.
    Depends on: Sprint 6
 
 2. **Sprint 5 — Medications (mobile logging)**
