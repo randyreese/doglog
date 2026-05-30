@@ -5,6 +5,7 @@
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
 - Desktop: PySide6 (`desktop/`), Sprint 7 in progress
 - Project plan: `docs/project-plan.md`
+- UI specs (confirmed ASCII renderings): `docs/ui-specs.md`
 
 ## Dev commands
 - `start_dev.bat` — starts backend (0.0.0.0:8001) + Vite dev server (5173)
@@ -48,6 +49,7 @@
 - `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\vite-pwa-dev-proxy.md` — why the Vite proxy is required for any PWA tested on a physical device; pattern for all future apps
 - `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\dev-prod-workflow.md` — dev/prod split pattern (shared with grow)
 - `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\offline-queue-idempotency.md` — how the offline queue creates a double-POST race, and the UNIQUE constraint + idempotent endpoint fix; applies to any app using flushQueue() pattern (doglog + grow)
+- `D:\Users\mail\Documents\GitHub\claude\docs\working-with-claude\spec-first-ui-workflow.md` — render ASCII + lock prose before building any UI; the workflow that produced the Sprint 7/5/5a specs this session
 
 ## History row design (Walk + Health shared pattern)
 

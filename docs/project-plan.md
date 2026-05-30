@@ -18,7 +18,7 @@ vet log and converts historical data to the new format.
 | Desktop | PySide6 on Windows |
 | Sync | WiFi-gate pattern — silent on cellular, auto-sync on WiFi connect |
 | Dev/Prod split | `--dev` flag, `start_dev.bat`, `deploy_to_prod.bat` (same pattern as grow) |
-| Google Sheets | One-time import for history; daily export for ongoing vet log |
+| Excel | Reporting platform for all tabular/printed output; one-time import from user-exported legacy data |
 
 ---
 
@@ -121,13 +121,13 @@ Status strip (expanded): full matrix — last pee time (Tess only) + last poop t
 
 ---
 
-## Google Sheets Format
+## Reporting (Excel)
 
-- One tab per calendar month (e.g. `2026-05`)
-- Summary tab per calendar year
-- Clean new format — old data converted to match
-- Daily export job writes to current month tab
-- Import script: one-time migration from existing Google Sheet
+Excel is the target platform for all tabular and printed reports. Reports are generated on demand (not on a schedule) as `.xlsx` files using `openpyxl` or similar.
+
+**Vet Report** (Sprint 10 first target): covers a user-specified date range; includes health events, medications, weight entries, and diary entries; formatted for printing or sharing with a vet.
+
+**Historical import** (Sprint 9): user exports legacy Google Sheet data manually (CSV or xlsx); one-time import script maps to current data model and loads to SQLite.
 
 ---
 
@@ -293,12 +293,25 @@ Goal: Complete Diary desktop polish, add dog management (unlocks Age column), an
   - Backend was already complete (birthdate, breed, active, track_pee all in model; full CRUD endpoints existed)
   - Desktop Settings → Dogs tab: full CRUD (name, birthdate checkbox+picker, breed, track pee, active); archived dogs shown grey with "Archived" status
   - Diary Age column: 0–16 wks → # mo → # yr(s) [# mo if non-zero]; auto-populates from dog birthdate
+- [ ] Diary text search (desktop)
+  - Search QLineEdit in Diary toolbar; filters Notes 1 field client-side on keypress (hide/show rows); no server round-trip needed at current record volumes
+  - Mobile search deferred to Unscheduled Future Work
+
 - [ ] Meal Config sidebar page
-  - Backend: `meal_configs` table (dog_id, slot, food_name, amount, effective_date); GET/POST/PATCH/DELETE /meal-configs/; effective-date versioning (latest config on or before a given date wins)
-  - Desktop: sidebar page with per-dog sections, per-slot rows; Add/Edit dialog (dog, slot, food name, amount, effective date); history of past configs shown below current
+  - Data model: `meal_configs` (id, dog_id, slot, effective_date) + `meal_config_items` (id, meal_config_id, food_name, amount, sort_order); child table, not JSON
+  - Backend: GET/POST/PATCH/DELETE /meal-configs/; effective-date versioning (latest config on or before a given date wins); DELETE /meal-configs/{id}/items/{item_id}
+  - Desktop layout: per-dog sections; per-slot rows showing current config; history rows inline below current (grey/italic); slots with no config show —
+  - Add: creates new versioned record (all fields editable); Edit: modifies record in place (Dog/Slot read-only, food/amount/effective-date editable)
+  - Add/Edit dialog: ingredient list is a mini table (Food | Amount | ▲ | ▼ | X); in-place cell editing; [+ Add Ingredient] pops pick list from meal_ingredients.ini filtered to exclude already-added items
+  - Delete current record promotes previous history row to current
+  - Slot order follows meal_slots.ini order
 - [ ] Medications Config sidebar page
-  - Backend: `medications` table (dog_id, name, dose_label, dosage, frequency, start_date, end_date); GET/POST/PATCH/DELETE /medications/
-  - Desktop: sidebar page with per-dog medication list; Add/Edit dialog (name, dose label, dosage, frequency, start/end dates); foundation for Sprint 5 mobile logging
+  - Data model: `medications` (id, dog_id, name, start_date, end_date) + `medication_doses` (id, medication_id, label, amount, sort_order); child table pattern matches meal_config_items
+  - Backend: GET/POST/PATCH/DELETE /medications/; active vs. past derived from end_date vs. today
+  - Desktop layout: shared page, per-dog sections; each section split Active / Past; Past rows grey/italic; medication name picked from medication_names.ini
+  - Add: all fields editable; Edit: Dog/Medication name read-only, dates and dose rows editable
+  - Add/Edit dialog: doses are a mini table (Label | Amount | ▲ | ▼ | X); label and amount are free text (dose timing and amounts are too varied to standardize); [+ Add Dose] appends a blank row
+  - Vet Report dependency: start/end dates must be stored as proper dates (not text); medication name from ini ensures consistent naming across report queries
 
 Depends on: Sprint 6
 
@@ -306,47 +319,70 @@ Depends on: Sprint 6
 
 ## Backlog
 
-*Numbering convention: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream.*
+*Sprint naming: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream. Backlog is a bullet list — never numbered, so insertions don't require renumbering.*
 
-1. **Sprint 5 — Medications (mobile logging)**
-   Mobile: one row per medication at the bottom of each dog's section in the Meals tab.
-   Tap → detail sheet with dynamic dose checkboxes (labels from desktop config), default all checked; uncheck to record a missed dose.
-   Data model: `medication_doses` table (dog_id, medication_id, dose_date, doses_given JSON).
-   Flea/tick prevention managed offline — not in scope.
-   Depends on: Sprint 7 (medication config must exist before mobile logging is useful)
+- **Sprint 5 — Medications (mobile logging)**
+  - Meals tab: single "Medications" row per dog, below Snack PM, slightly shaded to distinguish from meal rows
+  - Row status: "X of Y given" (counting individual dose entries across all active meds), "Not logged" if no log yet, "✓ All given" if complete
+  - Tap → slide-up sheet; all active medications grouped by name; one checkbox per dose entry (label + amount from `medication_doses` config); loads saved state for today, unchecked only if no log exists
+  - Save: upserts one `medication_logs` record per medication (dog_id, medication_id, log_date DATE, doses_given JSON array of given labels)
+  - Only active medications shown (end_date null or in future); non-daily meds (e.g. Heartgard Monthly) always shown, no due-date logic
+  - Offline: `medicationQueue` + Dexie `medicationLogs`; queue badge includes med queue
+  - Backend: prune pee/poo events older than 7 days on startup (one SQL DELETE in `main.py`)
+  - Flea/tick prevention managed offline — not in scope
+  - Depends on: Sprint 7 (medication config must exist before mobile logging is useful)
 
-2. **Sprint 8 — Desktop: dry food inventory**
-   Dry food purchase log, consumption pattern, reorder schedule display.
-   Depends on: Sprint 6
+- **Sprint 5a — Mobile Diary tab**
+  - 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first
+  - Filter bar: dog chips (Tess/Pickles, multi-select) + inline type `<select>` (All/Life/Travel/Vet/Train/Experience — labels not keys); not a bottom sheet
+  - Rows: date / dog chip / type label / notes1 preview / "View post →" if Notes 2 is a URL
+  - Row tap → edit sheet pre-filled; swipe left → delete with confirmation
+  - Diary is last tab — right swipe navigates back to Health (extends existing swipe nav from Sprint 4c)
+  - Add/Edit sheet: date picker (defaults today), dog dropdown, type dropdown (labels), notes1 textarea, notes2 URL field (optional), weight field with checkbox (optional)
+  - Full offline queue: diaryEntries + diaryQueue in Dexie, same pattern as healthQueue; queue badge includes diary queue
+  - Depends on: Sprint 7 (dog list stable)
 
-3. **Sprint 9 — Google Sheets import**
-   One-time migration script: read existing Google Sheet, map to data model, import to SQLite.
-   Depends on: Sprints 1–5 (full data model in place)
+- **Sprint 9 — Historical data import**
+  One-time migration script: read a user-exported file from the legacy Google Sheet (CSV or xlsx),
+  map to data model, import to SQLite. User handles the Google Sheets export manually; script
+  consumes the resulting file.
+  Depends on: Sprints 1–5 (full data model in place)
 
-4. **Sprint 10 — Google Sheets daily export**
-   Daily export job: write to current month tab in new sheet format. Summary tab.
-   Depends on: Sprint 9 (sheet format established)
+  *Assumptions to confirm at sprint start (based on Apr sheet review):*
+  - Bfast / Lunch / Dinner / 9p snack columns → `meal_logs` (% consumed); confirm "9p snack" maps to "Snack PM" slot or is distinct
+  - No Vomit / Vomit columns → `health_events`; confirm no other health columns exist across all months
+  - Outcomes column → diary entries (one per day, raw text); user may disagree — confirm whether structured parsing is wanted
+  - Notes column (Sucralfate etc.) → confirm target: diary entries, or `medications` table, or both
+  - Diet column → unclear; confirm what it encodes and whether it needs to be imported
+  - Streak column → assumed calculated, not imported; confirm
+  - Sheet coverage: confirm which months/tabs exist and which dogs are tracked per tab
+  - Lick mat ("LICK" in Outcomes text) → appears to be a separate feeding not captured in column data; confirm whether it should be a meal slot or ignored
 
-5. **Sprint 3B — Health tab filtering**
-   Health history currently shows all events (no date filter) — correct for vet reference.
-   Review whether date range filtering or search is ever needed. Low priority; only add if
-   history grows unwieldy in practice.
-   Depends on: Sprint 3
+- **Sprint 10 — Excel reports**
+  Excel is the target presentation platform for all tabular and printed reports. First target:
+  Vet Report — generates an xlsx covering the date range of interest, formatted for printing or
+  sharing. Additional reports (weight history, medication log, meal history) added as needed.
+  Depends on: Sprint 9 (data in place)
 
-6. **Stretch — Raspberry Pi fridge display**
-   Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.
-   Depends on: Sprint 1 (`/api/status` endpoint)
+## Unscheduled Future Work
 
-## Maintenance Backlog
+- **Sprint 8 — Desktop: dry food inventory**
+  Dry food purchase log, consumption pattern, reorder schedule display.
+  Depends on: Sprint 6
 
-- Prune pee/poo events older than 7 days on backend startup (one SQL DELETE in `main.py`)
+- **Diary text search (mobile)**
+  Mobile Diary tab search on Notes 1 field. Deferred until demand is established and record volume is understood. Options when ready: server-side LIKE query (WiFi only) or full Dexie scan (offline capable but unindexed). Desktop search ships in Sprint 7.
+
+- **Stretch — Raspberry Pi fridge display**
+  Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.
+  Depends on: Sprint 1 (`/api/status` endpoint)
 
 ---
 
 ## Open Questions
 
 - [ ] Status matrix color thresholds: what elapsed times trigger yellow/red per event type? (defaults: pee 4h/6h, poo 8h/12h — confirm after field use)
-- [ ] Google Sheets existing data: what columns/tabs does the current sheet use? (needed for import script)
+- [x] Google Sheets existing data: user will export manually; import script consumes the exported file (CSV or xlsx)
 - [ ] Meal slots: am/pm only, or more granular (breakfast/lunch/dinner/snack)?
 - [x] Photo storage: blob in SQLite, base64 over the wire, compressed to max 1200px client-side before upload
 
