@@ -344,10 +344,18 @@ Depends on: Sprint 7
   consumes the resulting file.
   Depends on: Sprints 1–5 (full data model in place)
 
+  *Pre-requisites before import:*
+  - Add DELETE endpoint for meal_logs (no mobile UI needed — one-time cleanup via API call or script)
+  - Delete dummy/test meal log records in prod DB before loading real history; these are in the 1/1–present date range and will corrupt the vet report if left in place
+
   *Assumptions to confirm at sprint start (based on Apr sheet review):*
   - Bfast / Lunch / Dinner / 9p snack columns → `meal_logs` (% consumed); confirm "9p snack" maps to "Snack PM" slot or is distinct
   - No Vomit / Vomit columns → `health_events`; confirm no other health columns exist across all months
   - Outcomes column → diary entries (one per day, raw text); user may disagree — confirm whether structured parsing is wanted
+  - Input format for meals: Excel/CSV one-row-per-meal (authored manually), bulk-fill defaults + exceptions only, or direct from existing records?
+  - Pickles diet change ~4/1/2026: need pre- and post-April ingredient sets; confirm exact date and config details before building
+  - Dated meal configs already in DB with `effective_date` — import script queries "latest config with effective_date ≤ log date" per dog+slot; no hardcoded config definitions needed in the script
+  - No config found for a dog+slot on a given date = skip that slot (no record created); handles cases like Pickles AM Snack not starting until Feb/Mar — just don't create a config with effective_date 2026-01-01 for that slot
   - Notes column (Sucralfate etc.) → confirm target: diary entries, or `medications` table, or both
   - Diet column → unclear; confirm what it encodes and whether it needs to be imported
   - Streak column → assumed calculated, not imported; confirm

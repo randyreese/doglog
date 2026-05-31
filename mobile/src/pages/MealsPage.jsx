@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
-import { queueMealLog, localISOString } from '../sync'
+import { queueMealLog, queueMedicationLog, localISOString } from '../sync'
 import { useSyncContext } from '../SyncContext'
 import { useConfig } from '../ConfigContext'
 import { db } from '../db'
@@ -174,6 +174,119 @@ const ed = {
   save: { padding: '10px 20px', background: '#5b8dd9', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
 }
 
+// ── Dose sheet ────────────────────────────────────────────────────────────────
+function DoseSheet({ dog, date, medications, medLogMap, open, onClose, onSave }) {
+  const dogMeds = medications.filter(m => m.dog_id === dog?.id)
+  const [checked, setChecked] = useState({})
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(null)
+
+  useEffect(() => {
+    if (!dog) return
+    const init = {}
+    for (const med of medications.filter(m => m.dog_id === dog.id)) {
+      const log = medLogMap[`${dog.id}:${med.id}`]
+      const given = log?.doses_given || []
+      init[med.id] = Object.fromEntries(med.doses.map(d => [d.label, given.includes(d.label)]))
+    }
+    setChecked(init)
+    setSaveError(null)
+  }, [dog, medLogMap, medications])
+
+  async function handleSave() {
+    setSaving(true)
+    setSaveError(null)
+    try {
+      await onSave(dog.id, date, dogMeds, checked)
+      onClose()
+    } catch {
+      setSaveError('Save failed — try again')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div
+      style={{ ...sh.overlay, opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none' }}
+      onClick={onClose}
+    >
+      <div
+        style={{ ...sh.sheet, padding: 16, gap: 14, display: 'flex', flexDirection: 'column', transform: open ? 'translateY(0)' : 'translateY(100%)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={ed.title}>{dog?.name} — Medications</div>
+        {dogMeds.map(med => (
+          <div key={med.id}>
+            <div style={ds.medName}>{med.name}</div>
+            {med.doses.map(dose => (
+              <label key={dose.label} style={ed.checkRow}>
+                <input
+                  type="checkbox"
+                  style={ed.checkbox}
+                  checked={!!checked[med.id]?.[dose.label]}
+                  onChange={e => setChecked(prev => ({
+                    ...prev,
+                    [med.id]: { ...prev[med.id], [dose.label]: e.target.checked },
+                  }))}
+                />
+                <span style={ed.checkLabel}>
+                  {dose.label}
+                  {dose.amount && <span style={ds.amount}>  {dose.amount}</span>}
+                </span>
+              </label>
+            ))}
+          </div>
+        ))}
+        {saveError && <div style={ed.error}>{saveError}</div>}
+        <div style={ed.actions}>
+          <button style={ed.cancel} onClick={onClose}>Cancel</button>
+          <button style={ed.save} onClick={handleSave} disabled={saving}>
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ds = {
+  medName: { fontSize: 14, fontWeight: 600, color: '#555', marginBottom: 4 },
+  amount: { color: '#888', fontWeight: 400 },
+}
+
+// ── Med row ───────────────────────────────────────────────────────────────────
+function MedRow({ dog, medications, medLogMap, onTap }) {
+  const dogMeds = medications.filter(m => m.dog_id === dog.id)
+  if (dogMeds.length === 0) return null
+
+  const totalDoses = dogMeds.reduce((acc, m) => acc + m.doses.length, 0)
+  let givenCount = 0
+  let hasAnyLog = false
+  for (const med of dogMeds) {
+    const log = medLogMap[`${dog.id}:${med.id}`]
+    if (log) { hasAnyLog = true; givenCount += log.doses_given.length }
+  }
+
+  let statusText, statusColor
+  if (!hasAnyLog) { statusText = 'Not logged'; statusColor = '#bbb' }
+  else if (givenCount === totalDoses) { statusText = '✓ All given'; statusColor = '#2f855a' }
+  else { statusText = `${givenCount} of ${totalDoses} given`; statusColor = '#d97706' }
+
+  return (
+    <div style={mdr.row} onClick={onTap}>
+      <span style={mdr.label}>Medications</span>
+      <span style={{ ...mdr.status, color: statusColor }}>{statusText}</span>
+    </div>
+  )
+}
+
+const mdr = {
+  row: { display: 'flex', alignItems: 'center', padding: '12px 16px', background: '#f0f4ff', borderBottom: '1px solid #e2e8f0', cursor: 'pointer' },
+  label: { flex: 1, fontSize: 15, color: '#555', fontStyle: 'italic' },
+  status: { fontSize: 14, fontWeight: 600 },
+}
+
 // ── Meal row ──────────────────────────────────────────────────────────────────
 function MealRow({ slot, log, onTap }) {
   const logged = log && log.percent_consumed !== null && log.percent_consumed !== undefined
@@ -278,12 +391,14 @@ const md = {
 export default function MealsPage() {
   const nav = useNavigate()
   const { signal, queueCount, syncVersion, refreshQueueCount } = useSyncContext()
-  const { dogs, mealSlots, mealIngredients, mealConfigs } = useConfig()
+  const { dogs, mealSlots, mealIngredients, mealConfigs, medications } = useConfig()
 
   const today = localDateString()
   const [currentDate, setCurrentDate] = useState(today)
   const [logs, setLogs] = useState([])
   const [editTarget, setEditTarget] = useState(null)
+  const [medTarget, setMedTarget] = useState(null)
+  const [medLogs, setMedLogs] = useState([])
   const [menuOpen, setMenuOpen] = useState(false)
   const [multiDayOpen, setMultiDayOpen] = useState(false)
   const [multiDayDogId, setMultiDayDogId] = useState(null)
@@ -319,11 +434,27 @@ export default function MealsPage() {
     }
   }, [currentDate])
 
+  const loadMedLogs = useCallback(async () => {
+    if (dogs.length === 0) return
+    try {
+      const results = await Promise.all(
+        dogs.map(dog => api.get(`/medication-logs/?dog_id=${dog.id}&log_date=${currentDate}`))
+      )
+      setMedLogs(results.flat())
+    } catch {
+      const local = await db.medicationLogs.where('log_date').equals(currentDate).toArray()
+      setMedLogs(local)
+    }
+  }, [currentDate, dogs])
+
   useEffect(() => { loadLogs() }, [loadLogs])
-  useEffect(() => { if (syncVersion > 0) loadLogs() }, [syncVersion, loadLogs])
+  useEffect(() => { loadMedLogs() }, [loadMedLogs])
+  useEffect(() => { if (syncVersion > 0) { loadLogs(); loadMedLogs() } }, [syncVersion, loadLogs, loadMedLogs])
 
   // build lookup: `${dog_id}:${slot}` → log
   const logMap = Object.fromEntries(logs.map(l => [`${l.dog_id}:${l.slot}`, l]))
+  // build lookup: `${dog_id}:${medication_id}` → medLog
+  const medLogMap = Object.fromEntries(medLogs.map(l => [`${l.dog_id}:${l.medication_id}`, l]))
 
   const isToday = currentDate === today
 
@@ -334,6 +465,23 @@ export default function MealsPage() {
     const next = !multiDayOpen
     setMultiDayOpen(next)
     if (!next) loadLogs()
+  }
+
+  async function handleMedSave(dogId, date, dogMeds, checked) {
+    for (const med of dogMeds) {
+      const doses_given = Object.entries(checked[med.id] || {})
+        .filter(([, v]) => v)
+        .map(([label]) => label)
+      const body = { dog_id: dogId, medication_id: med.id, log_date: date, doses_given }
+      try {
+        await api.post('/medication-logs/', body)
+        await db.medicationLogs.put({ dog_id: dogId, medication_id: med.id, log_date: date, doses_given })
+      } catch {
+        await queueMedicationLog({ dog_id: dogId, medication_id: med.id, log_date: date, doses_given })
+        await refreshQueueCount()
+      }
+    }
+    await loadMedLogs()
   }
 
   async function handleSave(dogId, slot, meal_date, pct, notes, ingredients) {
@@ -417,6 +565,12 @@ export default function MealsPage() {
                       })}
                     />
                   ))}
+                  <MedRow
+                    dog={dog}
+                    medications={medications}
+                    medLogMap={medLogMap}
+                    onTap={() => setMedTarget(dog)}
+                  />
                 </div>
               ))}
               {dogs.length === 0 && <div style={p.empty}>Loading…</div>}
@@ -448,6 +602,15 @@ export default function MealsPage() {
         mealIngredients={mealIngredients}
         onClose={() => setEditTarget(null)}
         onSave={handleSave}
+      />
+      <DoseSheet
+        dog={medTarget}
+        date={currentDate}
+        medications={medications}
+        medLogMap={medLogMap}
+        open={!!medTarget}
+        onClose={() => setMedTarget(null)}
+        onSave={handleMedSave}
       />
     </>
   )

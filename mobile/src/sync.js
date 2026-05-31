@@ -128,6 +128,30 @@ export async function flushQueue() {
       break
     }
   }
+
+  // Flush medication queue
+  const medEntries = await db.medicationQueue.toArray()
+  for (const entry of medEntries) {
+    try {
+      const res = await fetch(`${base}/doglog/medication-logs/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dog_id: entry.dog_id,
+          medication_id: entry.medication_id,
+          log_date: entry.log_date,
+          doses_given: entry.doses_given,
+        }),
+      })
+      if (!res.ok) break
+      await db.medicationQueue.delete(entry.id)
+      await db.medicationLogs
+        .where({ dog_id: entry.dog_id, medication_id: entry.medication_id, log_date: entry.log_date })
+        .modify(record => { delete record._queued })
+    } catch {
+      break
+    }
+  }
 }
 
 export function localISOString(d = new Date()) {
@@ -189,6 +213,11 @@ export async function queueHealthEvent({ dog_id, type, timestamp, notes, photo }
 export async function queueMealLog({ dog_id, slot, meal_date, percent_consumed, notes, ingredients }) {
   await db.mealQueue.add({ dog_id, slot, meal_date, percent_consumed, notes, ingredients, created_at: localISOString() })
   await db.mealLogs.put({ dog_id, slot, meal_date, percent_consumed, notes, ingredients, _queued: true })
+}
+
+export async function queueMedicationLog({ dog_id, medication_id, log_date, doses_given }) {
+  await db.medicationQueue.add({ dog_id, medication_id, log_date, doses_given, created_at: localISOString() })
+  await db.medicationLogs.put({ dog_id, medication_id, log_date, doses_given, _queued: true })
 }
 
 export async function deleteHealthEvent(id) {

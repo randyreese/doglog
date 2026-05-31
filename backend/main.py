@@ -6,7 +6,7 @@ import socket as _socket, io as _io
 from alembic.config import Config
 from alembic import command
 import models  # noqa: F401
-from routers import dogs, events, status, health, meals, milestones, meal_configs, medications
+from routers import dogs, events, status, health, meals, milestones, meal_configs, medications, medication_logs
 
 
 def _run_migrations():
@@ -51,6 +51,22 @@ def _seed_dogs():
 _seed_dogs()
 
 
+def _prune_old_events():
+    from database import SessionLocal
+    from sqlalchemy import text
+    db = SessionLocal()
+    try:
+        db.execute(text(
+            "DELETE FROM pee_poo_events WHERE timestamp < datetime('now', '-7 days')"
+        ))
+        db.commit()
+    finally:
+        db.close()
+
+
+_prune_old_events()
+
+
 app = FastAPI(
     title="Doglog API",
     description="Dog care tracking backend",
@@ -72,6 +88,7 @@ app.include_router(meals.router, prefix="/doglog")
 app.include_router(milestones.router, prefix="/doglog")
 app.include_router(meal_configs.router, prefix="/doglog")
 app.include_router(medications.router, prefix="/doglog")
+app.include_router(medication_logs.router, prefix="/doglog")
 
 
 from datetime import datetime as _dt

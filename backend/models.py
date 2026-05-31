@@ -96,6 +96,17 @@ class DryFood(Base):
     weight_kg = Column(Float, nullable=True)
 
 
+class MedicationLog(Base):
+    __tablename__ = "medication_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    dog_id = Column(Integer, nullable=False)
+    medication_id = Column(Integer, nullable=False)
+    log_date = Column(Date, nullable=False)
+    doses_given = Column(String, nullable=False)  # JSON: ["Morning before food"]
+
+    __table_args__ = (UniqueConstraint('dog_id', 'medication_id', 'log_date', name='uq_medication_log'),)
+
+
 class MealLog(Base):
     __tablename__ = "meal_logs"
     id = Column(Integer, primary_key=True, index=True)
