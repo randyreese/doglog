@@ -44,6 +44,10 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v1.2.1 (2026-05-31)
+- Fixed: stale queue dots on Meals tab when browsing past dates offline — `_queued` flag now cleared from `db.mealLogs` after a meal queue entry syncs successfully; previously the flag persisted in Dexie indefinitely (issue #4)
+- New: `docs/dexie-offline-architecture.md` — plain-English explanation of the Walk/Health full-cache vs Meals queue-only offline pattern
+
 ### v1.2.0 (2026-05-30)
 - New: **Meal Config** desktop page — per-dog QSplitter panels; per-slot table with current config + inline history (grey/italic); Add/Edit dialog with inline ingredient table (▲▼✕, pick list from ini, filtered to unused); right-click Copy/Paste between slots
 - New: **Medications Config** desktop page — per-dog Active/Past QSplitter panels; Add/Edit dialog with inline dose table (▲▼✕, free-text label + amount)

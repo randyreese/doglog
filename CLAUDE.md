@@ -3,9 +3,10 @@
 ## Stack
 - Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
-- Desktop: PySide6 (`desktop/`), Sprint 7 nearly complete (Diary text search remaining)
+- Desktop: PySide6 (`desktop/`), Sprint 7 complete; Sprint 5 (mobile medications) in progress
 - Project plan: `docs/project-plan.md`
 - UI specs (confirmed ASCII renderings): `docs/ui-specs.md`
+- Offline cache architecture: `docs/dexie-offline-architecture.md` — Walk/Health full-cache vs Meals queue-only; stale queue dot bug pattern
 
 ## Dev commands
 - `start_dev.bat` — starts backend (0.0.0.0:8001) + Vite dev server (5173)
