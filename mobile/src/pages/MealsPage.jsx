@@ -55,11 +55,12 @@ function EditSheet({ target, open, mealIngredients, onClose, onSave }) {
   useEffect(() => {
     if (target) {
       const log = target.log
+      const ingList = target.ingredients || mealIngredients
       setPct(log?.percent_consumed ?? 100)
       setNotes(log?.notes || '')
       const saved = log?.ingredients || {}
       // Default all ingredients to checked unless explicitly saved as false
-      setIngredients(Object.fromEntries(mealIngredients.map(i => [i.value, saved[i.value] ?? true])))
+      setIngredients(Object.fromEntries(ingList.map(i => [i.value, saved[i.value] ?? true])))
       setSaveError(null)
     }
   }, [target, mealIngredients])
@@ -119,22 +120,25 @@ function EditSheet({ target, open, mealIngredients, onClose, onSave }) {
         </div>
 
         {/* Ingredients */}
-        {mealIngredients.length > 0 && (
-          <div>
-            <div style={ed.fieldLabel}>Ingredients</div>
-            {mealIngredients.map(ing => (
-              <label key={ing.value} style={ed.checkRow}>
-                <input
-                  type="checkbox"
-                  checked={!!ingredients[ing.value]}
-                  onChange={e => setIngredients(prev => ({ ...prev, [ing.value]: e.target.checked }))}
-                  style={ed.checkbox}
-                />
-                <span style={ed.checkLabel}>{ing.label}</span>
-              </label>
-            ))}
-          </div>
-        )}
+        {(() => {
+          const ingList = target?.ingredients || mealIngredients
+          return ingList.length > 0 && (
+            <div>
+              <div style={ed.fieldLabel}>Ingredients</div>
+              {ingList.map(ing => (
+                <label key={ing.value} style={ed.checkRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!ingredients[ing.value]}
+                    onChange={e => setIngredients(prev => ({ ...prev, [ing.value]: e.target.checked }))}
+                    style={ed.checkbox}
+                  />
+                  <span style={ed.checkLabel}>{ing.label}</span>
+                </label>
+              ))}
+            </div>
+          )
+        })()}
 
         {saveError && <div style={ed.error}>{saveError}</div>}
 
@@ -274,7 +278,7 @@ const md = {
 export default function MealsPage() {
   const nav = useNavigate()
   const { signal, queueCount, syncVersion, refreshQueueCount } = useSyncContext()
-  const { dogs, mealSlots, mealIngredients } = useConfig()
+  const { dogs, mealSlots, mealIngredients, mealConfigs } = useConfig()
 
   const today = localDateString()
   const [currentDate, setCurrentDate] = useState(today)
@@ -409,6 +413,7 @@ export default function MealsPage() {
                         slot,
                         meal_date: currentDate,
                         log: logMap[`${dog.id}:${slot.value}`] || null,
+                        ingredients: mealConfigs[`${dog.id}:${slot.value}`] || null,
                       })}
                     />
                   ))}

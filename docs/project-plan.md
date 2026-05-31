@@ -293,10 +293,6 @@ Goal: Complete Diary desktop polish, add dog management (unlocks Age column), an
   - Backend was already complete (birthdate, breed, active, track_pee all in model; full CRUD endpoints existed)
   - Desktop Settings → Dogs tab: full CRUD (name, birthdate checkbox+picker, breed, track pee, active); archived dogs shown grey with "Archived" status
   - Diary Age column: 0–16 wks → # mo → # yr(s) [# mo if non-zero]; auto-populates from dog birthdate
-- [ ] Diary text search (desktop)
-  - Search QLineEdit in Diary toolbar; filters Notes 1 field client-side on keypress (hide/show rows); no server round-trip needed at current record volumes
-  - Mobile search deferred to Unscheduled Future Work
-
 - [ ] Meal Config sidebar page
   - Data model: `meal_configs` (id, dog_id, slot, effective_date) + `meal_config_items` (id, meal_config_id, food_name, amount, sort_order); child table, not JSON
   - Backend: GET/POST/PATCH/DELETE /meal-configs/; effective-date versioning (latest config on or before a given date wins); DELETE /meal-configs/{id}/items/{item_id}
@@ -312,6 +308,10 @@ Goal: Complete Diary desktop polish, add dog management (unlocks Age column), an
   - Add: all fields editable; Edit: Dog/Medication name read-only, dates and dose rows editable
   - Add/Edit dialog: doses are a mini table (Label | Amount | ▲ | ▼ | X); label and amount are free text (dose timing and amounts are too varied to standardize); [+ Add Dose] appends a blank row
   - Vet Report dependency: start/end dates must be stored as proper dates (not text); medication name from ini ensures consistent naming across report queries
+
+- [ ] Diary text search (desktop)
+  - Search QLineEdit in Diary toolbar; filters Notes 1 field client-side on keypress (hide/show rows); no server round-trip needed at current record volumes
+  - Mobile search deferred to Unscheduled Future Work
 
 Depends on: Sprint 6
 

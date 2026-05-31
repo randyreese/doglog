@@ -46,9 +46,16 @@ class MealConfig(Base):
     id = Column(Integer, primary_key=True, index=True)
     dog_id = Column(Integer, nullable=False)
     meal_slot = Column(String, nullable=False)
+    effective_date = Column(Date, nullable=False)
+
+
+class MealConfigItem(Base):
+    __tablename__ = "meal_config_items"
+    id = Column(Integer, primary_key=True, index=True)
+    meal_config_id = Column(Integer, nullable=False)
     food_name = Column(String, nullable=False)
     amount = Column(String, nullable=True)
-    effective_date = Column(Date, nullable=False)
+    sort_order = Column(Integer, nullable=False, default=0)
 
 
 class Medication(Base):
@@ -56,10 +63,17 @@ class Medication(Base):
     id = Column(Integer, primary_key=True, index=True)
     dog_id = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
-    dosage = Column(String, nullable=True)
-    frequency = Column(String, nullable=True)
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
+
+
+class MedicationDose(Base):
+    __tablename__ = "medication_doses"
+    id = Column(Integer, primary_key=True, index=True)
+    medication_id = Column(Integer, nullable=False)
+    label = Column(String, nullable=False)
+    amount = Column(String, nullable=True)
+    sort_order = Column(Integer, nullable=False, default=0)
 
 
 class Milestone(Base):

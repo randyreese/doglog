@@ -5,6 +5,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from windows.diary_widget import DiaryWidget
+from windows.meal_config_widget import MealConfigWidget
+from windows.medications_config_widget import MedicationsConfigWidget
 from windows.settings_widget import SettingsWidget
 from windows.placeholder import Placeholder
 
@@ -60,8 +62,8 @@ class MainWindow(QMainWindow):
 
         pages = [
             DiaryWidget(),
-            Placeholder("Meal Config — coming in Sprint 7"),
-            Placeholder("Medications Config — coming in Sprint 7"),
+            MealConfigWidget(),
+            MedicationsConfigWidget(),
             Placeholder("Dry Food Forecast — coming in Sprint 8"),
             SettingsWidget(),
         ]

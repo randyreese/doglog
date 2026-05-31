@@ -17,7 +17,7 @@ export default function ConnectPage() {
       const res = await fetch(`${trimmed}/doglog/health`, { signal: AbortSignal.timeout(5000) })
       if (!res.ok) throw new Error()
       setBackendUrl(trimmed)
-      nav('/', { replace: true })
+      window.location.replace('/')
     } catch {
       setStatus('Could not reach backend. Check URL and Wi-Fi.')
     } finally {

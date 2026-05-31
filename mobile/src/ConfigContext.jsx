@@ -15,6 +15,8 @@ export function ConfigProvider({ children }) {
   const [healthTypes, setHealthTypes] = useState(() => loadCached('cfg_health_types', []))
   const [mealSlots, setMealSlots] = useState(() => loadCached('cfg_meal_slots', []))
   const [mealIngredients, setMealIngredients] = useState(() => loadCached('cfg_meal_ingredients', []))
+  // mealConfigs: {`${dogId}:${slotKey}`: [{value: food_name, label: food_name}]}
+  const [mealConfigs, setMealConfigs] = useState(() => loadCached('cfg_meal_configs', {}))
 
   const load = useCallback(async () => {
     try {
@@ -34,6 +36,22 @@ export function ConfigProvider({ children }) {
       localStorage.setItem('cfg_meal_slots', JSON.stringify(slotsData))
       localStorage.setItem('cfg_meal_ingredients', JSON.stringify(ingredientsData))
     } catch { /* offline — use cached */ }
+
+    // Meal configs fetched independently so a failure doesn't block other config
+    try {
+      const configsData = await api.get('/meal-configs/')
+      const cfgMap = {}
+      for (const cfg of configsData) {
+        const key = `${cfg.dog_id}:${cfg.meal_slot}`
+        if (!cfgMap[key]) {
+          cfgMap[key] = cfg.items.map(it => ({ value: it.food_name, label: it.food_name }))
+        }
+      }
+      setMealConfigs(cfgMap)
+      localStorage.setItem('cfg_meal_configs', JSON.stringify(cfgMap))
+    } catch(e) {
+      console.error('meal-configs load failed:', e.message)
+    }
   }, [])
 
   useEffect(() => { load() }, [load])
@@ -42,7 +60,7 @@ export function ConfigProvider({ children }) {
   const dogMap = Object.fromEntries(dogs.map(d => [d.id, d.name]))
 
   return (
-    <ConfigContext.Provider value={{ dogs, healthTypes, mealSlots, mealIngredients, dogMap }}>
+    <ConfigContext.Provider value={{ dogs, healthTypes, mealSlots, mealIngredients, mealConfigs, dogMap }}>
       {children}
     </ConfigContext.Provider>
   )
