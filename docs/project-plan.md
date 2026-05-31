@@ -300,22 +300,25 @@ Goal: Deploy v1.2.0 to prod, enter real config data, build mobile medication log
 
 Pre-build (deploy + data):
 
-- [ ] Deploy v1.2.0 to prod (`git pull` + `docker compose up -d --build` on Mint; migration 0006 runs automatically)
+- [x] Deploy v1.2.0 to prod (`git pull` + `docker compose up -d --build` on Mint; migration 0006 ran automatically)
 - [ ] Enter meal ingredients in prod via desktop app (prod mode)
 - [ ] Enter medications in prod via desktop app (prod mode)
 - [ ] Delete 3 dummy meal log records from prior testing (visible in Meals tab, May dates)
 - [ ] Pull prod DB → dev via Settings → App → "Pull →" for realistic local test data
 
-Mobile build (Sprint 5 proper):
+Mobile build:
 
 - [ ] Backend: `medication_logs` table + migration; POST/GET/PATCH `/medication-logs/` endpoints
-- [ ] Backend: prune `pee_poo_events` older than 7 days on startup
+- [ ] Backend: prune `pee_poo_events` older than 7 days on startup (one SQL DELETE in `main.py`)
 - [ ] Mobile: Medications row per dog on Meals tab (below Snack PM, lightly shaded to distinguish from meal rows)
 - [ ] Mobile: row status — "X of Y given" / "Not logged" / "✓ All given"
-- [ ] Mobile: slide-up dose sheet — active meds grouped by name, one checkbox per dose entry (label + amount)
-- [ ] Mobile: save upserts one `medication_logs` record per medication per day (`doses_given` JSON array of given labels)
+- [ ] Mobile: slide-up dose sheet — active meds grouped by name; one checkbox per dose entry (label + amount from `medication_doses` config); loads saved state for today, unchecked only if no log exists
+- [ ] Mobile: save upserts one `medication_logs` record per medication per day (dog_id, medication_id, log_date DATE, `doses_given` JSON array of given labels)
+- [ ] Mobile: only active medications shown (end_date null or in future); non-daily meds always shown, no due-date logic
 - [ ] Mobile: offline queue (`medicationQueue` + Dexie `medicationLogs`); badge includes med queue
 - [ ] Go-live ✓
+
+Notes: flea/tick prevention managed offline — not in scope
 
 Depends on: Sprint 7
 
@@ -324,17 +327,6 @@ Depends on: Sprint 7
 ## Backlog
 
 *Sprint naming: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream. Backlog is a bullet list — never numbered, so insertions don't require renumbering.*
-
-- **Sprint 5 — Medications (mobile logging)**
-  - Meals tab: single "Medications" row per dog, below Snack PM, slightly shaded to distinguish from meal rows
-  - Row status: "X of Y given" (counting individual dose entries across all active meds), "Not logged" if no log yet, "✓ All given" if complete
-  - Tap → slide-up sheet; all active medications grouped by name; one checkbox per dose entry (label + amount from `medication_doses` config); loads saved state for today, unchecked only if no log exists
-  - Save: upserts one `medication_logs` record per medication (dog_id, medication_id, log_date DATE, doses_given JSON array of given labels)
-  - Only active medications shown (end_date null or in future); non-daily meds (e.g. Heartgard Monthly) always shown, no due-date logic
-  - Offline: `medicationQueue` + Dexie `medicationLogs`; queue badge includes med queue
-  - Backend: prune pee/poo events older than 7 days on startup (one SQL DELETE in `main.py`)
-  - Flea/tick prevention managed offline — not in scope
-  - Depends on: Sprint 7 (medication config must exist before mobile logging is useful)
 
 - **Sprint 5a — Mobile Diary tab**
   - 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first
