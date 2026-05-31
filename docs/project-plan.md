@@ -304,7 +304,7 @@ Pre-build (deploy + data):
 - [ ] Enter meal ingredients in prod via desktop app (prod mode)
 - [ ] Enter medications in prod via desktop app (prod mode)
 - [ ] Delete 3 dummy meal log records from prior testing (visible in Meals tab, May dates)
-- [ ] Copy prod DB → dev (`docker cp` + `scp`) for realistic local test data
+- [ ] Pull prod DB → dev via Settings → App → "Pull →" for realistic local test data
 
 Mobile build (Sprint 5 proper):
 
