@@ -7,7 +7,7 @@ Daily dog care tracking — mobile PWA + desktop app.
 - **Walk tab**: Log pee/poo events per dog with one tap. Status matrix shows time-since and count-today for each dog, replacing the fridge whiteboard.
 - **Health tab**: Log health events (6 types), add notes + photo post-log via edit sheet. History unfiltered for vet reference.
 - **Meals tab**: Track food consumption % per meal slot *(Sprint 4)*
-- **Desktop**: Diary (vet visits, weight log, travel, training — type filter, clickable Instagram links, age column); Settings → Dogs CRUD (add/edit/archive, birthdates) *(Sprint 7)*; meal config, medications, dry food forecast coming
+- **Desktop**: Diary (vet visits, weight log, travel, training — type filter, clickable Instagram links, age column); Settings → Dogs CRUD; **Meal Config** (per-dog-slot food composition, effective-date versioning, copy/paste between slots); **Medications Config** (per-dog active/past, multi-dose) *(Sprint 7)*
 - **Google Sheets**: Daily export for vet log, one-time history import *(Sprint 9-10)*
 
 ## Stack
@@ -43,6 +43,15 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 ---
 
 ## Version History
+
+### v1.2.0 (2026-05-30)
+- New: **Meal Config** desktop page — per-dog QSplitter panels; per-slot table with current config + inline history (grey/italic); Add/Edit dialog with inline ingredient table (▲▼✕, pick list from ini, filtered to unused); right-click Copy/Paste between slots
+- New: **Medications Config** desktop page — per-dog Active/Past QSplitter panels; Add/Edit dialog with inline dose table (▲▼✕, free-text label + amount)
+- New: migration 0006 — rebuilds `meal_configs` (child table `meal_config_items`) and `medications` (child table `medication_doses`)
+- New: `/meal-configs/` and `/medications/` REST endpoints (full CRUD, child table transactions)
+- Changed: Mobile Meals edit sheet — ingredient checklist now shows only the configured items for that dog+slot (from `meal_configs`); falls back to global ini list if no config exists
+- Changed: ConfigContext — meal configs loaded at startup alongside dogs/slots/ingredients; cached in localStorage; independent fetch (failure doesn't block other config data)
+- Fixed: ConnectPage URL save now does a full page reload so ConfigContext re-fetches from the new URL
 
 ### v1.1.0 (2026-05-29)
 - New: Desktop "Milestones" page renamed to **Diary** throughout UI and widget files; DB/API endpoints unchanged

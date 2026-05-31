@@ -3,7 +3,7 @@
 ## Stack
 - Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
-- Desktop: PySide6 (`desktop/`), Sprint 7 in progress
+- Desktop: PySide6 (`desktop/`), Sprint 7 nearly complete (Diary text search remaining)
 - Project plan: `docs/project-plan.md`
 - UI specs (confirmed ASCII renderings): `docs/ui-specs.md`
 
@@ -13,8 +13,10 @@
 
 ## Key files
 - `backend/main.py` — FastAPI app, migration startup, seeds Tess + Pickles on first run
-- `backend/models.py` — full data model (MealLog + legacy placeholder tables)
-- `backend/routers/` — dogs, events, status, health, meals, milestones (all routers)
+- `backend/models.py` — full data model including MealConfig+MealConfigItem and Medication+MedicationDose child tables
+- `backend/routers/` — dogs, events, status, health, meals, milestones, meal_configs, medications (all routers)
+- `backend/routers/meal_configs.py` — GET(dog_id optional)/POST/PATCH/DELETE /meal-configs/; child items replaced atomically on PATCH
+- `backend/routers/medications.py` — GET(dog_id optional)/POST/PATCH/DELETE /medications/; child doses replaced atomically on PATCH
 - `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/; GET/POST/DELETE/PUT /health-types (ini CRUD)
 - `backend/routers/meals.py` — GET /meal-slots, GET /meal-ingredients with CRUD; GET/POST /meal-logs/ (upsert by dog+slot+date); GET /meal-logs/range/?dog_id=X&days=30
 - `backend/routers/milestones.py` — GET/POST/PATCH/DELETE /milestones/; GET/POST/DELETE/PUT /milestone-event-types
@@ -28,14 +30,16 @@
 - `desktop/windows/diary_widget.py` — Diary page: full CRUD table (Date/Dog/Age/Type/Notes1/Notes2/Weight); type filter dropdown; dog checkboxes; Notes2 URLs render as "View post →" clickable links; age format 0–16 wks / mo / yr(s)
 - `desktop/windows/milestones_widget.py` — superseded by diary_widget.py; safe to delete
 - `desktop/windows/settings_widget.py` — QTabWidget: Dogs/Meal Slots/Meal Ingredients/Medications/Health Types/Milestone Types/App; Dogs tab has full CRUD with archive/restore
+- `desktop/windows/meal_config_widget.py` — Meal Config page: per-dog QSplitter, slot table (current + history rows), Add/Edit dialog with _ItemsTable (▲▼✕ + pick list from ini), right-click copy/paste between slots
+- `desktop/windows/medications_config_widget.py` — Medications Config page: per-dog QSplitter, Active/Past sections, Add/Edit dialog with _DosesTable (▲▼✕, free text label+amount)
 - `desktop/windows/placeholder.py` — generic placeholder for unbuilt nav pages
 - `scripts/import_milestones.py` — one-time Excel→DB import; auto-classifies vet/travel/train/life
-- `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients; fetched once at startup, cached in localStorage, refreshed on sync
+- `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients + mealConfigs; fetched once at startup, cached in localStorage, refreshed on sync; mealConfigs fetched independently so failure doesn't block other config data
 - `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: backend URL (tappable), build timestamp
 - `mobile/src/components/SwipeableRow.jsx` — swipe-left-to-delete wrapper; used on Walk + Health history rows
 - `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, today history + inline 7-day history toggle (History button); dogs from ConfigContext
 - `mobile/src/pages/HealthPage.jsx` — Health tab: filter bar (date/dog/type), row-tap edit sheet, type list from ConfigContext
-- `mobile/src/pages/MealsPage.jsx` — Meals tab: date pager, per-dog slot grids, tap-to-edit; Multi Day toggle for 30-day bar summary
+- `mobile/src/pages/MealsPage.jsx` — Meals tab: date pager, per-dog slot grids, tap-to-edit; Multi Day toggle for 30-day bar summary; edit sheet uses per-dog-slot meal_config ingredients (fallback: global ini list)
 - `mobile/src/SyncContext.jsx` — sync orchestration, syncInProgressRef guard, syncVersion counter, queue badge (all three queues)
 - `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queue/delete functions for all event types
 - `mobile/src/api.js` — api.get/post/patch/delete, localGet offline fallback (events + health-events)
