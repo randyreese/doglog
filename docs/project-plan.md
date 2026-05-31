@@ -133,6 +133,19 @@ Excel is the target platform for all tabular and printed reports. Reports are ge
 
 ## Sprint History
 
+**Sprint 7 — Desktop: Diary polish + dog config + meal composition + medication config** ✓ COMPLETE *(2026-05-30)*
+
+- [x] Milestone Type filter: single-select dropdown on Diary tab toolbar
+- [x] Rename "Milestones" → "Diary" throughout UI and desktop files (sidebar, page title, dialogs, `diary_widget.py`); DB table and API endpoints remain `milestones`
+- [x] Notes 2 column: URL detection, renders as clickable "View post →" links opening Windows default browser
+- [x] Dog add/edit/archive: Settings → Dogs tab full CRUD (name, birthdate, breed, track pee, active); archived dogs shown grey
+- [x] Diary Age column: calculated from dog birthdate; 0–16 wks / # mo / # yr(s) format
+- [x] Meal Config sidebar page: per-dog QSplitter panes; slot rows show current config + inline history (grey/italic); Add/Edit dialog with items table (▲▼✕ + pick list); right-click copy/paste between slots
+- [x] Medications Config sidebar page: per-dog QSplitter panes; Active/Past subsections; Add/Edit dialog with doses table
+- [x] Backend: migration 0006 — meal_configs + medications rebuilt as parent/child tables (meal_config_items, medication_doses)
+- [x] Mobile: meal edit sheet uses per-dog-slot meal_config items instead of global ini list; falls back to ini when no config exists
+- [ ] Diary text search (desktop) — deferred to Sprint 11
+
 **Sprint 6 — Desktop scaffold + milestones** ✓ COMPLETE *(2026-05-28)*
 
 - [x] PySide6 desktop app: sidebar nav (Milestones, Meal Config, Medications Config, Dry Food Forecast, Settings)
@@ -281,33 +294,30 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-**Sprint 7 — Desktop: Diary polish + dog config + meal composition + medication config**
+**Sprint 5 — Go-live prep + Mobile Medications** *(2026-05-31)*
 
-Goal: Complete Diary desktop polish, add dog management (unlocks Age column), and build out meal and medication config pages.
+Goal: Deploy v1.2.0 to prod, enter real config data, build mobile medication logging, and go live on June 1.
 
-- [x] Milestone Type filter: single-select dropdown on Diary tab toolbar
-- [x] Rename "Milestones" → "Diary" throughout UI and desktop files (sidebar, page title, dialogs, `diary_widget.py`); DB table and API endpoints remain `milestones` (no migration needed)
-- [x] Notes 2 column: detect URLs, render as clickable "View post →" links opening Windows default browser
-- [x] Mobile Diary tab spec (design complete, build deferred): 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first; dog chips + type dropdown filter; rows show date/dog chip/type/notes preview/"View post →" if Notes 2 is URL; swipe-to-delete; add/edit sheet with date picker (defaults today), dog, type, notes1, notes2 URL, optional weight; full offline queue (diaryEntries + diaryQueue in Dexie, same pattern as healthQueue); build after Dog work stabilizes dog list
-- [x] Dog add/edit/archive
-  - Backend was already complete (birthdate, breed, active, track_pee all in model; full CRUD endpoints existed)
-  - Desktop Settings → Dogs tab: full CRUD (name, birthdate checkbox+picker, breed, track pee, active); archived dogs shown grey with "Archived" status
-  - Diary Age column: 0–16 wks → # mo → # yr(s) [# mo if non-zero]; auto-populates from dog birthdate
-- [x] Meal Config sidebar page
-  - Data model: `meal_configs` (id, dog_id, slot, effective_date) + `meal_config_items` (id, meal_config_id, food_name, amount, sort_order); child table, not JSON
-  - Backend: GET/POST/PATCH/DELETE /meal-configs/; dog_id optional on GET (returns all dogs when omitted)
-  - Desktop layout: per-dog QSplitter panes; per-slot rows showing current config + inline history (grey/italic); slots with no config show —; right-click copy/paste between slots
-  - Mobile: meal edit sheet now shows per-dog-slot ingredients from meal_config instead of global ini list; mealConfigs loaded in ConfigContext at startup, cached in localStorage
-- [x] Medications Config sidebar page
-  - Data model: `medications` (id, dog_id, name, start_date, end_date) + `medication_doses` (id, medication_id, label, amount, sort_order); child table pattern matches meal_config_items
-  - Backend: GET/POST/PATCH/DELETE /medications/
-  - Desktop layout: per-dog QSplitter panes; Active / Past subsections; Past rows grey/italic
+Pre-build (deploy + data):
 
-- [ ] Diary text search (desktop)
-  - Search QLineEdit in Diary toolbar; filters Notes 1 field client-side on keypress (hide/show rows); no server round-trip needed at current record volumes
-  - Mobile search deferred to Unscheduled Future Work
+- [ ] Deploy v1.2.0 to prod (`git pull` + `docker compose up -d --build` on Mint; migration 0006 runs automatically)
+- [ ] Enter meal ingredients in prod via desktop app (prod mode)
+- [ ] Enter medications in prod via desktop app (prod mode)
+- [ ] Delete 3 dummy meal log records from prior testing (visible in Meals tab, May dates)
+- [ ] Copy prod DB → dev (`docker cp` + `scp`) for realistic local test data
 
-Depends on: Sprint 6
+Mobile build (Sprint 5 proper):
+
+- [ ] Backend: `medication_logs` table + migration; POST/GET/PATCH `/medication-logs/` endpoints
+- [ ] Backend: prune `pee_poo_events` older than 7 days on startup
+- [ ] Mobile: Medications row per dog on Meals tab (below Snack PM, lightly shaded to distinguish from meal rows)
+- [ ] Mobile: row status — "X of Y given" / "Not logged" / "✓ All given"
+- [ ] Mobile: slide-up dose sheet — active meds grouped by name, one checkbox per dose entry (label + amount)
+- [ ] Mobile: save upserts one `medication_logs` record per medication per day (`doses_given` JSON array of given labels)
+- [ ] Mobile: offline queue (`medicationQueue` + Dexie `medicationLogs`); badge includes med queue
+- [ ] Go-live ✓
+
+Depends on: Sprint 7
 
 ---
 
@@ -358,6 +368,11 @@ Depends on: Sprint 6
   sharing. Additional reports (weight history, medication log, meal history) added as needed.
   Depends on: Sprint 9 (data in place)
 
+- **Sprint 11 — Diary text search (desktop)**
+  QLineEdit in Diary toolbar; client-side filter on Notes 1 field on keypress; no server round-trip
+  needed at current record volumes. Mobile Diary search remains in Unscheduled Future Work.
+  Depends on: Sprint 7
+
 ## Unscheduled Future Work
 
 - **Sprint 8 — Desktop: dry food inventory**
@@ -365,7 +380,7 @@ Depends on: Sprint 6
   Depends on: Sprint 6
 
 - **Diary text search (mobile)**
-  Mobile Diary tab search on Notes 1 field. Deferred until demand is established and record volume is understood. Options when ready: server-side LIKE query (WiFi only) or full Dexie scan (offline capable but unindexed). Desktop search ships in Sprint 7.
+  Mobile Diary tab search on Notes 1 field. Deferred until demand is established and record volume is understood. Options when ready: server-side LIKE query (WiFi only) or full Dexie scan (offline capable but unindexed). Desktop search is Sprint 11.
 
 - **Stretch — Raspberry Pi fridge display**
   Pi Zero W + small display polling `/api/status`, renders status matrix on the fridge.

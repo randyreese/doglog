@@ -35,6 +35,6 @@
 - **Pick lists belong in Settings.** If it's just a list of names with no dates or per-record attributes, it's a Settings tab.
 - **Dated records belong in the sidebar.** Meal Config and Medications Config have start/end dates and versioned history — they're sidebar pages, not Settings tabs.
 - **Settings feeds Sidebar.** The Medications pick list (Settings) provides the name options used when building a record in Medications Config (sidebar). Same relationship between Meal Ingredients (Settings) and Meal Config (sidebar).
-- **Meal Ingredients is independent.** It drives the mobile logging checklist, not Meal Config. Meal Config uses free-form text descriptions, not the ini list.
+- **Meal Ingredients is the fallback checklist.** The mobile meal edit sheet uses per-dog-slot items from Meal Config when a config exists; it falls back to the global Meal Ingredients ini list otherwise. Meal Config item descriptions are free-form text — they are not drawn from the Meal Ingredients pick list.
 - **Dogs is in Settings** because it's simple config (no dated versions, no history). Dog management is infrequent — set up once.
 - **"All" in Milestone dog picker is hardcoded**, not a configurable entry. The dog picker always shows active dogs + "All" appended. No separate Milestone Dogs settings tab needed.
