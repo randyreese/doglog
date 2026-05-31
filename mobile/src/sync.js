@@ -121,6 +121,9 @@ export async function flushQueue() {
       })
       if (!res.ok) break
       await db.mealQueue.delete(entry.id)
+      await db.mealLogs
+        .where({ dog_id: entry.dog_id, slot: entry.slot, meal_date: entry.meal_date })
+        .modify(record => { delete record._queued })
     } catch {
       break
     }
