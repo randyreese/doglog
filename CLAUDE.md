@@ -3,7 +3,7 @@
 ## Stack
 - Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
-- Desktop: PySide6 (`desktop/`), Sprint 7 complete; Sprint 5 (mobile medications) in progress
+- Desktop: PySide6 (`desktop/`), Sprint 7 complete; Sprint 5 complete (mobile medications live)
 - Project plan: `docs/project-plan.md`
 - UI specs (confirmed ASCII renderings): `docs/ui-specs.md`
 - Offline cache architecture: `docs/dexie-offline-architecture.md` — Walk/Health full-cache vs Meals queue-only; stale queue dot bug pattern
@@ -20,6 +20,7 @@
 - `backend/routers/medications.py` — GET(dog_id optional)/POST/PATCH/DELETE /medications/; child doses replaced atomically on PATCH
 - `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/; GET/POST/DELETE/PUT /health-types (ini CRUD)
 - `backend/routers/meals.py` — GET /meal-slots, GET /meal-ingredients with CRUD; GET/POST /meal-logs/ (upsert by dog+slot+date); GET /meal-logs/range/?dog_id=X&days=30
+- `backend/routers/medication_logs.py` — GET/POST /medication-logs/ (upsert by dog+medication+date); doses_given stored as JSON array
 - `backend/routers/milestones.py` — GET/POST/PATCH/DELETE /milestones/; GET/POST/DELETE/PUT /milestone-event-types
 - `backend/health_types.ini` — health event types; editable via Settings desktop tab
 - `backend/meal_slots.ini` — meal slot names; editable via Settings desktop tab

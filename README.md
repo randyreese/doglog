@@ -44,6 +44,15 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v1.3.0 (2026-05-31)
+- New: **Mobile medication logging** — Medications row per dog on Meals tab (shaded, below meal slots); tap opens slide-up dose sheet grouped by medication name with one checkbox per dose (label + amount shown)
+- New: Row status — "Not logged" / "X of Y given" (amber) / "✓ All given" (green)
+- New: `medication_logs` table + migration 0007; POST/GET `/medication-logs/` endpoints (upsert by dog+medication+date)
+- New: Offline queue — `medicationQueue` + Dexie `medicationLogs`; queue badge includes med queue
+- New: Active medications loaded into ConfigContext from `/medications/`, cached in localStorage
+- Changed: Dexie upgraded to version 4 schema
+- Changed: `pee_poo_events` older than 7 days pruned on backend startup
+
 ### v1.2.1 (2026-05-31)
 - Fixed: stale queue dots on Meals tab when browsing past dates offline — `_queued` flag now cleared from `db.mealLogs` after a meal queue entry syncs successfully; previously the flag persisted in Dexie indefinitely (issue #4)
 - New: `docs/dexie-offline-architecture.md` — plain-English explanation of the Walk/Health full-cache vs Meals queue-only offline pattern

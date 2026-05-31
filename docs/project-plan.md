@@ -133,6 +133,21 @@ Excel is the target platform for all tabular and printed reports. Reports are ge
 
 ## Sprint History
 
+**Sprint 5 — Go-live prep + Mobile Medications** ✓ COMPLETE *(2026-05-31)*
+
+- [x] Deploy v1.2.0 to prod (migration 0006 ran automatically)
+- [x] Enter meal ingredients + meal configs in prod via desktop app
+- [x] Enter medications in prod via desktop app (Pickles: Sucralfate 2 doses)
+- [x] Backend: `medication_logs` table + migration 0007; POST/GET `/medication-logs/` endpoints
+- [x] Backend: prune `pee_poo_events` older than 7 days on startup
+- [x] Mobile: Medications row per dog on Meals tab (shaded, below meal slots)
+- [x] Mobile: row status — "X of Y given" / "Not logged" / "✓ All given"
+- [x] Mobile: slide-up dose sheet — meds grouped by name, one checkbox per dose with amount
+- [x] Mobile: offline queue (`medicationQueue` + Dexie `medicationLogs`); badge includes med queue
+- [x] Go-live ✓ deployed to prod 2026-05-31
+
+Notes: dummy test meal log records deferred cleanup; flea/tick prevention offline — not in scope
+
 **Sprint 7 — Desktop: Diary polish + dog config + meal composition + medication config** ✓ COMPLETE *(2026-05-30)*
 
 - [x] Milestone Type filter: single-select dropdown on Diary tab toolbar
@@ -294,33 +309,7 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-**Sprint 5 — Go-live prep + Mobile Medications** *(2026-05-31)*
-
-Goal: Deploy v1.2.0 to prod, enter real config data, build mobile medication logging, and go live on June 1.
-
-Pre-build (deploy + data):
-
-- [x] Deploy v1.2.0 to prod (`git pull` + `docker compose up -d --build` on Mint; migration 0006 ran automatically)
-- [ ] Enter meal ingredients in prod via desktop app (prod mode)
-- [ ] Enter medications in prod via desktop app (prod mode)
-- [ ] Delete 3 dummy meal log records from prior testing (visible in Meals tab, May dates)
-- [ ] Pull prod DB → dev via Settings → App → "Pull →" for realistic local test data
-
-Mobile build:
-
-- [ ] Backend: `medication_logs` table + migration; POST/GET/PATCH `/medication-logs/` endpoints
-- [ ] Backend: prune `pee_poo_events` older than 7 days on startup (one SQL DELETE in `main.py`)
-- [ ] Mobile: Medications row per dog on Meals tab (below Snack PM, lightly shaded to distinguish from meal rows)
-- [ ] Mobile: row status — "X of Y given" / "Not logged" / "✓ All given"
-- [ ] Mobile: slide-up dose sheet — active meds grouped by name; one checkbox per dose entry (label + amount from `medication_doses` config); loads saved state for today, unchecked only if no log exists
-- [ ] Mobile: save upserts one `medication_logs` record per medication per day (dog_id, medication_id, log_date DATE, `doses_given` JSON array of given labels)
-- [ ] Mobile: only active medications shown (end_date null or in future); non-daily meds always shown, no due-date logic
-- [ ] Mobile: offline queue (`medicationQueue` + Dexie `medicationLogs`); badge includes med queue
-- [ ] Go-live ✓
-
-Notes: flea/tick prevention managed offline — not in scope
-
-Depends on: Sprint 7
+*(pull next sprint from backlog)*
 
 ---
 
