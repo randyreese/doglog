@@ -8,8 +8,12 @@ rediscovering context.
 
 ## What we're importing
 
-Meal history for Tess and Pickles from **January 1, 2026 through go-live (June 1, 2026)**.
-Source: user-exported Google Sheets data (CSV or xlsx).
+Meal history for Tess and Pickles from **January 1, 2026 through May 31, 2026** (inclusive).
+Source: user-exported Google Sheets data (CSV or xlsx) — legacy sheet maintained through 5/31.
+
+**Hard boundary:** June 1, 2026 is go-live. All prod data from 6/1 forward is recorded live
+in the app and must not be touched by the import script. The import covers 1/1–5/31 only,
+with no overlap.
 
 Goal: populate `meal_logs` with accurate per-dog-per-slot-per-day records so the **Vet Report
 (Sprint 10)** reflects real eating history — particularly Pickles' diet change on 4/1/2026.
