@@ -36,6 +36,8 @@
 - `desktop/windows/medications_config_widget.py` — Medications Config page: per-dog QSplitter, Active/Past sections, Add/Edit dialog with _DosesTable (▲▼✕, free text label+amount)
 - `desktop/windows/placeholder.py` — generic placeholder for unbuilt nav pages
 - `scripts/import_milestones.py` — one-time Excel→DB import; auto-classifies vet/travel/train/life
+- `scripts/import_history.py` — Sprint 9: imports 1/1–5/31/2026 meal/health/medication history from Sprint9input.xlsx; see `docs/sprint9-historical-import.md` for full column map and script design
+- `docs/sprint9-historical-import.md` — Sprint 9 working doc: why (Pickles July vet visit), confirmed column map, Sucralfate parsing logic, confirmed scope, pre-requisites
 - `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients + mealConfigs; fetched once at startup, cached in localStorage, refreshed on sync; mealConfigs fetched independently so failure doesn't block other config data
 - `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: backend URL (tappable), build timestamp
 - `mobile/src/components/SwipeableRow.jsx` — swipe-left-to-delete wrapper; used on Walk + Health history rows

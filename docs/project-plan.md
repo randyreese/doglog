@@ -317,6 +317,32 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 *Sprint naming: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream. Backlog is a bullet list — never numbered, so insertions don't require renumbering.*
 
+- **Sprint 9 — Historical data import**
+  Import 1/1–5/31/2026 meal, health, and medication data from legacy Google Sheet into SQLite.
+  Source: `Sprint9input.xlsx` (5 tabs: Jan–May). Hard boundary: 6/1 is go-live, prod data
+  untouched. Goal: complete clinical timeline for Pickles' vet visit in July 2026.
+  Depends on: Sprints 1–5 (full data model in place)
+
+  *Also ships in Sprint 9:*
+  - Mobile Health tab: log-with-past-date (toggle reveals date picker before logging, so
+    retroactive Stomach Gurgles / Dry Heaves / Grass Eating entries can be added manually)
+
+  *Pre-requisites before import:*
+  - Delete 3 dummy test meal_log records via direct DB query before running script
+  - Confirm `snack_pm` is the correct slot key for "9p snack" (check meal_slots.ini)
+  - Confirm Sucralfate dose ordering in DB: am = dose[0], pm = dose[1]
+
+  *Confirmed import scope (session 2026-06-01):*
+  - Meals: Bfast/Lunch/Dinner/9p snack columns → `meal_logs`; % direct from sheet; ingredient
+    snapshot from DB config lookup (latest effective_date ≤ log date per dog+slot)
+  - AM Snack (lick mat): synthesized at 100% for all days with a config (both dogs from 2/15);
+    no column in source, Pickles' occasional misses not tracked
+  - Vomit: col L "x" → `health_events` type="vomit" for that date
+  - Sucralfate (Apr–May col M "Notes"): parse "am"/"pm" → `medication_logs` per day for Pickles
+  - Ignored: Diet (D), Outcomes (I), Activities (Mar M), 7a tomorrow (Jan–Feb M), NoV (K), Streak
+  - Activities column (Mar): "Vet" 3/24, "Alley Park", "CS visit" — user enters manually via desktop Diary
+  - Full column map and script design in `docs/sprint9-historical-import.md`
+
 - **Sprint 5a — Mobile Diary tab**
   - 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first
   - Filter bar: dog chips (Tess/Pickles, multi-select) + inline type `<select>` (All/Life/Travel/Vet/Train/Experience — labels not keys); not a bottom sheet
@@ -326,30 +352,6 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
   - Add/Edit sheet: date picker (defaults today), dog dropdown, type dropdown (labels), notes1 textarea, notes2 URL field (optional), weight field with checkbox (optional)
   - Full offline queue: diaryEntries + diaryQueue in Dexie, same pattern as healthQueue; queue badge includes diary queue
   - Depends on: Sprint 7 (dog list stable)
-
-- **Sprint 9 — Historical data import**
-  One-time migration script: read a user-exported file from the legacy Google Sheet (CSV or xlsx),
-  map to data model, import to SQLite. User handles the Google Sheets export manually; script
-  consumes the resulting file.
-  Depends on: Sprints 1–5 (full data model in place)
-
-  *Pre-requisites before import:*
-  - Add DELETE endpoint for meal_logs (no mobile UI needed — one-time cleanup via API call or script)
-  - Delete dummy/test meal log records in prod DB before loading real history; these are in the 1/1–present date range and will corrupt the vet report if left in place
-
-  *Assumptions to confirm at sprint start (based on Apr sheet review):*
-  - Bfast / Lunch / Dinner / 9p snack columns → `meal_logs` (% consumed); confirm "9p snack" maps to "Snack PM" slot or is distinct
-  - No Vomit / Vomit columns → `health_events`; confirm no other health columns exist across all months
-  - Outcomes column → diary entries (one per day, raw text); user may disagree — confirm whether structured parsing is wanted
-  - Input format for meals: Excel/CSV one-row-per-meal (authored manually), bulk-fill defaults + exceptions only, or direct from existing records?
-  - Pickles diet change ~4/1/2026: need pre- and post-April ingredient sets; confirm exact date and config details before building
-  - Dated meal configs already in DB with `effective_date` — import script queries "latest config with effective_date ≤ log date" per dog+slot; no hardcoded config definitions needed in the script
-  - No config found for a dog+slot on a given date = skip that slot (no record created); handles cases like Pickles AM Snack not starting until Feb/Mar — just don't create a config with effective_date 2026-01-01 for that slot
-  - Notes column (Sucralfate etc.) → confirm target: diary entries, or `medications` table, or both
-  - Diet column → unclear; confirm what it encodes and whether it needs to be imported
-  - Streak column → assumed calculated, not imported; confirm
-  - Sheet coverage: confirm which months/tabs exist and which dogs are tracked per tab
-  - Lick mat ("LICK" in Outcomes text) → appears to be a separate feeding not captured in column data; confirm whether it should be a meal slot or ignored
 
 - **Sprint 10 — Excel reports**
   Excel is the target presentation platform for all tabular and printed reports. First target:
