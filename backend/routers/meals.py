@@ -173,16 +173,24 @@ def list_meal_logs(meal_date: date = Query(...), db: Session = Depends(get_db)):
 def list_meal_logs_range(
     dog_id: int = Query(...),
     days: int = Query(30),
+    start_date: Optional[date] = Query(None),
+    end_date: Optional[date] = Query(None),
     db: Session = Depends(get_db),
 ):
-    since = date.today() - timedelta(days=days - 1)
-    return [
-        _to_out(log)
-        for log in db.query(models.MealLog)
-        .filter(models.MealLog.dog_id == dog_id, models.MealLog.meal_date >= since)
-        .order_by(models.MealLog.meal_date.desc())
-        .all()
-    ]
+    if start_date is not None and end_date is not None:
+        since = start_date
+        q = db.query(models.MealLog).filter(
+            models.MealLog.dog_id == dog_id,
+            models.MealLog.meal_date >= since,
+            models.MealLog.meal_date <= end_date,
+        )
+    else:
+        since = date.today() - timedelta(days=days - 1)
+        q = db.query(models.MealLog).filter(
+            models.MealLog.dog_id == dog_id,
+            models.MealLog.meal_date >= since,
+        )
+    return [_to_out(log) for log in q.order_by(models.MealLog.meal_date.desc()).all()]
 
 
 @router.post("/meal-logs/", response_model=MealLogOut)

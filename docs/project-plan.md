@@ -131,6 +131,37 @@ Excel is the target platform for all tabular and printed reports. Reports are ge
 
 ---
 
+## Current Sprint
+
+### Sprint 10 — Excel vet report
+
+Goal: Generate a formatted monthly vet report as xlsx, covering meals, health events, and medications for a selected dog. Primary deliverable before Pickles' July vet visit.
+
+Design decisions locked:
+
+- Named-range data zone pattern (`data_anchor_{month_lower}`, workbook-scoped); OFFSET formulas in presentation grid
+- Data zone layout: row 0 = dog name, row 1 = period, rows 2–3 = blank, row 4+ = day data (one row per day)
+- Health types tagged `activity` or `event` in `[report_columns]` ini section; routes events to correct display column
+- Reports tab in desktop sidebar (before Settings); dog + month/year + file picker + Run button
+- 12-tab production file per dog per year; `data_anchor_{month_lower}` on each tab
+
+Stories:
+
+- [x] Backend: `report_column` flag on health types (ini + full CRUD)
+- [x] Backend: `GET /medication-logs/range/` endpoint
+- [x] Backend: `GET /meal-logs/range/` — `start_date`/`end_date` params
+- [x] Backend: `GET /health-events/` — `until` param
+- [x] Desktop: Settings → Health Types tab — Report Column dropdown (—/Activity/Event)
+- [x] Desktop: Reports sidebar page with Vet Report section
+- [x] `desktop/vet_report.py` — generate() writes data zone + dog/period header
+- [x] Dev test: data landing confirmed correct for Apr 2026
+- [ ] Test notes/wrap: add health events + meal notes to dev db, verify concatenation + Excel wrap_text
+- [ ] Write OFFSET formulas in template to wire presentation grid to data zone
+- [ ] Deploy updated backend to prod
+- [ ] Run against prod data; validate full month output
+
+---
+
 ## Sprint History
 
 **Sprint 9 — Historical data import** ✓ COMPLETE *(2026-06-02)*

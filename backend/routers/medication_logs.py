@@ -51,6 +51,25 @@ def list_medication_logs(
     ]
 
 
+@router.get("/medication-logs/range/", response_model=list[MedicationLogOut])
+def list_medication_logs_range(
+    dog_id: int = Query(...),
+    start_date: Date = Query(...),
+    end_date: Date = Query(...),
+    db: Session = Depends(get_db),
+):
+    return [
+        _to_out(log)
+        for log in db.query(models.MedicationLog)
+        .filter(
+            models.MedicationLog.dog_id == dog_id,
+            models.MedicationLog.log_date >= start_date,
+            models.MedicationLog.log_date <= end_date,
+        )
+        .all()
+    ]
+
+
 @router.post("/medication-logs/", response_model=MedicationLogOut)
 def upsert_medication_log(body: MedicationLogIn, db: Session = Depends(get_db)):
     doses_json = json.dumps(body.doses_given)

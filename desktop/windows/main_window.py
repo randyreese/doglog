@@ -7,6 +7,7 @@ from PySide6.QtGui import QFont
 from windows.diary_widget import DiaryWidget
 from windows.meal_config_widget import MealConfigWidget
 from windows.medications_config_widget import MedicationsConfigWidget
+from windows.reports_widget import ReportsWidget
 from windows.settings_widget import SettingsWidget
 from windows.placeholder import Placeholder
 
@@ -16,6 +17,7 @@ _NAV_ITEMS = [
     "Meal Config",
     "Medications Config",
     "Dry Food Forecast",
+    "Reports",
     "Settings",
 ]
 
@@ -65,6 +67,7 @@ class MainWindow(QMainWindow):
             MealConfigWidget(),
             MedicationsConfigWidget(),
             Placeholder("Dry Food Forecast — coming in Sprint 8"),
+            ReportsWidget(),
             SettingsWidget(),
         ]
 

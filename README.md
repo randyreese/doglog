@@ -44,6 +44,16 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v1.5.0 (2026-06-02)
+- New: **Desktop Reports page** — sidebar nav item with dog selector, month/year picker, file picker, and Run button; generates Excel vet report
+- New: `desktop/vet_report.py` — report generator; fetches meal logs, health events, medication logs for a selected dog + month; writes to named-range data zone in an xlsx template using `data_anchor_{month}` convention
+- New: `GET /medication-logs/range/` — date-range query for medication logs (used by report generator)
+- New: `GET /meal-logs/range/` — added `start_date`/`end_date` params (backward compatible; `days` still works for mobile)
+- New: `GET /health-events/` — added `until` param for date-bounded queries
+- New: `health_types.ini` — `[report_columns]` section; each type tagged `activity` or `event` for report column routing
+- New: Settings → Health Types tab — third column "Report Column" (—/Activity/Event); Add/Edit dialogs include dropdown
+- New: `reports/` folder for generated xlsx output
+
 ### v1.4.0 (2026-06-02)
 - New: `scripts/import_history.py` — one-time import of 5 months (Jan–May 2026) of legacy Google Sheets data; 1,420 meal logs, 14 vomit events, 60 Sucralfate medication logs loaded to prod; `--purge`, `--dry-run`, `--force`, `--tabs`, `--dog`, `--db` flags
 - New: Health tab — "Set time" toggle between type picker and Log button; reveals date + time pickers pre-filled to now; resets after each log; covers both past-date and same-day after-the-fact logging

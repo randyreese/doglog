@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QTableWidget, QTableWidgetItem, QHeaderView, QMessageBox,
     QTabWidget, QInputDialog, QFormLayout, QFrame,
-    QDialog, QDialogButtonBox, QLineEdit, QDateEdit, QCheckBox,
+    QDialog, QDialogButtonBox, QLineEdit, QDateEdit, QCheckBox, QComboBox,
 )
 from PySide6.QtCore import Qt, QDate
 from PySide6.QtGui import QColor, QBrush
@@ -349,6 +349,190 @@ class _DogsTab(QWidget):
                 QMessageBox.critical(self, "Error", str(e))
 
 
+# ── Health Types tab ─────────────────────────────────────────────────────────
+
+_RCOL_OPTIONS = [("—", ""), ("Activity", "activity"), ("Event", "event")]
+
+
+class _HealthTypeDialog(QDialog):
+    def __init__(self, record: dict = None, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Health Type" if record else "Add Health Type")
+        self.setFixedWidth(340)
+        layout = QFormLayout(self)
+        layout.setSpacing(10)
+
+        self._label = QLineEdit()
+        self._label.setMaxLength(60)
+
+        self._rcol = QComboBox()
+        for display, value in _RCOL_OPTIONS:
+            self._rcol.addItem(display, value)
+
+        layout.addRow("Label:", self._label)
+        layout.addRow("Report column:", self._rcol)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self._validate)
+        buttons.rejected.connect(self.reject)
+        layout.addRow(buttons)
+
+        if record:
+            self._label.setText(record.get("label", ""))
+            rc = record.get("report_column", "")
+            idx = next((i for i, (_, v) in enumerate(_RCOL_OPTIONS) if v == rc), 0)
+            self._rcol.setCurrentIndex(idx)
+
+    def _validate(self):
+        if not self._label.text().strip():
+            QMessageBox.warning(self, "Validation", "Label is required.")
+            return
+        self.accept()
+
+    def get_data(self) -> dict:
+        return {
+            "label": self._label.text().strip(),
+            "report_column": self._rcol.currentData(),
+        }
+
+
+class _HealthTypesTab(QWidget):
+    def __init__(self):
+        super().__init__()
+        self._items: list = []
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
+
+        toolbar = QHBoxLayout()
+        toolbar.addStretch()
+        self._add_btn = QPushButton("+ Add")
+        self._edit_btn = QPushButton("Edit")
+        self._del_btn = QPushButton("Delete")
+        self._up_btn = QPushButton("▲ Up")
+        self._dn_btn = QPushButton("▼ Down")
+        self._ref_btn = QPushButton("Refresh")
+        for btn in (self._add_btn, self._edit_btn, self._del_btn,
+                    self._up_btn, self._dn_btn, self._ref_btn):
+            toolbar.addWidget(btn)
+        self._add_btn.clicked.connect(self._add)
+        self._edit_btn.clicked.connect(self._edit)
+        self._del_btn.clicked.connect(self._delete)
+        self._up_btn.clicked.connect(self._move_up)
+        self._dn_btn.clicked.connect(self._move_down)
+        self._ref_btn.clicked.connect(self._load)
+        layout.addLayout(toolbar)
+
+        self._table = QTableWidget(0, 3)
+        self._table.setHorizontalHeaderLabels(["Key", "Label", "Report Column"])
+        hh = self._table.horizontalHeader()
+        hh.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        hh.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self._table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self._table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self._table.doubleClicked.connect(self._edit)
+        layout.addWidget(self._table)
+
+        self._load()
+
+    def _load(self):
+        try:
+            self._items = api.get("/health-types")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
+            self._items = []
+        self._populate()
+
+    def _populate(self):
+        row = self._table.currentRow()
+        self._table.setRowCount(0)
+        rcol_display = {v: d for d, v in _RCOL_OPTIONS}
+        for i, item in enumerate(self._items):
+            self._table.insertRow(i)
+            key_item = QTableWidgetItem(item.get("value", ""))
+            key_item.setData(Qt.ItemDataRole.UserRole, item)
+            self._table.setItem(i, 0, key_item)
+            self._table.setItem(i, 1, QTableWidgetItem(item.get("label", "")))
+            rc = item.get("report_column", "")
+            self._table.setItem(i, 2, QTableWidgetItem(rcol_display.get(rc, "—")))
+        if 0 <= row < self._table.rowCount():
+            self._table.setCurrentCell(row, 0)
+
+    def _current_item(self) -> dict | None:
+        row = self._table.currentRow()
+        if row < 0:
+            return None
+        cell = self._table.item(row, 0)
+        return cell.data(Qt.ItemDataRole.UserRole) if cell else None
+
+    def _add(self):
+        dlg = _HealthTypeDialog(parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            data = dlg.get_data()
+            try:
+                api.post("/health-types", json=data)
+                self._load()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", str(e))
+
+    def _edit(self):
+        item = self._current_item()
+        if not item:
+            return
+        dlg = _HealthTypeDialog(record=item, parent=self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            data = dlg.get_data()
+            try:
+                api.patch(f"/health-types/{item['value']}", json=data)
+                self._load()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", str(e))
+
+    def _delete(self):
+        item = self._current_item()
+        if not item:
+            return
+        msg = (
+            f"Delete '{item['label']}'?\n\n"
+            f"Warning: existing records that reference this entry will retain "
+            f"the key '{item['value']}' but lose their label."
+        )
+        if QMessageBox.question(self, "Confirm Delete", msg) == QMessageBox.StandardButton.Yes:
+            try:
+                api.delete(f"/health-types/{item['value']}")
+                self._load()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", str(e))
+
+    def _move_up(self):
+        row = self._table.currentRow()
+        if row <= 0:
+            return
+        self._items.insert(row - 1, self._items.pop(row))
+        self._save_order()
+        self._populate()
+        self._table.setCurrentCell(row - 1, 0)
+
+    def _move_down(self):
+        row = self._table.currentRow()
+        if row < 0 or row >= len(self._items) - 1:
+            return
+        self._items.insert(row + 1, self._items.pop(row))
+        self._save_order()
+        self._populate()
+        self._table.setCurrentCell(row + 1, 0)
+
+    def _save_order(self):
+        try:
+            api.put("/health-types", json=self._items)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
+
+
 # ── App tab ───────────────────────────────────────────────────────────────────
 
 class _AppTab(QWidget):
@@ -456,10 +640,7 @@ class SettingsWidget(QWidget):
             _IniListTab("/medication-names", "/medication-names", "/medication-names", "/medication-names"),
             "Medications",
         )
-        tabs.addTab(
-            _IniListTab("/health-types", "/health-types", "/health-types", "/health-types"),
-            "Health Types",
-        )
+        tabs.addTab(_HealthTypesTab(), "Health Types")
         tabs.addTab(
             _IniListTab(
                 "/milestone-event-types",

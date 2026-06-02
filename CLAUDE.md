@@ -3,7 +3,7 @@
 ## Stack
 - Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
-- Desktop: PySide6 (`desktop/`), Sprint 7 complete; Sprint 5 complete (mobile medications live); Sprint 9 complete (historical import)
+- Desktop: PySide6 (`desktop/`), Sprint 7 complete; Sprint 5 complete (mobile medications live); Sprint 9 complete (historical import); Sprint 10 in progress (Excel vet report)
 - Project plan: `docs/project-plan.md`
 - UI specs (confirmed ASCII renderings): `docs/ui-specs.md`
 - Offline cache architecture: `docs/dexie-offline-architecture.md` — Walk/Health full-cache vs Meals queue-only; stale queue dot bug pattern
@@ -18,20 +18,23 @@
 - `backend/routers/` — dogs, events, status, health, meals, milestones, meal_configs, medications (all routers)
 - `backend/routers/meal_configs.py` — GET(dog_id optional)/POST/PATCH/DELETE /meal-configs/; child items replaced atomically on PATCH
 - `backend/routers/medications.py` — GET(dog_id optional)/POST/PATCH/DELETE /medications/; child doses replaced atomically on PATCH
-- `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/; GET/POST/DELETE/PUT /health-types (ini CRUD)
-- `backend/routers/meals.py` — GET /meal-slots, GET /meal-ingredients with CRUD; GET/POST /meal-logs/ (upsert by dog+slot+date); GET /meal-logs/range/?dog_id=X&days=30
-- `backend/routers/medication_logs.py` — GET/POST /medication-logs/ (upsert by dog+medication+date); doses_given stored as JSON array
+- `backend/routers/health.py` — POST/GET/PATCH/DELETE for /health-events/ (GET supports since+until); GET/POST/DELETE/PUT /health-types (ini CRUD); health-types now returns report_column (activity/event/"")
+- `backend/routers/meals.py` — GET /meal-slots, GET /meal-ingredients with CRUD; GET/POST /meal-logs/ (upsert by dog+slot+date); GET /meal-logs/range/?dog_id=X&days=30 (also accepts start_date+end_date)
+- `backend/routers/medication_logs.py` — GET/POST /medication-logs/ (upsert by dog+medication+date); GET /medication-logs/range/?dog_id=X&start_date=Y&end_date=Z; doses_given stored as JSON array
 - `backend/routers/milestones.py` — GET/POST/PATCH/DELETE /milestones/; GET/POST/DELETE/PUT /milestone-event-types
-- `backend/health_types.ini` — health event types; editable via Settings desktop tab
+- `backend/health_types.ini` — health event types + [report_columns] section (activity/event per key); editable via Settings desktop tab
 - `backend/meal_slots.ini` — meal slot names; editable via Settings desktop tab
 - `backend/meal_ingredients.ini` — ingredient checklist; editable via Settings desktop tab
 - `backend/milestone_event_types.ini` — milestone event types (Life/Travel/Vet/Train/Experience); editable via Settings desktop tab
 - `desktop/main.py` — entry point; `--dev` flag points to localhost:8001
 - `desktop/api.py` — httpx client with configure(); get/post/patch/put/delete helpers
-- `desktop/windows/main_window.py` — sidebar (180px) + QStackedWidget; 6 nav items
+- `desktop/windows/main_window.py` — sidebar (180px) + QStackedWidget; 7 nav items (Reports added before Settings)
 - `desktop/windows/diary_widget.py` — Diary page: full CRUD table (Date/Dog/Age/Type/Notes1/Notes2/Weight); type filter dropdown; dog checkboxes; Notes2 URLs render as "View post →" clickable links; age format 0–16 wks / mo / yr(s)
 - `desktop/windows/milestones_widget.py` — superseded by diary_widget.py; safe to delete
-- `desktop/windows/settings_widget.py` — QTabWidget: Dogs/Meal Slots/Meal Ingredients/Medications/Health Types/Milestone Types/App; Dogs tab has full CRUD with archive/restore
+- `desktop/windows/settings_widget.py` — QTabWidget: Dogs/Meal Slots/Meal Ingredients/Medications/Health Types/Milestone Types/App; Dogs tab has full CRUD with archive/restore; Health Types tab is custom _HealthTypesTab (3 cols: Key/Label/Report Column)
+- `desktop/windows/reports_widget.py` — Reports page; dog dropdown, month/year picker, file picker, Run button; imports vet_report.generate() directly (restart app after editing vet_report.py)
+- `desktop/vet_report.py` — report generator; generate(dog_id, month, year, output_file, base_url); data zone: dog at anchor+0, period at anchor+1, day data at anchor+4; named range convention: data_anchor_{month_lower} (workbook-scoped)
+- `reports/` — output folder for generated xlsx files
 - `desktop/windows/meal_config_widget.py` — Meal Config page: per-dog QSplitter, slot table (current + history rows), Add/Edit dialog with _ItemsTable (▲▼✕ + pick list from ini), right-click copy/paste between slots
 - `desktop/windows/medications_config_widget.py` — Medications Config page: per-dog QSplitter, Active/Past sections, Add/Edit dialog with _DosesTable (▲▼✕, free text label+amount)
 - `desktop/windows/placeholder.py` — generic placeholder for unbuilt nav pages
