@@ -337,6 +337,22 @@ export default function HealthPage() {
   const [editEvent, setEditEvent] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [filter, setFilter] = useState({ days: 30, dogId: null, type: null })
+  const [customTimeEnabled, setCustomTimeEnabled] = useState(false)
+  const [customDate, setCustomDate] = useState('')
+  const [customTime, setCustomTime] = useState('')
+
+  function nowDate() {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  }
+  function nowTime() {
+    const d = new Date()
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+  }
+  function handleCustomTimeToggle(enabled) {
+    setCustomTimeEnabled(enabled)
+    if (enabled) { setCustomDate(nowDate()); setCustomTime(nowTime()) }
+  }
 
   // Swipe navigation
   const swipeStartX = useRef(null)
@@ -377,7 +393,7 @@ export default function HealthPage() {
     if (!dogs.length || !selectedType || logging) return
     navigator.vibrate?.(40)
     const dog = dogs[dogIdx]
-    const ts = localISOString()
+    const ts = customTimeEnabled ? `${customDate}T${customTime}:00` : localISOString()
     setLogging(true)
     try {
       try {
@@ -390,6 +406,7 @@ export default function HealthPage() {
       await loadEvents()
     } finally {
       setLogging(false)
+      setCustomTimeEnabled(false)
     }
   }
 
@@ -477,6 +494,18 @@ export default function HealthPage() {
           onOpen={() => setTypeSheetOpen(true)}
         />
 
+        {/* Custom time row */}
+        <div style={p.customTimeRow}>
+          <label style={p.customTimeLabel}>
+            <input type="checkbox" checked={customTimeEnabled} onChange={e => handleCustomTimeToggle(e.target.checked)} />
+            {' '}Set time
+          </label>
+          {customTimeEnabled && <>
+            <input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} style={p.dateInput} />
+            <input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} style={p.timeInput} />
+          </>}
+        </div>
+
         {/* Log row */}
         <div style={p.logRow}>
           <button
@@ -524,6 +553,10 @@ const p = {
   history: { flex: 1, minHeight: 0, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },
   empty: { padding: '20px 12px', color: '#aaa', textAlign: 'center', fontSize: 14 },
   loading: { padding: 16, textAlign: 'center', color: '#888', background: '#fff', borderBottom: '1px solid #e2e8f0' },
+  customTimeRow: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#fff', borderBottom: '1px solid #e2e8f0' },
+  customTimeLabel: { fontSize: 14, color: '#555', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', flexShrink: 0 },
+  dateInput: { flex: 1, padding: '6px 8px', border: '1px solid #ccc', borderRadius: 6, fontSize: 14 },
+  timeInput: { width: 90, padding: '6px 8px', border: '1px solid #ccc', borderRadius: 6, fontSize: 14 },
   logRow: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, padding: '10px 12px', background: '#f5f5f5' },
   logBtn: { width: 100, height: 52, background: '#fff', color: '#000', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 20, fontWeight: 400, cursor: 'pointer' },
   logBtnDisabled: { opacity: 0.5, cursor: 'default' },
