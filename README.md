@@ -44,6 +44,11 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v1.4.0 (2026-06-02)
+- New: `scripts/import_history.py` — one-time import of 5 months (Jan–May 2026) of legacy Google Sheets data; 1,420 meal logs, 14 vomit events, 60 Sucralfate medication logs loaded to prod; `--purge`, `--dry-run`, `--force`, `--tabs`, `--dog`, `--db` flags
+- New: Health tab — "Set time" toggle between type picker and Log button; reveals date + time pickers pre-filled to now; resets after each log; covers both past-date and same-day after-the-fact logging
+- Fixed: `/doglog/medication-logs` missing from Vite dev proxy — GET fell through to empty Dexie store, showing all dose checkboxes unchecked in dev regardless of stored data
+
 ### v1.3.0 (2026-05-31)
 - New: **Mobile medication logging** — Medications row per dog on Meals tab (shaded, below meal slots); tap opens slide-up dose sheet grouped by medication name with one checkbox per dose (label + amount shown)
 - New: Row status — "Not logged" / "X of Y given" (amber) / "✓ All given" (green)
