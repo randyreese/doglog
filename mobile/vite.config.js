@@ -21,6 +21,7 @@ export default defineConfig({
       '/doglog/meal-configs': 'http://127.0.0.1:8001',
       '/doglog/milestones': 'http://127.0.0.1:8001',
       '/doglog/milestone-event-types': 'http://127.0.0.1:8001',
+      '/doglog/medication-logs': 'http://127.0.0.1:8001',
       '/doglog/medications': 'http://127.0.0.1:8001',
       '/doglog/medication-names': 'http://127.0.0.1:8001',
       '/doglog/lan-url': 'http://127.0.0.1:8001',

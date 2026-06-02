@@ -309,7 +309,23 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-*(pull next sprint from backlog)*
+**Sprint 9 — Historical data import** *(started 2026-06-02)*
+
+Goal: Populate 1/1–5/31/2026 meal, health, and medication history from legacy Google Sheet.
+Hard boundary: 6/1 is go-live, prod data untouched. Target: complete clinical timeline for
+Pickles' July 2026 vet visit.
+
+Design locked: tab naming is `2026-01` through `2026-05`; slot key for 9p snack is `pm_snack`;
+Sucralfate doses stored as label strings; AM Snack synthesized at 100%; non-standard % values
+(e.g. 70%) stored as-is.
+
+- [x] Write `scripts/import_history.py` — meals, vomit events, Sucralfate medication logs; `--purge`, `--dry-run`, `--force` flags
+- [x] Pull prod DB to dev; run import on dev copy
+  - 1,420 meal logs; 14 vomit events; 60 Sucralfate medication logs; 0 skipped
+  - Ingredient snapshots correct for pre/post April 1 diet change (confirmed in DB)
+  - Medication logs correct: Apr 4–May 31 has both doses; Apr 1–2 fixed manually by user
+- [ ] Deploy import to prod
+- [ ] Mobile: log-with-past-date toggle on Health tab (date picker before logging, for retroactive manual entries)
 
 ---
 
@@ -317,31 +333,13 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 *Sprint naming: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream. Backlog is a bullet list — never numbered, so insertions don't require renumbering.*
 
-- **Sprint 9 — Historical data import**
-  Import 1/1–5/31/2026 meal, health, and medication data from legacy Google Sheet into SQLite.
-  Source: `Sprint9input.xlsx` (5 tabs: Jan–May). Hard boundary: 6/1 is go-live, prod data
-  untouched. Goal: complete clinical timeline for Pickles' vet visit in July 2026.
-  Depends on: Sprints 1–5 (full data model in place)
-
-  *Also ships in Sprint 9:*
-  - Mobile Health tab: log-with-past-date (toggle reveals date picker before logging, so
-    retroactive Stomach Gurgles / Dry Heaves / Grass Eating entries can be added manually)
-
-  *Pre-requisites before import:*
-  - Delete 3 dummy test meal_log records via direct DB query before running script
-  - Confirm `snack_pm` is the correct slot key for "9p snack" (check meal_slots.ini)
-  - Confirm Sucralfate dose ordering in DB: am = dose[0], pm = dose[1]
-
-  *Confirmed import scope (session 2026-06-01):*
-  - Meals: Bfast/Lunch/Dinner/9p snack columns → `meal_logs`; % direct from sheet; ingredient
-    snapshot from DB config lookup (latest effective_date ≤ log date per dog+slot)
-  - AM Snack (lick mat): synthesized at 100% for all days with a config (both dogs from 2/15);
-    no column in source, Pickles' occasional misses not tracked
-  - Vomit: col L "x" → `health_events` type="vomit" for that date
-  - Sucralfate (Apr–May col M "Notes"): parse "am"/"pm" → `medication_logs` per day for Pickles
-  - Ignored: Diet (D), Outcomes (I), Activities (Mar M), 7a tomorrow (Jan–Feb M), NoV (K), Streak
-  - Activities column (Mar): "Vet" 3/24, "Alley Park", "CS visit" — user enters manually via desktop Diary
-  - Full column map and script design in `docs/sprint9-historical-import.md`
+- **Mobile Meals edit-sheet: use stored ingredient snapshot for existing records**
+  When the edit sheet opens for an existing meal log, load ingredients from the record's stored
+  `ingredients` JSON snapshot rather than the current meal config. Currently it always loads the
+  current config, showing wrong ingredients for pre-April-1 Pickles records in the edit sheet
+  (though the stored DB data is correct and the vet report is unaffected). Display/UX fix only.
+  Discovered during Sprint 9 import verification (2026-06-02).
+  Depends on: Sprint 9
 
 - **Sprint 5a — Mobile Diary tab**
   - 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first
