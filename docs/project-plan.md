@@ -133,6 +133,17 @@ Excel is the target platform for all tabular and printed reports. Reports are ge
 
 ## Sprint History
 
+**Sprint 9 — Historical data import** ✓ COMPLETE *(2026-06-02)*
+
+- [x] `scripts/import_history.py`: imports 1/1–5/31/2026 from `Sprint9input.xlsx`; `--purge`, `--dry-run`, `--force`, `--tabs`, `--dog`, `--db` flags
+- [x] 1,420 meal logs; 14 vomit events; 60 Sucralfate medication logs imported to prod
+- [x] Ingredient snapshots correct for pre/post April 1 diet change
+- [x] Medication logs: Apr 4–May 31 both doses; Apr 1–2 fixed manually
+- [x] Mobile Health tab: custom date+time toggle for retroactive logging (resets after each log)
+- [x] Fixed: `/doglog/medication-logs` missing from Vite dev proxy — GET fell through to empty Dexie store
+
+Notes: Meals edit-sheet shows current config instead of stored snapshot for historical records — data correct, display-only bug added to backlog. Tab names in workbook are `2026-01` through `2026-05` (not Jan–May as originally assumed).
+
 **Sprint 5 — Go-live prep + Mobile Medications** ✓ COMPLETE *(2026-05-31)*
 
 - [x] Deploy v1.2.0 to prod (migration 0006 ran automatically)
@@ -309,23 +320,7 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 
 ## Current Sprint
 
-**Sprint 9 — Historical data import** *(started 2026-06-02)*
-
-Goal: Populate 1/1–5/31/2026 meal, health, and medication history from legacy Google Sheet.
-Hard boundary: 6/1 is go-live, prod data untouched. Target: complete clinical timeline for
-Pickles' July 2026 vet visit.
-
-Design locked: tab naming is `2026-01` through `2026-05`; slot key for 9p snack is `pm_snack`;
-Sucralfate doses stored as label strings; AM Snack synthesized at 100%; non-standard % values
-(e.g. 70%) stored as-is.
-
-- [x] Write `scripts/import_history.py` — meals, vomit events, Sucralfate medication logs; `--purge`, `--dry-run`, `--force` flags
-- [x] Pull prod DB to dev; run import on dev copy
-  - 1,420 meal logs; 14 vomit events; 60 Sucralfate medication logs; 0 skipped
-  - Ingredient snapshots correct for pre/post April 1 diet change (confirmed in DB)
-  - Medication logs correct: Apr 4–May 31 has both doses; Apr 1–2 fixed manually by user
-- [ ] Deploy import to prod
-- [ ] Mobile: log-with-past-date toggle on Health tab (date picker before logging, for retroactive manual entries)
+*(pull next sprint from backlog)*
 
 ---
 
