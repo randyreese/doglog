@@ -437,8 +437,7 @@ export default function HealthPage() {
   })
 
   const typeMap = Object.fromEntries((healthTypes || []).map(t => [t.value, t.label]))
-  const signalColor = signal === 'good' ? '#2f855a' : signal === 'weak' ? '#d97706' : '#e53e3e'
-  const signalLabel = signal === 'good' ? '●' : signal === 'weak' ? '◑' : '○'
+  const signalEmoji = { good: '🟢', weak: '🟡', offline: '🔴' }[signal] || '🔴'
   const currentTypeLabel = selectedType ? (typeMap[selectedType] || selectedType) : '(select)'
 
   return (
@@ -450,9 +449,7 @@ export default function HealthPage() {
         <div style={p.header}>
           <button style={p.hamburger} onClick={() => setMenuOpen(true)}>☰</button>
           <span style={p.title}>Dog Log</span>
-          <span style={p.signalDot} title={signal}>
-            <span style={{ color: signalColor }}>{signalLabel}</span>
-          </span>
+          <span style={p.signalDot}>{signalEmoji}</span>
           {queueCount > 0 && <span style={p.queue}>{queueCount}</span>}
         </div>
 

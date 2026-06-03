@@ -305,7 +305,7 @@ export default function DiaryPage() {
 
         <div style={p.header}>
           <button style={p.hamburger} onClick={() => setMenuOpen(true)}>☰</button>
-          <span style={p.title}>Diary</span>
+          <span style={p.title}>Dog Log</span>
           {queueCount > 0 && <span style={p.queue}>{queueCount}</span>}
           <span style={p.signalDot}>{signalEmoji}</span>
         </div>
