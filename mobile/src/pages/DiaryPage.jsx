@@ -15,8 +15,7 @@ function todayStr() {
 function fmtDate(dateStr) {
   if (!dateStr) return '—'
   const [y, m, d] = dateStr.split('-')
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  return `${months[parseInt(m, 10) - 1]} ${parseInt(d, 10)}, ${y}`
+  return `${m}/${d}/${y.slice(-2)}`
 }
 
 function isUrl(str) {
@@ -65,15 +64,15 @@ function DiaryRow({ entry, dogMap, typeMap, onDelete, onEdit }) {
 }
 
 const dr = {
-  row: { display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 12px', border: '1px solid #e8e8e8', background: '#fff' },
-  dateBlock: { flexShrink: 0, paddingTop: 1, minWidth: 80 },
-  date: { fontSize: 12, color: '#888' },
-  content: { flex: 1, display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 },
-  topLine: { display: 'flex', alignItems: 'center' },
+  row: { display: 'flex', alignItems: 'flex-start', gap: 8, padding: '10px 12px', border: '1px solid #e8e8e8', background: '#fff' },
+  dateBlock: { width: 68, flexShrink: 0, paddingTop: 1 },
+  date: { fontSize: 11, color: '#999' },
+  content: { flex: 1, display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 },
+  topLine: { display: 'flex', alignItems: 'center', flexWrap: 'wrap' },
   dogLabel: { fontSize: 15, color: '#1a202c', fontWeight: 600 },
   sep: { fontSize: 15, color: '#bbb', margin: '0 2px' },
   typeLabel: { fontSize: 15, color: '#555' },
-  notes: { fontSize: 12, color: '#888', fontStyle: 'italic', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  notes: { fontSize: 12, color: '#888', fontStyle: 'italic', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' },
   viewLink: { fontSize: 12, color: '#3182ce', textDecoration: 'none' },
   queueDot: { width: 8, height: 8, borderRadius: '50%', background: '#e53e3e', flexShrink: 0, marginTop: 4 },
 }
@@ -382,7 +381,7 @@ const p = {
   chipActive: { background: '#5b8dd9', color: '#fff', borderColor: '#5b8dd9' },
   typeSelect: { flex: 1, padding: '4px 8px', border: '1px solid #ccc', borderRadius: 8, fontSize: 13, background: '#fff' },
   addBtn: { padding: '4px 14px', background: '#5b8dd9', color: '#fff', border: 'none', borderRadius: 8, fontSize: 20, cursor: 'pointer', lineHeight: '1.4' },
-  list: { flex: 1, minHeight: 0, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 4 },
+  list: { flex: 1, minHeight: 0, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },
   empty: { padding: '20px 12px', color: '#aaa', textAlign: 'center', fontSize: 14 },
   tabBar: { position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', borderTop: '1px solid #ddd', background: '#fff', zIndex: 10 },
   tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 15, color: '#888', cursor: 'pointer', fontWeight: 500 },
