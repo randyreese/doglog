@@ -82,7 +82,7 @@ class ReportsWidget(QWidget):
         file_row = QHBoxLayout()
         file_row.addWidget(QLabel("File:"), 0)
         self._file_path = QLineEdit()
-        self._file_path.setPlaceholderText("Select .xlsx file…")
+        self._file_path.setPlaceholderText("Select template file…")
         self._file_path.setReadOnly(True)
         file_row.addWidget(self._file_path, 1)
         browse_btn = QPushButton("Browse…")
@@ -122,7 +122,7 @@ class ReportsWidget(QWidget):
     def _browse(self):
         default_dir = str(Path(__file__).parent.parent.parent / "reports")
         path, _ = QFileDialog.getOpenFileName(
-            self, "Select report file", default_dir, "Excel files (*.xlsx)"
+            self, "Select report template", default_dir, "Excel files (*.xlsm *.xlsx)"
         )
         if path:
             self._file_path.setText(path)

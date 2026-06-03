@@ -1,4 +1,4 @@
-"""Vet report generator — writes one month of data to a named-range data zone in an xlsx file."""
+"""Vet report generator — writes one month of data to a named-range data zone in an xlsm/xlsx file."""
 import calendar
 from collections import defaultdict
 from datetime import date, datetime
@@ -55,16 +55,11 @@ def _fmt_medications(logs_for_date: list, active_meds: list) -> str:
 
 
 def _find_anchor(wb: openpyxl.Workbook, ws) -> tuple[int, int]:
-    """Return (row, col) of the data_anchor for this sheet.
-
-    Looks for data_anchor_{sheet_lower} (e.g. data_anchor_apr) then
-    falls back to the generic data_anchor. All names must be workbook-scoped.
-    """
-    key = f"data_anchor_{ws.title.lower()}"
-    dn = wb.defined_names.get(key) or wb.defined_names.get("data_anchor")
+    """Return (row, col) of the workbook-scoped data_anchor named range."""
+    dn = wb.defined_names.get("data_anchor")
     if dn is None:
         raise ValueError(
-            f"Named range '{key}' (or 'data_anchor') not found. "
+            f"Named range 'data_anchor' not found. "
             f"Available names: {', '.join(wb.defined_names.keys()) or '(none)'}"
         )
     _, ref = list(dn.destinations)[0]
@@ -158,8 +153,8 @@ def generate(
 
     # Open workbook
     output_file = str(output_file)
-    wb = openpyxl.load_workbook(output_file)
-    sheet_name = start.strftime("%b")  # "Jan", "Feb", …
+    wb = openpyxl.load_workbook(output_file, keep_vba=True)
+    sheet_name = "Month View"
     if sheet_name not in wb.sheetnames:
         raise ValueError(
             f"Sheet '{sheet_name}' not found in {Path(output_file).name}. "

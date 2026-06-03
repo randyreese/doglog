@@ -139,11 +139,11 @@ Goal: Generate a formatted monthly vet report as xlsx, covering meals, health ev
 
 Design decisions locked:
 
-- Named-range data zone pattern (`data_anchor_{month_lower}`, workbook-scoped); OFFSET formulas in presentation grid
+- Named-range data zone pattern (`data_anchor`, workbook-scoped); OFFSET formulas in presentation grid
 - Data zone layout: row 0 = dog name, row 1 = period, rows 2–3 = blank, row 4+ = day data (one row per day)
 - Health types tagged `activity` or `event` in `[report_columns]` ini section; routes events to correct display column
 - Reports tab in desktop sidebar (before Settings); dog + month/year + file picker + Run button
-- 12-tab production file per dog per year; `data_anchor_{month_lower}` on each tab
+- Single reusable template `VetReportTemplate.xlsm`, one tab `Month View`; re-run for any dog/month combination
 
 Stories:
 

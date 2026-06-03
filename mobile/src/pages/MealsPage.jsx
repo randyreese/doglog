@@ -406,6 +406,7 @@ export default function MealsPage() {
   // Swipe navigation
   const swipeStartX = useRef(null)
   const swipeStartY = useRef(null)
+  const dateInputRef = useRef(null)
 
   function onPageTouchStart(e) {
     if (multiDayOpen) return
@@ -517,7 +518,17 @@ export default function MealsPage() {
         {!multiDayOpen && (
           <div style={p.pager}>
             <button style={p.pagerBtn} onClick={goBack}>‹</button>
-            <span style={p.pagerDate}>{formatDateDisplay(currentDate)}</span>
+            <span style={p.pagerDate} onClick={() => dateInputRef.current?.showPicker()}>
+              {formatDateDisplay(currentDate)}
+            </span>
+            <input
+              ref={dateInputRef}
+              type="date"
+              max={today}
+              value={currentDate}
+              onChange={e => { if (e.target.value) setCurrentDate(e.target.value) }}
+              style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
+            />
             <button style={{ ...p.pagerBtn, ...(isToday ? p.pagerBtnDisabled : {}) }} onClick={goForward} disabled={isToday}>›</button>
           </div>
         )}
@@ -626,7 +637,7 @@ const p = {
   pager: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: '#fff', borderBottom: '1px solid #e2e8f0' },
   pagerBtn: { width: 40, height: 40, fontSize: 26, background: 'none', border: 'none', cursor: 'pointer', color: '#5b8dd9', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   pagerBtnDisabled: { color: '#ccc', cursor: 'default' },
-  pagerDate: { fontSize: 16, fontWeight: 600, color: '#1a202c' },
+  pagerDate: { fontSize: 16, fontWeight: 600, color: '#1a202c', cursor: 'pointer', textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: 3 },
   content: { flex: 1, minHeight: 0, overflowY: 'auto' },
   dogSection: { marginBottom: 8 },
   dogHeader: { padding: '6px 16px 4px', fontSize: 16, fontWeight: 600, color: '#1a202c', background: '#f5f5f5' },

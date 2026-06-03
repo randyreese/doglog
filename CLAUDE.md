@@ -32,9 +32,9 @@
 - `desktop/windows/diary_widget.py` — Diary page: full CRUD table (Date/Dog/Age/Type/Notes1/Notes2/Weight); type filter dropdown; dog checkboxes; Notes2 URLs render as "View post →" clickable links; age format 0–16 wks / mo / yr(s)
 - `desktop/windows/milestones_widget.py` — superseded by diary_widget.py; safe to delete
 - `desktop/windows/settings_widget.py` — QTabWidget: Dogs/Meal Slots/Meal Ingredients/Medications/Health Types/Milestone Types/App; Dogs tab has full CRUD with archive/restore; Health Types tab is custom _HealthTypesTab (3 cols: Key/Label/Report Column)
-- `desktop/windows/reports_widget.py` — Reports page; dog dropdown, month/year picker, file picker, Run button; imports vet_report.generate() directly (restart app after editing vet_report.py)
-- `desktop/vet_report.py` — report generator; generate(dog_id, month, year, output_file, base_url); data zone: dog at anchor+0, period at anchor+1, day data at anchor+4; named range convention: data_anchor_{month_lower} (workbook-scoped)
-- `reports/` — output folder for generated xlsx files
+- `desktop/windows/reports_widget.py` — Reports page; dog dropdown, month/year picker, template file picker (*.xlsm *.xlsx), Run button; imports vet_report.generate() directly (restart app after editing vet_report.py)
+- `desktop/vet_report.py` — report generator; generate(dog_id, month, year, output_file, base_url); data zone: dog at anchor+0, period at anchor+1, day data at anchor+4; named range: `data_anchor` (workbook-scoped, no month suffix); target tab: `Month View`; `keep_vba=True` for xlsm support
+- `reports/VetReportTemplate.xlsm` — reusable single-tab template; tab `Month View`; workbook-scoped named range `data_anchor`; OFFSET formulas in presentation grid wire to data zone
 - `desktop/windows/meal_config_widget.py` — Meal Config page: per-dog QSplitter, slot table (current + history rows), Add/Edit dialog with _ItemsTable (▲▼✕ + pick list from ini), right-click copy/paste between slots
 - `desktop/windows/medications_config_widget.py` — Medications Config page: per-dog QSplitter, Active/Past sections, Add/Edit dialog with _DosesTable (▲▼✕, free text label+amount)
 - `desktop/windows/placeholder.py` — generic placeholder for unbuilt nav pages

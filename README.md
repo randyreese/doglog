@@ -44,6 +44,10 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v1.6.0 (2026-06-03)
+- New: **Meals tab calendar picker** — tap the date label to open native OS date picker; navigates directly to selected date; forward navigation capped at today
+- Changed: **Vet report template simplified** — single-tab template (`VetReportTemplate.xlsm`, tab `Month View`) replaces per-dog-per-year 12-tab workbooks; named range changed from `data_anchor_{month}` to `data_anchor` (workbook-scoped); `keep_vba=True` for future macro support
+
 ### v1.5.0 (2026-06-02)
 - New: **Desktop Reports page** — sidebar nav item with dog selector, month/year picker, file picker, and Run button; generates Excel vet report
 - New: `desktop/vet_report.py` — report generator; fetches meal logs, health events, medication logs for a selected dog + month; writes to named-range data zone in an xlsx template using `data_anchor_{month}` convention
