@@ -133,19 +133,39 @@ Excel is the target platform for all tabular and printed reports. Reports are ge
 
 ## Current Sprint
 
-### Sprint 10 — Excel vet report
+*(pull next sprint from backlog)*
+
+---
+
+## Sprint History
+
+**Sprint 5a — Mobile Diary tab** ✓ COMPLETE *(2026-06-03)*
+
+- [x] 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first
+- [x] Filter bar: dog chips (multi-select) + inline type `<select>`; not a bottom sheet
+- [x] Rows: mm/dd/yy date / dog·type / notes1 preview (2-line wrap) / "View →" if notes2 is URL
+- [x] Row tap → edit sheet pre-filled; swipe left → delete with confirmation
+- [x] Right swipe from Diary → Health; left swipe from Health → Diary
+- [x] Add/Edit sheet: date picker, dog dropdown (All/Tess/Pickles), type dropdown, weight checkbox+field, notes textarea, link field
+- [x] Full offline queue: diaryEntries + diaryQueue in Dexie v5; badge count includes diary queue
+- [x] syncFromBackend fetches milestones alongside dogs/events/health-events
+- [x] milestoneEventTypes added to ConfigContext; cached in localStorage
+- [x] Signal dot upgraded to emoji (🟢🟡🔴) across all four tabs
+- [x] All tab headers consistently show "Dog Log"
+- [x] Tab bar font reduced to 15px for 4-tab layout
+- [x] Bug fix: Meals edit sheet now loads ingredient list from stored snapshot, not current config
+
+**Sprint 10 — Excel vet report** ✓ COMPLETE *(2026-06-03)*
 
 Goal: Generate a formatted monthly vet report as xlsx, covering meals, health events, and medications for a selected dog. Primary deliverable before Pickles' July vet visit.
 
 Design decisions locked:
 
-- Named-range data zone pattern (`data_anchor`, workbook-scoped); OFFSET formulas in presentation grid
+- Named-range data zone pattern (`data_anchor`, workbook-scoped); direct cell references in presentation grid (OFFSET not needed for this template design)
 - Data zone layout: row 0 = dog name, row 1 = period, rows 2–3 = blank, row 4+ = day data (one row per day)
 - Health types tagged `activity` or `event` in `[report_columns]` ini section; routes events to correct display column
 - Reports tab in desktop sidebar (before Settings); dog + month/year + file picker + Run button
 - Single reusable template `VetReportTemplate.xlsm`, one tab `Month View`; re-run for any dog/month combination
-
-Stories:
 
 - [x] Backend: `report_column` flag on health types (ini + full CRUD)
 - [x] Backend: `GET /medication-logs/range/` endpoint
@@ -154,15 +174,9 @@ Stories:
 - [x] Desktop: Settings → Health Types tab — Report Column dropdown (—/Activity/Event)
 - [x] Desktop: Reports sidebar page with Vet Report section
 - [x] `desktop/vet_report.py` — generate() writes data zone + dog/period header
-- [x] Dev test: data landing confirmed correct for Apr 2026
-- [ ] Test notes/wrap: add health events + meal notes to dev db, verify concatenation + Excel wrap_text
-- [ ] Write OFFSET formulas in template to wire presentation grid to data zone
-- [ ] Deploy updated backend to prod
-- [ ] Run against prod data; validate full month output
-
----
-
-## Sprint History
+- [x] Template: direct references used (not OFFSET); single-tab `Month View` design confirmed working
+- [x] Deploy updated backend to prod
+- [x] Run against prod data; Pickles Mar 2026 output validated
 
 **Sprint 9 — Historical data import** ✓ COMPLETE *(2026-06-02)*
 
@@ -358,30 +372,6 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 ## Backlog
 
 *Sprint naming: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream. Backlog is a bullet list — never numbered, so insertions don't require renumbering.*
-
-- **Mobile Meals edit-sheet: use stored ingredient snapshot for existing records**
-  When the edit sheet opens for an existing meal log, load ingredients from the record's stored
-  `ingredients` JSON snapshot rather than the current meal config. Currently it always loads the
-  current config, showing wrong ingredients for pre-April-1 Pickles records in the edit sheet
-  (though the stored DB data is correct and the vet report is unaffected). Display/UX fix only.
-  Discovered during Sprint 9 import verification (2026-06-02).
-  Depends on: Sprint 9
-
-- **Sprint 5a — Mobile Diary tab**
-  - 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first
-  - Filter bar: dog chips (Tess/Pickles, multi-select) + inline type `<select>` (All/Life/Travel/Vet/Train/Experience — labels not keys); not a bottom sheet
-  - Rows: date / dog chip / type label / notes1 preview / "View post →" if Notes 2 is a URL
-  - Row tap → edit sheet pre-filled; swipe left → delete with confirmation
-  - Diary is last tab — right swipe navigates back to Health (extends existing swipe nav from Sprint 4c)
-  - Add/Edit sheet: date picker (defaults today), dog dropdown, type dropdown (labels), notes1 textarea, notes2 URL field (optional), weight field with checkbox (optional)
-  - Full offline queue: diaryEntries + diaryQueue in Dexie, same pattern as healthQueue; queue badge includes diary queue
-  - Depends on: Sprint 7 (dog list stable)
-
-- **Sprint 10 — Excel reports**
-  Excel is the target presentation platform for all tabular and printed reports. First target:
-  Vet Report — generates an xlsx covering the date range of interest, formatted for printing or
-  sharing. Additional reports (weight history, medication log, meal history) added as needed.
-  Depends on: Sprint 9 (data in place)
 
 - **Sprint 11 — Diary text search (desktop)**
   QLineEdit in Diary toolbar; client-side filter on Notes 1 field on keypress; no server round-trip

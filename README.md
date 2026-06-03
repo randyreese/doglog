@@ -44,6 +44,16 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v1.7.0 (2026-06-03)
+- New: **Mobile Diary tab** (Sprint 5a) — 4th bottom tab (Walk/Meals/Health/Diary); dog chip filter (multi-select), event type dropdown; rows show mm/dd/yy date / dog·type / notes preview (2 lines) / "View →" link; swipe-left to delete, tap to edit; full offline queue (diaryEntries + diaryQueue in Dexie v5); sync includes milestones on every backend sync
+- New: `DiaryPage.jsx` — add/edit sheet with date, dog, type, weight checkbox+field, notes, link fields; offline queued new entries flush on next WiFi sync; edit of synced entries requires connectivity
+- New: `milestoneEventTypes` added to ConfigContext (fetched from `/milestone-event-types`, cached in localStorage)
+- Fixed: Meals edit sheet ingredient snapshot — historical records now show the stored ingredient list from the log, not the current meal config (fixes pre-April-1 Pickles records showing wrong ingredients)
+- Changed: Signal dot on all tabs upgraded from unicode dot + CSS color to emoji (🟢🟡🔴) — larger and more visible
+- Changed: All tab headers consistently show "Dog Log"
+- Changed: Tab bar font reduced from 20px to 15px to accommodate 4 tabs
+- Changed: Swipe navigation extended — left swipe from Health → Diary; right swipe from Diary → Health
+
 ### v1.6.0 (2026-06-03)
 - New: **Meals tab calendar picker** — tap the date label to open native OS date picker; navigates directly to selected date; forward navigation capped at today
 - Changed: **Vet report template simplified** — single-tab template (`VetReportTemplate.xlsm`, tab `Month View`) replaces per-dog-per-year 12-tab workbooks; named range changed from `data_anchor_{month}` to `data_anchor` (workbook-scoped); `keep_vba=True` for future macro support

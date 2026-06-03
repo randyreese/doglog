@@ -3,7 +3,7 @@
 ## Stack
 - Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
-- Desktop: PySide6 (`desktop/`), Sprint 7 complete; Sprint 5 complete (mobile medications live); Sprint 9 complete (historical import); Sprint 10 in progress (Excel vet report)
+- Desktop: PySide6 (`desktop/`), Sprint 10 complete (Excel vet report live); Sprint 5a complete (Mobile Diary tab)
 - Project plan: `docs/project-plan.md`
 - UI specs (confirmed ASCII renderings): `docs/ui-specs.md`
 - Offline cache architecture: `docs/dexie-offline-architecture.md` — Walk/Health full-cache vs Meals queue-only; stale queue dot bug pattern
@@ -34,7 +34,7 @@
 - `desktop/windows/settings_widget.py` — QTabWidget: Dogs/Meal Slots/Meal Ingredients/Medications/Health Types/Milestone Types/App; Dogs tab has full CRUD with archive/restore; Health Types tab is custom _HealthTypesTab (3 cols: Key/Label/Report Column)
 - `desktop/windows/reports_widget.py` — Reports page; dog dropdown, month/year picker, template file picker (*.xlsm *.xlsx), Run button; imports vet_report.generate() directly (restart app after editing vet_report.py)
 - `desktop/vet_report.py` — report generator; generate(dog_id, month, year, output_file, base_url); data zone: dog at anchor+0, period at anchor+1, day data at anchor+4; named range: `data_anchor` (workbook-scoped, no month suffix); target tab: `Month View`; `keep_vba=True` for xlsm support
-- `reports/VetReportTemplate.xlsm` — reusable single-tab template; tab `Month View`; workbook-scoped named range `data_anchor`; OFFSET formulas in presentation grid wire to data zone
+- `reports/VetReportTemplate.xlsm` — reusable single-tab template; tab `Month View`; workbook-scoped named range `data_anchor`; direct cell references in presentation grid (not OFFSET)
 - `desktop/windows/meal_config_widget.py` — Meal Config page: per-dog QSplitter, slot table (current + history rows), Add/Edit dialog with _ItemsTable (▲▼✕ + pick list from ini), right-click copy/paste between slots
 - `desktop/windows/medications_config_widget.py` — Medications Config page: per-dog QSplitter, Active/Past sections, Add/Edit dialog with _DosesTable (▲▼✕, free text label+amount)
 - `desktop/windows/placeholder.py` — generic placeholder for unbuilt nav pages
@@ -42,12 +42,13 @@
 - `scripts/import_history.py` — Sprint 9 one-time import; reads `Sprint9input.xlsx` (tabs named `2026-01` through `2026-05`); imports meal_logs, vomit health_events, Sucralfate medication_logs; `--file`, `--tabs`, `--dog`, `--dry-run`, `--purge`, `--force`, `--db` flags; slot key for 9p snack is `pm_snack`
 - `scripts/import_history.py` — Sprint 9: imports 1/1–5/31/2026 meal/health/medication history from Sprint9input.xlsx; see `docs/sprint9-historical-import.md` for full column map and script design
 - `docs/sprint9-historical-import.md` — Sprint 9 working doc: why (Pickles July vet visit), confirmed column map, Sucralfate parsing logic, confirmed scope, pre-requisites
-- `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients + mealConfigs; fetched once at startup, cached in localStorage, refreshed on sync; mealConfigs fetched independently so failure doesn't block other config data
+- `mobile/src/ConfigContext.jsx` — shared config context: dogs + health types + meal slots + ingredients + mealConfigs + milestoneEventTypes; fetched once at startup, cached in localStorage, refreshed on sync; mealConfigs fetched independently so failure doesn't block other config data
 - `mobile/src/components/HamburgerMenu.jsx` — slide-out drawer: backend URL (tappable), build timestamp
-- `mobile/src/components/SwipeableRow.jsx` — swipe-left-to-delete wrapper; used on Walk + Health history rows
+- `mobile/src/components/SwipeableRow.jsx` — swipe-left-to-delete wrapper; used on Walk + Health + Diary history rows
 - `mobile/src/pages/WalkPage.jsx` — primary UI: status matrix, carousels, today history + inline 7-day history toggle (History button); dogs from ConfigContext
-- `mobile/src/pages/HealthPage.jsx` — Health tab: filter bar (date/dog/type), row-tap edit sheet, type list from ConfigContext
-- `mobile/src/pages/MealsPage.jsx` — Meals tab: date pager, per-dog slot grids, tap-to-edit; Multi Day toggle for 30-day bar summary; edit sheet uses per-dog-slot meal_config ingredients (fallback: global ini list)
+- `mobile/src/pages/HealthPage.jsx` — Health tab: filter bar (date/dog/type), row-tap edit sheet, type list from ConfigContext; left swipe → Diary
+- `mobile/src/pages/MealsPage.jsx` — Meals tab: date pager, per-dog slot grids, tap-to-edit; Multi Day toggle for 30-day bar summary; edit sheet uses stored ingredient snapshot for existing records (falls back to current config for new)
+- `mobile/src/pages/DiaryPage.jsx` — Diary tab: dog chip filter (multi-select) + type select; rows show date/dog·type/notes/View→; add/edit slide-up sheet; full offline queue (diaryEntries + diaryQueue Dexie v5); right swipe → Health
 - `mobile/src/SyncContext.jsx` — sync orchestration, syncInProgressRef guard, syncVersion counter, queue badge (all three queues)
 - `mobile/src/sync.js` — WiFi-gate sync, localISOString(), queue/delete functions for all event types
 - `mobile/src/api.js` — api.get/post/patch/delete, localGet offline fallback (events + health-events)
