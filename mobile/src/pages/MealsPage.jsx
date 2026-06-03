@@ -49,18 +49,24 @@ function EditSheet({ target, open, mealIngredients, onClose, onSave }) {
   const [pct, setPct] = useState(100)
   const [notes, setNotes] = useState('')
   const [ingredients, setIngredients] = useState({})
+  const [ingList, setIngList] = useState([])
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
 
   useEffect(() => {
     if (target) {
       const log = target.log
-      const ingList = target.ingredients || mealIngredients
+      const saved = log?.ingredients || {}
+      const labelMap = Object.fromEntries(
+        [...mealIngredients, ...(target.ingredients || [])].map(i => [i.value, i.label])
+      )
+      const effectiveList = (log && Object.keys(saved).length > 0)
+        ? Object.keys(saved).map(k => ({ value: k, label: labelMap[k] || k }))
+        : (target.ingredients || mealIngredients)
+      setIngList(effectiveList)
       setPct(log?.percent_consumed ?? 100)
       setNotes(log?.notes || '')
-      const saved = log?.ingredients || {}
-      // Default all ingredients to checked unless explicitly saved as false
-      setIngredients(Object.fromEntries(ingList.map(i => [i.value, saved[i.value] ?? true])))
+      setIngredients(Object.fromEntries(effectiveList.map(i => [i.value, saved[i.value] ?? true])))
       setSaveError(null)
     }
   }, [target, mealIngredients])
@@ -121,7 +127,6 @@ function EditSheet({ target, open, mealIngredients, onClose, onSave }) {
 
         {/* Ingredients */}
         {(() => {
-          const ingList = target?.ingredients || mealIngredients
           return ingList.length > 0 && (
             <div>
               <div style={ed.fieldLabel}>Ingredients</div>
