@@ -357,6 +357,7 @@ export default function WalkPage() {
         <button style={{ ...p.tab, ...p.tabActive }}>Walk</button>
         <button style={p.tab} onClick={() => nav('/meals')}>Meals</button>
         <button style={p.tab} onClick={() => nav('/health')}>Health</button>
+        <button style={p.tab} onClick={() => nav('/diary')}>Diary</button>
       </div>
     </div>
   )
@@ -381,6 +382,6 @@ const p = {
   history: { flex: 1, minHeight: 0, overflowY: 'auto', background: '#f5f5f5', padding: '8px 12px' },
   empty: { padding: '20px 12px', color: '#aaa', textAlign: 'center', fontSize: 14 },
   tabBar: { position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', borderTop: '1px solid #ddd', background: '#fff', zIndex: 10 },
-  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 20, color: '#888', cursor: 'pointer', fontWeight: 500 },
+  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 15, color: '#888', cursor: 'pointer', fontWeight: 500 },
   tabActive: { color: '#5b8dd9', fontWeight: 700, borderTop: '2px solid #5b8dd9' },
 }

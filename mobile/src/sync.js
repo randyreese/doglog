@@ -37,24 +37,27 @@ export async function syncFromBackend() {
   const base = getBackendUrl()
   if (!base) throw new Error('No backend configured')
 
-  const [dogsRes, eventsRes, healthRes] = await Promise.all([
+  const [dogsRes, eventsRes, healthRes, milestonesRes] = await Promise.all([
     fetch(`${base}/doglog/dogs/`, { cache: 'no-store' }),
     fetch(`${base}/doglog/events/?limit=200`, { cache: 'no-store' }),
     fetch(`${base}/doglog/health-events/?limit=200`, { cache: 'no-store' }),
+    fetch(`${base}/doglog/milestones/`, { cache: 'no-store' }),
   ])
-  if (!dogsRes.ok || !eventsRes.ok || !healthRes.ok) throw new Error('Sync fetch failed')
+  if (!dogsRes.ok || !eventsRes.ok || !healthRes.ok || !milestonesRes.ok) throw new Error('Sync fetch failed')
 
-  const [dogs, events, healthEvents] = await Promise.all([
-    dogsRes.json(), eventsRes.json(), healthRes.json(),
+  const [dogs, events, healthEvents, milestones] = await Promise.all([
+    dogsRes.json(), eventsRes.json(), healthRes.json(), milestonesRes.json(),
   ])
 
-  await db.transaction('rw', [db.dogs, db.events, db.meta, db.healthEvents], async () => {
+  await db.transaction('rw', [db.dogs, db.events, db.meta, db.healthEvents, db.diaryEntries], async () => {
     await db.dogs.clear()
     await db.events.clear()
     await db.healthEvents.clear()
+    await db.diaryEntries.clear()
     await db.dogs.bulkPut(dogs)
     await db.events.bulkPut(events)
     await db.healthEvents.bulkPut(healthEvents)
+    await db.diaryEntries.bulkPut(milestones)
     const ts = new Date().toISOString()
     await db.meta.put({ key: 'last_synced', value: ts })
     localStorage.setItem(LAST_SYNCED_KEY, ts)
@@ -152,6 +155,29 @@ export async function flushQueue() {
       break
     }
   }
+
+  // Flush diary queue
+  const diaryEntriesToFlush = await db.diaryQueue.toArray()
+  for (const entry of diaryEntriesToFlush) {
+    try {
+      const res = await fetch(`${base}/doglog/milestones/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dog_id: entry.dog_id || null,
+          date: entry.date,
+          event_type: entry.event_type,
+          notes1: entry.notes1 || null,
+          notes2: entry.notes2 || null,
+          weight_lbs: entry.weight_lbs || null,
+        }),
+      })
+      if (!res.ok) break
+      await db.diaryQueue.delete(entry.id)
+    } catch {
+      break
+    }
+  }
 }
 
 export function localISOString(d = new Date()) {
@@ -218,6 +244,34 @@ export async function queueMealLog({ dog_id, slot, meal_date, percent_consumed, 
 export async function queueMedicationLog({ dog_id, medication_id, log_date, doses_given }) {
   await db.medicationQueue.add({ dog_id, medication_id, log_date, doses_given, created_at: localISOString() })
   await db.medicationLogs.put({ dog_id, medication_id, log_date, doses_given, _queued: true })
+}
+
+export async function queueDiaryEntry({ dog_id, date, event_type, notes1, notes2, weight_lbs }) {
+  const queueId = await db.diaryQueue.add({ dog_id: dog_id || null, date, event_type, notes1: notes1 || null, notes2: notes2 || null, weight_lbs: weight_lbs || null, created_at: localISOString() })
+  await db.diaryEntries.add({
+    id: Date.now(),
+    dog_id: dog_id || null,
+    date,
+    event_type,
+    notes1: notes1 || null,
+    notes2: notes2 || null,
+    weight_lbs: weight_lbs || null,
+    _queued: true,
+    _queueId: queueId,
+  })
+}
+
+export async function deleteDiaryEntry(id) {
+  const local = await db.diaryEntries.get(id)
+  if (local?._queued) {
+    await db.diaryQueue.delete(local._queueId)
+  } else {
+    try {
+      const { api } = await import('./api')
+      await api.delete(`/milestones/${id}`)
+    } catch { /* offline — server delete skipped, local still removed */ }
+  }
+  await db.diaryEntries.delete(id)
 }
 
 export async function deleteHealthEvent(id) {

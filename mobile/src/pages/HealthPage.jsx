@@ -373,6 +373,7 @@ export default function HealthPage() {
     if (swipeFromRow.current) return
     if (Math.abs(dx) < 100 || Math.abs(dx) < Math.abs(dy) * 2) return
     if (dx > 0) nav('/meals')
+    else nav('/diary')
   }
 
   const loadEvents = useCallback(async () => {
@@ -522,6 +523,7 @@ export default function HealthPage() {
           <button style={p.tab} onClick={() => nav('/')}>Walk</button>
           <button style={p.tab} onClick={() => nav('/meals')}>Meals</button>
           <button style={{ ...p.tab, ...p.tabActive }}>Health</button>
+          <button style={p.tab} onClick={() => nav('/diary')}>Diary</button>
         </div>
       </div>
 
@@ -561,6 +563,6 @@ const p = {
   logBtn: { width: 100, height: 52, background: '#fff', color: '#000', border: '2px solid #5b8dd9', borderRadius: 10, fontSize: 20, fontWeight: 400, cursor: 'pointer' },
   logBtnDisabled: { opacity: 0.5, cursor: 'default' },
   tabBar: { position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', borderTop: '1px solid #ddd', background: '#fff', zIndex: 10 },
-  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 20, color: '#888', cursor: 'pointer', fontWeight: 500 },
+  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 15, color: '#888', cursor: 'pointer', fontWeight: 500 },
   tabActive: { color: '#5b8dd9', fontWeight: 700, borderTop: '2px solid #5b8dd9' },
 }

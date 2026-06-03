@@ -609,6 +609,7 @@ export default function MealsPage() {
           <button style={p.tab} onClick={() => nav('/')}>Walk</button>
           <button style={{ ...p.tab, ...p.tabActive }}>Meals</button>
           <button style={p.tab} onClick={() => nav('/health')}>Health</button>
+          <button style={p.tab} onClick={() => nav('/diary')}>Diary</button>
         </div>
       </div>
 
@@ -654,6 +655,6 @@ const p = {
   chip: { padding: '6px 16px', borderRadius: 20, border: '1px solid #ccc', background: '#fff', fontSize: 14, color: '#555', cursor: 'pointer' },
   chipActive: { background: '#5b8dd9', color: '#fff', borderColor: '#5b8dd9' },
   tabBar: { position: 'fixed', bottom: 0, left: 0, right: 0, display: 'flex', borderTop: '1px solid #ddd', background: '#fff', zIndex: 10 },
-  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 20, color: '#888', cursor: 'pointer', fontWeight: 500 },
+  tab: { flex: 1, padding: '12px 0', background: 'none', border: 'none', fontSize: 15, color: '#888', cursor: 'pointer', fontWeight: 500 },
   tabActive: { color: '#5b8dd9', fontWeight: 700, borderTop: '2px solid #5b8dd9' },
 }

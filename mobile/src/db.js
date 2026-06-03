@@ -41,3 +41,18 @@ db.version(4).stores({
   medicationLogs: '[dog_id+medication_id+log_date], dog_id, log_date',
   medicationQueue: '++id, dog_id, log_date',
 })
+
+db.version(5).stores({
+  dogs: 'id, name, active',
+  events: 'id, dog_id, type, timestamp',
+  eventQueue: '++id, dog_id, created_at',
+  meta: 'key',
+  healthEvents: 'id, dog_id, type, timestamp',
+  healthQueue: '++id, dog_id, created_at',
+  mealLogs: '[dog_id+slot+meal_date], dog_id, meal_date',
+  mealQueue: '++id, dog_id, meal_date',
+  medicationLogs: '[dog_id+medication_id+log_date], dog_id, log_date',
+  medicationQueue: '++id, dog_id, log_date',
+  diaryEntries: 'id, dog_id, date',
+  diaryQueue: '++id, created_at',
+})

@@ -19,6 +19,7 @@ export function ConfigProvider({ children }) {
   const [mealConfigs, setMealConfigs] = useState(() => loadCached('cfg_meal_configs', {}))
   // medications: active only [{id, dog_id, name, start_date, end_date, doses}]
   const [medications, setMedications] = useState(() => loadCached('cfg_medications', []))
+  const [milestoneEventTypes, setMilestoneEventTypes] = useState(() => loadCached('cfg_milestone_event_types', []))
 
   const load = useCallback(async () => {
     try {
@@ -55,6 +56,14 @@ export function ConfigProvider({ children }) {
       console.error('meal-configs load failed:', e.message)
     }
 
+    try {
+      const milestoneTypesData = await api.get('/milestone-event-types')
+      setMilestoneEventTypes(milestoneTypesData)
+      localStorage.setItem('cfg_milestone_event_types', JSON.stringify(milestoneTypesData))
+    } catch(e) {
+      console.error('milestone-event-types load failed:', e.message)
+    }
+
     // Active medications (end_date null or in future)
     try {
       const medsData = await api.get('/medications/')
@@ -73,7 +82,7 @@ export function ConfigProvider({ children }) {
   const dogMap = Object.fromEntries(dogs.map(d => [d.id, d.name]))
 
   return (
-    <ConfigContext.Provider value={{ dogs, healthTypes, mealSlots, mealIngredients, mealConfigs, medications, dogMap }}>
+    <ConfigContext.Provider value={{ dogs, healthTypes, mealSlots, mealIngredients, mealConfigs, medications, milestoneEventTypes, dogMap }}>
       {children}
     </ConfigContext.Provider>
   )

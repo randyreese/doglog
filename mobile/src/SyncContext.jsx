@@ -17,10 +17,10 @@ export function SyncProvider({ children }) {
 
   const refreshQueueCount = useCallback(async () => {
     const { db } = await import('./db')
-    const [peePoo, health, meal, med] = await Promise.all([
-      db.eventQueue.count(), db.healthQueue.count(), db.mealQueue.count(), db.medicationQueue.count(),
+    const [peePoo, health, meal, med, diary] = await Promise.all([
+      db.eventQueue.count(), db.healthQueue.count(), db.mealQueue.count(), db.medicationQueue.count(), db.diaryQueue.count(),
     ])
-    setQueueCount(peePoo + health + meal + med)
+    setQueueCount(peePoo + health + meal + med + diary)
   }, [])
 
   const doSync = useCallback(async () => {
