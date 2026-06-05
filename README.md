@@ -44,6 +44,11 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v1.8.0 (2026-06-04)
+- New: **Desktop Diary text search** (Sprint 11) — "Search notes:" bar below the Diary toolbar; client-side substring filter across Notes 1 and Notes 2 on every keystroke; no server round-trip; case-insensitive
+- Removed: `desktop/windows/milestones_widget.py` dead code (superseded by DiaryWidget)
+- Updated: `reports/VetReportTemplate.xlsm` — refined presentation layout; vet reports printed through May 2026
+
 ### v1.7.0 (2026-06-03)
 - New: **Mobile Diary tab** (Sprint 5a) — 4th bottom tab (Walk/Meals/Health/Diary); dog chip filter (multi-select), event type dropdown; rows show mm/dd/yy date / dog·type / notes preview (2 lines) / "View →" link; swipe-left to delete, tap to edit; full offline queue (diaryEntries + diaryQueue in Dexie v5); sync includes milestones on every backend sync
 - New: `DiaryPage.jsx` — add/edit sheet with date, dog, type, weight checkbox+field, notes, link fields; offline queued new entries flush on next WiFi sync; edit of synced entries requires connectivity

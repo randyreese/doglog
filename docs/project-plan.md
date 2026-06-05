@@ -139,6 +139,14 @@ Excel is the target platform for all tabular and printed reports. Reports are ge
 
 ## Sprint History
 
+**Sprint 11 — Diary text search (desktop)** ✓ COMPLETE *(2026-06-04)*
+
+- [x] "Search notes:" QLineEdit below Diary toolbar; max-width ~480px, left-aligned
+- [x] Filters Notes 1 and Notes 2 on every keystroke (client-side, case-insensitive substring)
+- [x] Empty search shows all records; composable with existing dog/type filters
+- [x] Deleted dead `desktop/windows/milestones_widget.py`
+- [x] Updated `reports/VetReportTemplate.xlsm` with refined presentation layout
+
 **Sprint 5a — Mobile Diary tab** ✓ COMPLETE *(2026-06-03)*
 
 - [x] 4th bottom tab (Walk/Meals/Health/Diary); unified list newest-first
@@ -372,11 +380,6 @@ Notes: QR code endpoint exists but LAN discovery UI deferred. Three-tab layout
 ## Backlog
 
 *Sprint naming: planned sprints keep their number. Unplanned sprints that jump the queue get a letter suffix (e.g. Sprint 3B) — no renumbering downstream. Backlog is a bullet list — never numbered, so insertions don't require renumbering.*
-
-- **Sprint 11 — Diary text search (desktop)**
-  QLineEdit in Diary toolbar; client-side filter on Notes 1 field on keypress; no server round-trip
-  needed at current record volumes. Mobile Diary search remains in Unscheduled Future Work.
-  Depends on: Sprint 7
 
 ## Unscheduled Future Work
 
