@@ -155,6 +155,16 @@ class DiaryWidget(QWidget):
         toolbar.addWidget(self._all_check)
         layout.addLayout(toolbar)
 
+        search_bar = QHBoxLayout()
+        search_bar.addWidget(QLabel("Search notes:"))
+        self._search = QLineEdit()
+        self._search.setPlaceholderText("filter by notes…")
+        self._search.setMaximumWidth(480)
+        self._search.textChanged.connect(self._apply_filter)
+        search_bar.addWidget(self._search)
+        search_bar.addStretch()
+        layout.addLayout(search_bar)
+
         self._table = QTableWidget(0, 7)
         self._table.setHorizontalHeaderLabels(
             ["Date", "Dog", "Age", "Type", "Notes 1", "Notes 2", "Weight"]
@@ -218,6 +228,7 @@ class DiaryWidget(QWidget):
         checked_ids = {dog_id for dog_id, cb in self._dog_checks.items() if cb.isChecked()}
         include_all = self._all_check.isChecked()
         selected_type = self._type_filter.currentData()
+        query = self._search.text().strip().lower()
 
         filtered = [
             r for r in self._all_records
@@ -226,6 +237,10 @@ class DiaryWidget(QWidget):
                 or (r["dog_id"] is not None and r["dog_id"] in checked_ids)
             ) and (
                 selected_type is None or r.get("event_type") == selected_type
+            ) and (
+                not query
+                or query in (r.get("notes1") or "").lower()
+                or query in (r.get("notes2") or "").lower()
             )
         ]
         self._populate(filtered)

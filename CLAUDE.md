@@ -3,7 +3,7 @@
 ## Stack
 - Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
-- Desktop: PySide6 (`desktop/`), Sprint 10 complete (Excel vet report live); Sprint 5a complete (Mobile Diary tab)
+- Desktop: PySide6 (`desktop/`), Sprint 11 complete (Diary text search); Sprint 10 complete (Excel vet report live); Sprint 5a complete (Mobile Diary tab)
 - Project plan: `docs/project-plan.md`
 - UI specs (confirmed ASCII renderings): `docs/ui-specs.md`
 - Offline cache architecture: `docs/dexie-offline-architecture.md` — Walk/Health full-cache vs Meals queue-only; stale queue dot bug pattern
@@ -30,7 +30,6 @@
 - `desktop/api.py` — httpx client with configure(); get/post/patch/put/delete helpers
 - `desktop/windows/main_window.py` — sidebar (180px) + QStackedWidget; 7 nav items (Reports added before Settings)
 - `desktop/windows/diary_widget.py` — Diary page: full CRUD table (Date/Dog/Age/Type/Notes1/Notes2/Weight); type filter dropdown; dog checkboxes; Notes2 URLs render as "View post →" clickable links; age format 0–16 wks / mo / yr(s)
-- `desktop/windows/milestones_widget.py` — superseded by diary_widget.py; safe to delete
 - `desktop/windows/settings_widget.py` — QTabWidget: Dogs/Meal Slots/Meal Ingredients/Medications/Health Types/Milestone Types/App; Dogs tab has full CRUD with archive/restore; Health Types tab is custom _HealthTypesTab (3 cols: Key/Label/Report Column)
 - `desktop/windows/reports_widget.py` — Reports page; dog dropdown, month/year picker, template file picker (*.xlsm *.xlsx), Run button; imports vet_report.generate() directly (restart app after editing vet_report.py)
 - `desktop/vet_report.py` — report generator; generate(dog_id, month, year, output_file, base_url); data zone: dog at anchor+0, period at anchor+1, day data at anchor+4; named range: `data_anchor` (workbook-scoped, no month suffix); target tab: `Month View`; `keep_vba=True` for xlsm support
