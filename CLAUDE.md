@@ -4,6 +4,7 @@
 - Backend: FastAPI + SQLAlchemy + SQLite, port 8001, Docker on Mint
 - Mobile: Vite + React PWA, Dexie.js offline, WiFi-gate sync
 - Desktop: PySide6 (`desktop/`), Sprint 11 complete (Diary text search); Sprint 10 complete (Excel vet report live); Sprint 5a complete (Mobile Diary tab)
+- Architecture summary: `docs/architecture.md`; design evaluation: `docs/design-evaluation.md`; AWS migration roadmap: `docs/aws-migration-roadmap.md`
 - Project plan: `docs/project-plan.md`
 - UI specs (confirmed ASCII renderings): `docs/ui-specs.md`
 - Offline cache architecture: `docs/dexie-offline-architecture.md` — Walk/Health full-cache vs Meals queue-only; stale queue dot bug pattern
@@ -62,6 +63,7 @@
 - `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\dev-prod-workflow.md` — dev/prod split pattern (shared with grow)
 - `D:\Users\mail\Documents\GitHub\claude\docs\dev-workflow\offline-queue-idempotency.md` — how the offline queue creates a double-POST race, and the UNIQUE constraint + idempotent endpoint fix; applies to any app using flushQueue() pattern (doglog + grow)
 - `D:\Users\mail\Documents\GitHub\claude\docs\working-with-claude\spec-first-ui-workflow.md` — render ASCII + lock prose before building any UI; the workflow that produced the Sprint 7/5/5a specs this session
+- `D:\Users\mail\Documents\GitHub\claude\docs\working-with-claude\app-analysis\` — reusable process docs for the three-exercise analysis that produced docs/architecture.md, docs/design-evaluation.md, and docs/aws-migration-roadmap.md (start with app-analysis-startup.md)
 
 ## History row design (Walk + Health shared pattern)
 
