@@ -17,6 +17,29 @@ export default function HamburgerMenu({ onClose }) {
     try { return new Date(__BUILD_TIME__).toLocaleString() } catch { return '' }
   })()
 
+  async function handleClearAndReload() {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(
+        regs.filter(r => r.scope.includes('/doglog/')).map(r => r.unregister())
+      )
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys()
+      await Promise.all(keys.map(async k => {
+        const cache = await caches.open(k)
+        const requests = await cache.keys()
+        const mine = requests.filter(r => r.url.includes('/doglog/'))
+        if (mine.length === requests.length) {
+          await caches.delete(k)
+        } else {
+          await Promise.all(mine.map(r => cache.delete(r)))
+        }
+      }))
+    }
+    window.location.href = window.location.origin + '/doglog/'
+  }
+
   return (
     <>
       {/* Backdrop */}
@@ -28,6 +51,10 @@ export default function HamburgerMenu({ onClose }) {
           <span style={s.title}>Dog Log</span>
           <button style={s.close} onClick={onClose}>✕</button>
         </div>
+
+        <div style={s.divider} />
+
+        <button style={s.item} onClick={handleClearAndReload}>↺ Force refresh</button>
 
         <div style={s.divider} />
 
