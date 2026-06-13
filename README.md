@@ -44,6 +44,9 @@ Tess and Pickles are seeded on first run. Dogs are configurable via the API.
 
 ## Version History
 
+### v1.9.0 (2026-06-13)
+- New: **Force refresh** in hamburger menu — scoped to `/doglog/` only; unregisters doglog's SW and clears only doglog cache entries, leaving pantrykeeper untouched on the shared `mint.local` origin
+
 ### v1.8.0 (2026-06-04)
 - New: **Desktop Diary text search** (Sprint 11) — "Search notes:" bar below the Diary toolbar; client-side substring filter across Notes 1 and Notes 2 on every keystroke; no server round-trip; case-insensitive
 - Removed: `desktop/windows/milestones_widget.py` dead code (superseded by DiaryWidget)
